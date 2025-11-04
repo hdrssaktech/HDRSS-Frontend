@@ -14,30 +14,46 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import { getMembers } from "../../api/api";
 
+
 const numColumns = 2;
 
 export default function Membership() {
   const navigation = useNavigation();
   const route = useRoute();
-  const { categoryType } = route.params || {}; 
+  // const route = useRoute();
+const { categoryType, districtId, districtName } = route.params || {};
+  // const { categoryType } = route.params || {}; 
 
   const [members, setMembers] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const fetchMembers = async () => {
-      try {
-        const data = await getMembers();
-        const filtered = data.filter((m) => m.categoryType === categoryType);
-        setMembers(filtered);
-      } catch (error) {
-        console.error(error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchMembers();
-  }, [categoryType]);
+useEffect(() => {
+  const fetchMembers = async () => {
+    try {
+      const data = await getMembers();
+
+      // ✅ Fix: match 'Districts' or 'State' based on your data
+      const filtered = data.filter(
+        (m) =>
+          m.categoryType.toLowerCase() === categoryType?.toLowerCase() &&
+          m.district?.toLowerCase() === districtName?.toLowerCase()
+      );
+
+      setMembers(filtered);
+
+      console.log("✅ Filtered Members:", filtered.length);
+      console.log("Category:", categoryType);
+      console.log("District:", districtName);
+    } catch (error) {
+      console.error("Error fetching members:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  fetchMembers();
+}, [categoryType, districtName]);
+
 
   const renderItem = ({ item }) => (
     <View style={styles.card}>

@@ -227,6 +227,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     flexDirection: "row",
     alignItems: "center",
+    marginTop:30,
     elevation: 5,
     shadowColor: "#000",
     shadowOpacity: 0.25,

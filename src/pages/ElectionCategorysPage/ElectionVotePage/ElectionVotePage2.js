@@ -578,30 +578,31 @@ export default function ElectionVotePage2({ route, navigation }) {
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Reviews</Text>
 
-          {election.VideoReviews && election.VideoReviews.length > 0 ? (
-            election.VideoReviews.map((rev) => (
-              <View key={rev.id} style={styles.reviewCard}>
-                <Text style={styles.reviewerName}>
-                  {rev.reviewerName || "Anonymous"}
-                </Text>
-                <View style={styles.starContainer}>
-                  {[1, 2, 3, 4, 5].map((star) => (
-                    <Ionicons
-                      key={star}
-                      name={star <= rev.rating ? "star" : "star-outline"}
-                      size={18}
-                      color="#f4c430"
-                    />
-                  ))}
-                </View>
-                <Text style={styles.comment}>{rev.comment}</Text>
-              </View>
-            ))
-          ) : (
-            <Text style={{ textAlign: "center", color: "#777" }}>
-              No reviews yet.
-            </Text>
-          )}
+   {election.VideoReviews && election.VideoReviews.length > 0 ? (
+  election.VideoReviews.slice(0, 3).map((rev) => (
+    <View key={rev.id} style={styles.reviewCard}>
+      <Text style={styles.reviewerName}>
+        {rev.reviewerName || "Anonymous"}
+      </Text>
+      <View style={styles.starContainer}>
+        {[1, 2, 3, 4, 5].map((star) => (
+          <Ionicons
+            key={star}
+            name={star <= rev.rating ? "star" : "star-outline"}
+            size={18}
+            color="#f4c430"
+          />
+        ))}
+      </View>
+      <Text style={styles.comment}>{rev.comment}</Text>
+    </View>
+  ))
+) : (
+  <Text style={{ textAlign: "center", color: "#777" }}>
+    No reviews yet.
+  </Text>
+)}
+
 
           {/* 📝 Add Review Button */}
           <TouchableOpacity

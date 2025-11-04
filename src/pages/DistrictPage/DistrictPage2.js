@@ -232,13 +232,16 @@ export default function DistrictPage2() {
             </TouchableOpacity>
 
             <TouchableOpacity
-              style={styles.menuBox}
-              onPress={() =>
-                navigation.navigate("Member0", { districtName: district._id })
-              }
-            >
-              <Text style={styles.menuText}>HDRSS</Text>
-            </TouchableOpacity>
+            style={styles.menuBox}
+            onPress={() =>
+              navigation.navigate("Member0", {
+                districtId: district.id,
+                districtName: district.name,
+              })
+            }
+          >
+            <Text style={styles.menuText}>HDRSS</Text>
+          </TouchableOpacity>
 
             <TouchableOpacity
               style={styles.menuBox}

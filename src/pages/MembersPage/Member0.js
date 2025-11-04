@@ -6,10 +6,13 @@ import {
   StyleSheet,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { useNavigation } from "@react-navigation/native";
+// import { useNavigation } from "@react-navigation/native";
+import { useNavigation, useRoute } from "@react-navigation/native";
 
 export default function Member0() {
   const navigation = useNavigation();
+  const route = useRoute();
+const { districtId, districtName } = route.params || {};
 
   return (
     <View style={styles.container}>
@@ -25,30 +28,47 @@ export default function Member0() {
 
         <Text style={styles.headerTitle}>Leadership Directory</Text>
       </View>
+ {/* <View style={{ marginTop: 20, alignItems: "center" }}>
+        <Text style={{ fontSize: 16, fontWeight: "bold", color: "#333" }}>
+          District Name: {districtName}
+        </Text>
+        <Text style={{ fontSize: 14, color: "#666" }}>
+          District ID: {districtId}
+        </Text>
+      </View> */}
+
 
       {/* 🔹 Buttons Row (State + District) */}
       <View style={styles.buttonRow}>
         {/* State Level */}
-        <TouchableOpacity
-          style={[styles.mainButton, { backgroundColor: "#93210A" }]}
-          onPress={() =>
-            navigation.navigate("Member", { categoryType: "State" })
-          }
-        >
-          <Ionicons name="people-circle-outline" size={24} color="#fff" />
-          <Text style={styles.mainButtonText}>State Level</Text>
-        </TouchableOpacity>
+<TouchableOpacity
+  style={[styles.mainButton, { backgroundColor: "#93210A" }]}
+  onPress={() =>
+    navigation.navigate("Member", {
+      categoryType: "State",
+      districtId,
+      districtName,
+    })
+  }
+>
+  <Ionicons name="people-circle-outline" size={24} color="#fff" />
+  <Text style={styles.mainButtonText}>State Level</Text>
+</TouchableOpacity>
 
-        {/* District Level */}
-        <TouchableOpacity
-          style={[styles.mainButton, { backgroundColor: "#E0A800" }]}
-          onPress={() =>
-            navigation.navigate("Member", { categoryType: "District" })
-          }
-        >
-          <Ionicons name="location-outline" size={24} color="#fff" />
-          <Text style={styles.mainButtonText}>District Level</Text>
-        </TouchableOpacity>
+{/* District Level */}
+<TouchableOpacity
+  style={[styles.mainButton, { backgroundColor: "#E0A800" }]}
+  onPress={() =>
+    navigation.navigate("Member", {
+      categoryType: "Districts",
+      districtId,
+      districtName,
+    })
+  }
+>
+  <Ionicons name="location-outline" size={24} color="#fff" />
+  <Text style={styles.mainButtonText}>District Level</Text>
+</TouchableOpacity>
       </View>
 
       {/* 🔹 Join Button */}
@@ -139,3 +159,5 @@ const styles = StyleSheet.create({
     marginLeft: 8,
   },
 });
+
+

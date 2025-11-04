@@ -1,17 +1,10 @@
 // src/Controller/ElectionController.js
 import { fetchAllElectionsAPI, fetchElectionByIdAPI } from "../../api/api";
-
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import {jwtDecode} from 'jwt-decode'
 export const fetchAllElections = async () => {
   return await fetchAllElectionsAPI();
 };
-
-export const fetchElectionById = async (id) => {
-  return await fetchElectionByIdAPI(id);
-};
-
-
-
-
 
 import axios from "axios";
 
@@ -40,15 +33,41 @@ export const fetchVideoReviews = async (videoId) => {
 };
 
 // ✅ Post new review
-export const postVideoReview = async (videoId, comment, rating) => {
+export const postVideoReview = async (reviewData) => {
   try {
-    const response = await axios.post(`${BASE_URL}/videoreviews/${videoId}`, {
-      comment,
-      rating,
+    const token = await AsyncStorage.getItem("token");
+
+    let reviewerName = "Anonymous";
+
+    if (token) {
+      const decoded = jwtDecode(token);
+      // 👇 Adjust according to your token payload (check backend)
+      reviewerName =
+        decoded?.name || decoded?.phoneNumber || decoded?.username || "Anonymous";
+    }
+
+    const payload = { ...reviewData, reviewerName };
+
+    const response = await axios.post(`${BASE_URL}/video-reviews`, payload, {
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`, // ✅ send token
+      },
     });
+
     return response.data;
   } catch (error) {
-    console.error("❌ Error posting review:", error);
+    console.error("❌ Error posting review:", error.response?.data || error);
+    throw error;
+  }
+};
+// ✅ Fetch single election by ID (with reviews)
+export const fetchElectionById = async (id) => {
+  try {
+    const response = await axios.get(`${BASE_URL}/elections/${id}/reviews`);
+    return response.data;
+  } catch (error) {
+    console.error("❌ Error fetching election:", error);
     throw error;
   }
 };

@@ -147,7 +147,7 @@ englishText: {
     position: "absolute",
     top: 10,
     right: 6,
-    fontSize: 9.5,
+    fontSize: 9,
     fontWeight: "bold",
     color: "#000",
   },
