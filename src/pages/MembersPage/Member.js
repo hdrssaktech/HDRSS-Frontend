@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import {
@@ -20,7 +19,7 @@ const numColumns = 2;
 export default function Membership() {
   const navigation = useNavigation();
   const route = useRoute();
-  const { categoryType } = route.params || {}; // "State" or "District"
+  const { categoryType } = route.params || {}; 
 
   const [members, setMembers] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -161,4 +160,3 @@ const styles = StyleSheet.create({
   },
   joinButtonText: { color: "#fff", fontSize: 16, fontWeight: "bold" },
 });
-

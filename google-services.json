@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "14690152575",
+    "project_id": "akhdrss",
+    "storage_bucket": "akhdrss.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:14690152575:android:9c06698513b0be5ee68f4a",
+        "android_client_info": {
+          "package_name": "com.aktech.hdrss"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCw7i3KoLKlsMXJeK3CpLGtaMl0Wa1p8M0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

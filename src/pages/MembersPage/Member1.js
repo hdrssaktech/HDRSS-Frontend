@@ -167,6 +167,9 @@ export default function Membership1() {
         district,
         id: memberId,
         image: imageUrl,
+         dob,
+         bloodGroup,
+         contactDetails: contact,
       });
 
       Alert.alert("✅ Success", "ID Card generated successfully!");

@@ -15,6 +15,14 @@ export default function Member0() {
     <View style={styles.container}>
       {/* 🔹 Header */}
       <View style={styles.header}>
+        {/* 🔙 Back Arrow */}
+        <TouchableOpacity
+          onPress={() => navigation.goBack()}
+          style={styles.backButton}
+        >
+          <Ionicons name="chevron-back" size={26} color="#fff" />
+        </TouchableOpacity>
+
         <Text style={styles.headerTitle}>Leadership Directory</Text>
       </View>
 
@@ -59,6 +67,7 @@ export default function Member0() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#fff", paddingHorizontal: 20 },
+
   header: {
     backgroundColor: "#93210A",
     paddingVertical: 20,
@@ -69,8 +78,19 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.3,
     shadowRadius: 6,
     elevation: 4,
+    position: "relative",
   },
+
+  // 🔹 Back Arrow Style
+  backButton: {
+    position: "absolute",
+    left: 15,
+    top: 15,
+    padding: 6,
+  },
+
   headerTitle: { color: "#fff", fontSize: 20, fontWeight: "bold" },
+
   buttonRow: {
     flexDirection: "row",
     justifyContent: "space-between",
@@ -119,5 +139,3 @@ const styles = StyleSheet.create({
     marginLeft: 8,
   },
 });
-
-

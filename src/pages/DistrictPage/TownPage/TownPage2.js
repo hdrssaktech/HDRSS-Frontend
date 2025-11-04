@@ -61,7 +61,9 @@ export default function TownPage2() {
         >
           <Ionicons name="chevron-back" size={28} color="#fff" />
         </TouchableOpacity>
-        <Text style={styles.bannerTitle}>{town.title || town.townname}</Text>
+        <View style={styles.bannerTitleContainer}>
+          <Text style={styles.bannerTitle}>{town.title || town.townname}</Text>
+        </View>
       </View>
 
       {/* 📝 About */}
@@ -69,10 +71,19 @@ export default function TownPage2() {
         <View style={styles.aboutContainer}>
           <Text style={styles.aboutText}>{aboutText}</Text>
           {town.about?.length > 180 && (
-            <TouchableOpacity onPress={() => setShowMore(!showMore)}>
+            <TouchableOpacity
+              onPress={() => setShowMore(!showMore)}
+              style={styles.showMoreContainer}
+            >
               <Text style={styles.showMore}>
                 {showMore ? "Show Less" : "Show More"}
               </Text>
+              <Ionicons
+                name={showMore ? "chevron-up" : "chevron-forward"}
+                size={18}
+                color="#93210A"
+                style={{ marginLeft: 5 }}
+              />
             </TouchableOpacity>
           )}
         </View>
@@ -87,7 +98,7 @@ export default function TownPage2() {
             data={town.add}
             keyExtractor={(item, index) => index.toString()}
             renderItem={({ item }) => (
-              <Image source={{ uri: item.image }} style={styles.smallImage} />
+              <Image source={{ uri: item.image }} style={styles.fullWidthImage} />
             )}
             showsHorizontalScrollIndicator={false}
             pagingEnabled
@@ -104,7 +115,6 @@ export default function TownPage2() {
               key={index}
               style={[
                 styles.placeBox,
-                styles.altRow,
                 { flexDirection: index % 2 === 0 ? "row" : "row-reverse" },
               ]}
             >
@@ -126,7 +136,6 @@ export default function TownPage2() {
               key={index}
               style={[
                 styles.placeBox,
-                styles.altRow,
                 { flexDirection: index % 2 === 0 ? "row" : "row-reverse" },
               ]}
             >
@@ -142,7 +151,7 @@ export default function TownPage2() {
 
       {/* 🎥 Videos */}
       {town.videos && town.videos.length > 0 && (
-        <View style={styles.sectionContainer}>
+        <View style={styles.videoSection}>
           <Text style={styles.sectionTitle}>Videos</Text>
           {town.videos.map((vid, index) => {
             const videoId = extractYouTubeId(vid.videoUrl);
@@ -167,7 +176,7 @@ export default function TownPage2() {
 // ✅ Helper: Extract YouTube ID
 function extractYouTubeId(url) {
   const regex =
-    /(?:youtube\.com\/(?:watch\?v=|embed\/)|youtu\.be\/)([A-Za-z0-9_-]{11})/;
+    `/(?:youtube\.com\/(?:watch\?v=|embed\/)|youtu\.be\/)([A-Za-z0-9_-]{11})/`;
   const match = url.match(regex);
   return match ? match[1] : null;
 }
@@ -180,7 +189,6 @@ const styles = StyleSheet.create({
   bannerImage: {
     width: "100%",
     height: 250,
-    justifyContent: "flex-end",
   },
   overlay: {
     ...StyleSheet.absoluteFillObject,
@@ -193,13 +201,20 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(0,0,0,0.4)",
     borderRadius: 20,
     padding: 5,
+    zIndex: 2,
+  },
+  bannerTitleContainer: {
+    position: "absolute",
+    bottom: 20,
+    left: 20,
+    right: 20,
   },
   bannerTitle: {
-    color: "#fff",
-    fontSize: 23,
+   color: "#fff",
+    fontSize: 20,
     fontWeight: "bold",
-    left: 75,
-    bottom: 200,
+    left: 50,
+    bottom: 130,
   },
 
   /* About */
@@ -213,23 +228,24 @@ const styles = StyleSheet.create({
     lineHeight: 22,
     textAlign: "justify",
   },
+  showMoreContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "flex-end",
+    marginTop: 5,
+  },
   showMore: {
     color: "#93210A",
     fontWeight: "bold",
-    textAlign: "right",
-    marginTop: 5,
   },
 
   /* Gallery */
   galleryContainer: {
-    marginHorizontal: 15,
     marginVertical: 10,
   },
-  smallImage: {
-    width: width - 60,
-    height: 200,
-    borderRadius: 0,
-    marginRight: 10,
+  fullWidthImage: {
+    width: width,
+    height: 220,
   },
 
   /* Sections */
@@ -241,46 +257,43 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: "bold",
     color: "#93210A",
-    marginVertical: 10,
-    left: 100,
+    marginBottom: 10,
+    textAlign: "center",
   },
 
-  /* Famous & Tourist */
-  altRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginVertical: 25,
-  },
   placeBox: {
     backgroundColor: "#fff",
-    borderRadius: 12,
+    borderRadius: 10,
     padding: 10,
     elevation: 3,
     shadowColor: "#000",
-    shadowOpacity: 0.15,
-    shadowRadius: 5,
-    marginVertical: 1,
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    marginVertical: 12,
+    alignItems: "center",
   },
   circleImage: {
-    width: 90,
-    height: 90,
-    borderRadius: 45,
+    width: 100,
+    height: 100,
+    borderRadius: 50,
     backgroundColor: "#eee",
-    marginHorizontal: 5,
+    marginHorizontal: 10,
   },
   altTextContainer: {
     flex: 1,
-    paddingHorizontal: 15,
+    paddingHorizontal: 10,
   },
   altDescription: {
-    fontSize: 15,
-    color: "#333",
-    textAlign: "justify",
+    fontSize: 13,
+  color: "#555",
+  lineHeight: 18,
+  marginBottom: 8,
   },
   altName: {
-    fontSize: 17,
-    fontWeight: "bold",
-    color: "#93210A",
+    fontSize: 13,
+  color: "#555",
+  lineHeight: 18,
+  marginBottom: 8,
   },
   altDistance: {
     color: "#555",
@@ -289,10 +302,13 @@ const styles = StyleSheet.create({
   },
 
   /* Video */
+  videoSection: {
+    marginBottom: 30,
+  },
   videoContainer: {
-    width: "100%",
-    height: 220,
-    borderRadius: 10,
+    width: width,
+    height: 230,
+    borderRadius: 0,
     overflow: "hidden",
     marginBottom: 15,
   },
@@ -300,5 +316,6 @@ const styles = StyleSheet.create({
     width: "100%",
     height: "100%",
   },
+
   center: { flex: 1, justifyContent: "center", alignItems: "center" },
 });

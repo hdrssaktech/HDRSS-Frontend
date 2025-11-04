@@ -10,6 +10,7 @@ import {
   Dimensions,
 } from "react-native";
 import { useRoute, useNavigation } from "@react-navigation/native";
+import { Ionicons } from "@expo/vector-icons";
 
 const { width } = Dimensions.get("window");
 
@@ -24,10 +25,10 @@ const PartiesPage1 = () => {
   useEffect(() => {
     const fetchParties = async () => {
       try {
-        console.log("📍 District ID received:", districtId);
+        console.log(" District ID received:", districtId);
 
         const response = await fetch(
-          `https://hdrss-backend.onrender.com/api/party/district/${districtId}`
+           `https://hdrss-backend.onrender.com/api/party/district/${districtId}`
         );
         const data = await response.json();
         console.log("✅ Parties API Response:", data);
@@ -62,6 +63,16 @@ const PartiesPage1 = () => {
   if (parties.length === 0) {
     return (
       <View style={styles.container}>
+        <View style={styles.headerBox}>
+          <TouchableOpacity
+            onPress={() => navigation.goBack()}
+            style={styles.backButton}
+          >
+            <Ionicons name="chevron-back" size={26} color="#fff" />
+          </TouchableOpacity>
+          <Text style={styles.headerTitle}> Parties in this District</Text>
+        </View>
+
         <Text style={styles.emptyText}>No parties found for this district.</Text>
       </View>
     );
@@ -69,7 +80,16 @@ const PartiesPage1 = () => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.header}>🎉 Parties in this District</Text>
+      {/* Header Section */}
+      <View style={styles.headerBox}>
+        <TouchableOpacity
+          onPress={() => navigation.goBack()}
+          style={styles.backButton}
+        >
+          <Ionicons name="chevron-back" size={24} color="#fff" />
+        </TouchableOpacity>
+        <Text style={styles.headerTitle}>Parties </Text>
+      </View>
 
       <FlatList
         data={parties}
@@ -111,6 +131,31 @@ const styles = StyleSheet.create({
     paddingHorizontal: 15,
     paddingTop: 15,
   },
+
+  // 🔹 Header Styles
+  headerBox: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#93210A",
+    paddingVertical: 15,
+    paddingHorizontal: 10,
+    borderRadius: 10,
+    marginBottom: 20,
+    marginTop: 25,
+  },
+  backButton: {
+    marginRight: 10,
+    marginTop: -3, // 👆 slightly raises the arrow
+    padding: 4,
+  },
+  headerTitle: {
+    fontSize: 20,
+    fontWeight: "bold",
+    color: "#fff",
+    letterSpacing: 0.5,
+    textAlign: "left",
+  },
+
   loaderContainer: {
     flex: 1,
     justifyContent: "center",
@@ -122,17 +167,7 @@ const styles = StyleSheet.create({
     marginTop: 8,
     fontWeight: "500",
   },
-  header: {
-    fontSize: 22,
-    backgroundColor:"#93210A",
-    padding:20,
-    fontWeight: "800",
-    marginTop:30,
-    color: "white",
-    marginBottom: 15,
-    textAlign: "center",
-    letterSpacing: 0.5,
-  },
+
   card: {
     backgroundColor: "#fff",
     borderRadius: 16,
@@ -151,12 +186,17 @@ const styles = StyleSheet.create({
     resizeMode: "cover",
   },
   overlay: {
+     backgroundColor: "rgba(0, 0, 0, 0.17)",
+    width: "100%",
+    height: "100%",
+    paddingVertical: 80,
     position: "absolute",
-    bottom: 0,
-    left: 0,
-    right: 0,
-    height: 80,
-    backgroundColor: "rgba(0,0,0,0.3)",
+  },
+  get overlay() {
+    return this._overlay;
+  },
+  set overlay(value) {
+    this._overlay = value;
   },
   textContainer: {
     position: "absolute",

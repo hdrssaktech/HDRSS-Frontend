@@ -8,14 +8,16 @@ import {
   Linking,
   ScrollView,
 } from "react-native";
-import { useRoute } from "@react-navigation/native";
+import { useRoute, useNavigation } from "@react-navigation/native";
+import { Ionicons } from "@expo/vector-icons"; // ✅ added for back arrow icon
 
 const PartiesPage2 = () => {
   const route = useRoute();
+  const navigation = useNavigation();
   const { party } = route.params; // ✅ Get data from previous page
 
   const callNumber = (number) => {
-    if (number) Linking.openURL(`tel:${number}`);
+    if (number) Linking.openURL(`tel:${number}`);;
   };
 
   const openMap = (location) => {
@@ -29,6 +31,14 @@ const PartiesPage2 = () => {
 
   return (
     <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
+      {/* 🔹 Back Arrow */}
+      <TouchableOpacity
+        onPress={() => navigation.goBack()}
+        style={styles.backButton}
+      >
+        <Ionicons name="chevron-back" size={26} color="#faf9f9ff" />
+      </TouchableOpacity>
+
       {/* Header Image */}
       <Image
         source={{
@@ -51,7 +61,7 @@ const PartiesPage2 = () => {
         </View>
 
         <View style={styles.infoBlock}>
-          <Text style={styles.infoLabel}>🎖️ Role:</Text>
+          <Text style={styles.infoLabel}>🎖 Role:</Text>
           <Text style={styles.infoValue}>{party.role || "No role info"}</Text>
         </View>
 
@@ -97,6 +107,17 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#FDF7F7",
   },
+
+  // 🔹 Back arrow position
+  backButton: {
+    position: "absolute",
+    top: 40, // adjust if needed
+    left: 15,
+    zIndex: 10,
+    borderRadius: 20,
+    padding: 4,
+  },
+
   image: {
     width: "100%",
     height: 250,

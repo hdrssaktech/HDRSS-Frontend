@@ -3,15 +3,62 @@ import { View, Text, TextInput, TouchableOpacity, StyleSheet, Animated, Image } 
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import { AuthContext } from "../../context/AuthContext";
+import * as Notifications from "expo-notifications";
+import * as Device from "expo-device";
+import { Platform } from "react-native";
 import { handleLogin as handleLoginAPI } from "../../Controller/ComplaintController/ComplaintController"; // ✅ rename imported function
 
 export default function Loginpage() {
   const navigation = useNavigation();
   const { login } = useContext(AuthContext);
-
+  const [expoPushToken, setExpoPushToken] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
   const [password, setPassword] = useState("");
 
+
+ async function registerForPushNotificationsAsync() {
+  if (!Device.isDevice) {
+    alert("Must use physical device for Push Notifications");
+    return;
+  }
+
+  const { status: existingStatus } = await Notifications.getPermissionsAsync();
+  let finalStatus = existingStatus;
+  if (existingStatus !== "granted") {
+    const { status } = await Notifications.requestPermissionsAsync();
+    finalStatus = status;
+  }
+
+  if (finalStatus !== "granted") {
+    alert("Failed to get push token for notifications!");
+    return;
+  }
+
+  const token = (await Notifications.getExpoPushTokenAsync()).data;
+  setExpoPushToken(token);
+  console.log("Expo Push Token:", token);
+
+  if (Platform.OS === "android") {
+    Notifications.setNotificationChannelAsync("default", {
+      name: "default",
+      importance: Notifications.AndroidImportance.MAX,
+    });
+  }
+  return token;
+}
+
+async function sendLocalNotification() {
+  await Notifications.scheduleNotificationAsync({
+    content: {
+      title: "Login Successful 🎉",
+      body: "Welcome back to HDRSS!",
+    },
+    trigger: null, // triggers immediately
+  });
+}
+  useEffect(() => {
+  registerForPushNotificationsAsync();
+}, []);
   // ✅ Rotation Animation (same as Header)
   const rotateAnim = useRef(new Animated.Value(0)).current;
   useEffect(() => {
@@ -35,13 +82,13 @@ export default function Loginpage() {
       alert("Please enter mobile number and password");
       return;
     }
-
     try {
       // Call the imported login API to actually perform login
       const success = await handleLoginAPI(phoneNumber, password);
 
       if (success) {
-        login(phoneNumber, password); // optional if your AuthContext manages token
+        login(phoneNumber, password); 
+        await sendLocalNotification(); 
       } else {
         alert("Invalid credentials or token missing");
       }

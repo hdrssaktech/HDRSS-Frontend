@@ -28,7 +28,7 @@ const GovernmentPage = () => {
     const fetchGovernments = async () => {
       try {
         const response = await fetch(
-          `https://hdrss-backend.onrender.com/api/governments/district/${districtId}`
+         `https://hdrss-backend.onrender.com/api/governments/district/${districtId}`
         );
         const data = await response.json();
         console.log("✅ API Response:", data);
@@ -65,10 +65,20 @@ const GovernmentPage = () => {
 
       {/* Header Section */}
       <View style={styles.headerBox}>
-        <Text style={styles.headerTitle}>Governments</Text>
-        <Text style={styles.headerSubtitle}>
-          Select a government to explore available services
-        </Text>
+        <TouchableOpacity
+          style={styles.backButton}
+          activeOpacity={0.7}
+          onPress={() => navigation.goBack()}
+        >
+          <Ionicons name="chevron-back" size={26} color="#fff" />
+        </TouchableOpacity>
+
+        <View style={styles.headerTextBox}>
+          <Text style={styles.headerTitle}>Governments</Text>
+          <Text style={styles.headerSubtitle}>
+            Select a government to explore available services
+          </Text>
+        </View>
       </View>
 
       {/* Grid Section */}
@@ -95,7 +105,11 @@ const GovernmentPage = () => {
               style={styles.imageContainer}
             >
               {item.image ? (
-                <Image source={{ uri: item.image }} style={styles.image} resizeMode="cover" />
+                <Image
+                  source={{ uri: item.image }}
+                  style={styles.image}
+                  resizeMode="cover"
+                />
               ) : (
                 <Ionicons name="business" size={48} color="#fff" />
               )}
@@ -106,7 +120,11 @@ const GovernmentPage = () => {
                 {item?.title || "Untitled Government"}
               </Text>
               <View style={styles.iconRow}>
-                <Ionicons name="chevron-forward-circle" size={18} color="#93210A" />
+                <Ionicons
+                  name="chevron-forward-circle"
+                  size={18}
+                  color="#93210A"
+                />
                 <Text style={styles.moreText}>View Services</Text>
               </View>
             </View>
@@ -124,7 +142,7 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingHorizontal: 12,
     paddingTop: 15,
-    marginTop:30
+    marginTop: 30,
   },
   loaderContainer: {
     flex: 1,
@@ -146,6 +164,18 @@ const styles = StyleSheet.create({
     shadowColor: "#93210A",
     shadowOpacity: 0.3,
     shadowOffset: { width: 0, height: 4 },
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 12,
+  },
+backButton: {
+  marginRight: 10,
+  marginTop: -40, // 👆 moves the icon slightly upward
+  padding: -8,
+},
+
+  headerTextBox: {
+    flex: 1,
   },
   headerTitle: {
     fontSize: 22,

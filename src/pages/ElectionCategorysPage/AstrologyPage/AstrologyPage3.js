@@ -1,5 +1,4 @@
-// src/pages/Astrology/AstrologyPage3.js
-import React from "react";
+import React, { useState, useCallback } from "react";
 import {
   View,
   Text,
@@ -8,9 +7,11 @@ import {
   Image,
   TouchableOpacity,
   Dimensions,
+  ActivityIndicator,
 } from "react-native";
 import Icon from "react-native-vector-icons/MaterialIcons";
 import { Video } from "expo-av";
+import YoutubePlayer from "react-native-youtube-iframe";
 import { useNavigation } from "@react-navigation/native";
 
 const { width } = Dimensions.get("window");
@@ -18,6 +19,27 @@ const { width } = Dimensions.get("window");
 export default function AstrologyPage3({ route }) {
   const navigation = useNavigation();
   const { astrologyItem } = route.params;
+  const [playing, setPlaying] = useState(false);
+  const [loading, setLoading] = useState(true);
+
+  // ✅ Extract YouTube video ID
+  const getYouTubeVideoId = (url) => {
+    if (!url) return null;
+    const match = url.match(
+      /(?:youtube\.com\/(?:[^/\n\s]+\/\S+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([a-zA-Z0-9_-]{11})/
+    );
+    return match ? match[1] : null;
+  };
+
+  const onStateChange = useCallback((state) => {
+    if (state === "ended") setPlaying(false);
+  }, []);
+
+  // ✅ Default video if API doesn't return one
+  const videoUrl =
+    astrologyItem?.video || "https://www.youtube.com/watch?v=sjQw5YBPj3Y";
+
+  const youtubeVideoId = getYouTubeVideoId(videoUrl);
 
   return (
     <View style={styles.container}>
@@ -26,36 +48,69 @@ export default function AstrologyPage3({ route }) {
         <TouchableOpacity onPress={() => navigation.goBack()}>
           <Icon name="arrow-back" size={24} color="#fff" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>{astrologyItem.name}</Text>
+        <Text style={styles.headerTitle}>
+          {astrologyItem?.name || "Astrology"}
+        </Text>
       </View>
 
       <ScrollView contentContainerStyle={styles.scrollContainer}>
         {/* 🔹 Main Image */}
-        <Image source={{ uri: astrologyItem.image }} style={styles.mainImage} />
+        {astrologyItem?.image && (
+          <Image source={{ uri: astrologyItem.image }} style={styles.mainImage} />
+        )}
 
         {/* 🔹 Title */}
-        <Text style={styles.title}>{astrologyItem.title}</Text>
+        {astrologyItem?.title && (
+          <Text style={styles.title}>{astrologyItem.title}</Text>
+        )}
 
         {/* 🔹 Description */}
-        <Text style={styles.description}>{astrologyItem.description}</Text>
+        {astrologyItem?.description && (
+          <Text style={styles.description}>{astrologyItem.description}</Text>
+        )}
 
-        {/* 🔹 Video Section */}
-        {astrologyItem.video ? (
-          <View style={styles.videoContainer}>
-            <Video
-              source={{ uri: astrologyItem.video }}
-              rate={1.0}
-              volume={1.0}
-              resizeMode="contain"
-              shouldPlay={false}
-              useNativeControls
-              style={styles.video}
+        {/* 🎥 Video Section */}
+        <View style={styles.videoWrapper}>
+          {/* 🔹 Video Title */}
+          <Text style={styles.videoTitle}>
+            {astrologyItem?.videoTitle || "Video"}
+          </Text>
+
+          {youtubeVideoId ? (
+            <YoutubePlayer
+              height={230}
+              width={width} // Full screen width
+              play={playing}
+              videoId={youtubeVideoId}
+              onChangeState={onStateChange}
+              webViewStyle={{ borderRadius: 0 }}
             />
-          </View>
-        ) : null}
+          ) : (
+            <View style={styles.videoContainer}>
+              {loading && (
+                <ActivityIndicator
+                  size="large"
+                  color="#93210A"
+                  style={{ marginBottom: 10 }}
+                />
+              )}
+              <Video
+                source={{ uri: videoUrl }}
+                rate={1.0}
+                volume={1.0}
+                resizeMode="cover"
+                shouldPlay={false}
+                useNativeControls
+                onLoadStart={() => setLoading(true)}
+                onLoad={() => setLoading(false)}
+                style={styles.fullVideo}
+              />
+            </View>
+          )}
+        </View>
 
         {/* 🔹 Gallery Section */}
-        {astrologyItem.gallery && astrologyItem.gallery.length > 0 && (
+        {astrologyItem?.gallery && astrologyItem.gallery.length > 0 && (
           <View style={styles.galleryContainer}>
             <Text style={styles.sectionTitle}>Gallery</Text>
             <ScrollView horizontal showsHorizontalScrollIndicator={false}>
@@ -85,48 +140,70 @@ const styles = StyleSheet.create({
     color: "#fff",
     marginLeft: 12,
   },
-  scrollContainer: { padding: 16, paddingBottom: 40 },
+  scrollContainer: {
+    paddingBottom: 40,
+  },
   mainImage: {
-    width: "100%",
+    width: width,
     height: 220,
-    borderRadius: 15,
+    borderRadius: 0, // edge-to-edge
     marginBottom: 16,
   },
   title: {
-    fontSize: 18,
-    fontWeight: "bold",
-    color: "#93210A",
-    textAlign: "center",
-    marginBottom: 10,
-  },
+  fontSize: 20,
+  fontWeight: "bold",
+  color: "#93210A",
+  textAlign: "left", // changed from "center" to "left"
+  marginBottom: 10,
+  paddingHorizontal: 16,
+},
+
   description: {
     fontSize: 15,
     color: "#333",
     lineHeight: 22,
     textAlign: "justify",
+    paddingHorizontal: 16,
     marginBottom: 20,
   },
-  videoContainer: {
-    alignItems: "center",
+
+  // 🔹 Video Styles
+  videoWrapper: {
+    width: width,
+    alignSelf: "center",
+    backgroundColor: "#fff",
     marginBottom: 25,
   },
-  video: {
-    width: width * 0.9,
-    height: 200,
-    borderRadius: 10,
+  videoTitle: {
+    fontSize: 20,
+    fontWeight: "bold",
+    color: "#93210A",
+    marginBottom: 8,
+    textAlign: "left", // ✅ aligned to the left
+    paddingLeft: 16, // ✅ spacing from screen edge
   },
+  videoContainer: {
+    backgroundColor: "#000",
+  },
+  fullVideo: {
+    width: width,
+    height: 230,
+  },
+
+  // 🔹 Gallery Styles
   galleryContainer: {
     marginTop: 10,
+    paddingHorizontal: 16,
   },
   sectionTitle: {
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: "bold",
     color: "#93210A",
     marginBottom: 10,
   },
   galleryImage: {
-    width: 160,
-    height: 120,
+    width: 200,
+    height: 150,
     borderRadius: 12,
     marginRight: 12,
   },

@@ -1,10 +1,22 @@
-// Header.js
-import React, { useRef, useEffect } from "react";
+import React, { useRef, useEffect, useState } from "react";
 import { View, Text, StyleSheet, Image, TouchableOpacity, Animated } from "react-native";
+import * as Font from "expo-font";
 
 export default function Header({ toggleSidebar }) {
   const rotateAnim = useRef(new Animated.Value(0)).current;
+  const [fontLoaded, setFontLoaded] = useState(false);
 
+  // ✅ Load the Impact font (lowercase file name)
+  useEffect(() => {
+    (async () => {
+      await Font.loadAsync({
+        Impact: require("../../../assets/fonts/impact.ttf"),
+      });
+      setFontLoaded(true);
+    })();
+  }, []);
+
+  // ✅ Start rotation animation
   useEffect(() => {
     Animated.loop(
       Animated.timing(rotateAnim, {
@@ -20,21 +32,28 @@ export default function Header({ toggleSidebar }) {
     outputRange: ["0deg", "360deg"],
   });
 
+  // ✅ Loading fallback
+  if (!fontLoaded) {
+    return (
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: "#800000" }}>
+        <Text style={{ color: "white" }}>Loading Impact font...</Text>
+      </View>
+    );
+  }
+
+  // ✅ Main header UI
   return (
     <View style={styles.header}>
-      {/* Toggle Sidebar */}
       <TouchableOpacity onPress={toggleSidebar}>
         <Text style={styles.menuIcon}>☰</Text>
       </TouchableOpacity>
 
-      {/* rest of your header */}
       <View style={styles.titleContainer}>
-        <View style={styles.maroonBox}>
-          <Text style={styles.tamilText}> இந்து தர்ம ரக்ஷ சேனா</Text>
-          <Text style={styles.hinduText}>हिन्दू  धर्म  रक्षा  सेना</Text>
-          <Text style={styles.englishText}>HINDU DHARMA RAKSHA SENA</Text>
-        </View>
-      </View>
+  <Text style={[styles.tamilText, { fontFamily: "Impact" }]}>இந்து தர்ம ரக்ஷ சேனா</Text>
+  <Text style={[styles.hinduText, { fontFamily: "Impact" }]}>हिन्दू धर्म रक्षा सेना</Text>
+  <Text style={[styles.englishText, { fontFamily: "Impact" }]}>HINDU DHARMA RAKSHA SENA</Text>
+</View>
+
 
       <View style={styles.orangeContainer}>
         <View style={styles.logoBox} />
@@ -44,7 +63,10 @@ export default function Header({ toggleSidebar }) {
             style={[styles.sunRays, { transform: [{ rotate: spin }] }]}
           />
           <Text style={styles.regNo}>REGD.NO: 152/2021</Text>
-          <Image source={require("../../../assets/Header/sunlogo.png")} style={styles.sunCenter} />
+          <Image
+            source={require("../../../assets/Header/sunlogo.png")}
+            style={styles.sunCenter}
+          />
           <View style={styles.whiteLine} />
         </View>
       </View>
@@ -60,40 +82,52 @@ const styles = StyleSheet.create({
     paddingVertical: 30,
     paddingHorizontal: 10,
     justifyContent: "space-between",
-    borderBottomLeftRadius: 45,
+    borderBottomLeftRadius: 50,
     borderBottomRightRadius: 45,
   },
   menuIcon: {
     fontSize: 20,
     color: "white",
     left: 9,
-    top: -41,
+    top: -30                                                                                                                                                              ,
   },
   titleContainer: {
     flex: 1,
     alignItems: "center",
   },
   tamilText: {
-    color: "white",
-    marginTop: 40,
-    fontSize: 15,
-    fontWeight: "900",
-  },
-  hinduText: {
-    color: "white",
-    marginTop: 15,
-    marginLeft: 20,
-    fontSize: 17,
-    fontWeight: "900",
-  },
-  englishText: {
-    color: "white",
-    marginTop: 15,
-    marginRight: -20,
-    fontSize: 15,
-    fontWeight: "900",
-    bottom: 2,
-  },
+  color: "white",
+  fontSize: 16,
+  fontWeight: "800",
+  fontFamily: "Impact",
+  letterSpacing: -1,
+  textAlign: "center",
+   marginTop: 40,
+   left:9,
+},
+
+hinduText: {
+  color: "white",
+  fontSize: 17,
+  fontWeight: "900",
+  fontFamily: "Impact",
+  letterSpacing: 5,
+  textAlign: "center",
+  marginTop: 4,
+   left:9,
+},
+
+englishText: {
+  color: "white",
+  fontSize: 17,
+  fontWeight: "1200",
+  fontFamily: "Impact",
+  letterSpacing: -0,
+  textAlign: "center",
+  marginTop: 2,
+ 
+  left:9,
+},
   orangeContainer: {
     position: "relative",
     width: 120,
@@ -103,7 +137,7 @@ const styles = StyleSheet.create({
   },
   logoBox: {
     width: 100,
-    height: 220,
+    height: 200,
     backgroundColor: "#E65100",
     right: -15,
     marginRight: 6,
@@ -112,7 +146,7 @@ const styles = StyleSheet.create({
   regNo: {
     position: "absolute",
     top: 10,
-    left: 12,
+    right: 6,
     fontSize: 9.5,
     fontWeight: "bold",
     color: "#000",
@@ -141,7 +175,7 @@ const styles = StyleSheet.create({
     height: 2,
     backgroundColor: "#fff",
     position: "absolute",
-    bottom: -8,
+    bottom: -1,
     right: -3,
   },
 });

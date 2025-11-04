@@ -1,106 +1,209 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import {
-  SafeAreaView,
-  ScrollView,
   View,
   Text,
-  Image,
   StyleSheet,
-  StatusBar,
+  Image,
+  ScrollView,
   TouchableOpacity,
-  ActivityIndicator,
+  ImageBackground,
+  Dimensions,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { useNavigation } from "@react-navigation/native";
-import { fetchNews } from "../../Controller/NewsController/NewsController";   // ✅ import controller
+import YoutubePlayer from "react-native-youtube-iframe";
 
-// 🔹 Card Component
-const ListCard = ({ item, onPress }) => (
-  <TouchableOpacity style={styles.listCardRow1} onPress={onPress}>
-    <Image source={{ uri: item.image }} style={styles.listCardImage1} />
-    <View style={styles.listCardContent1}>
-      <Text style={styles.listCardCategory}>{item.type}</Text>
-      <Text style={styles.listCardTitle1} numberOfLines={2}>
-        {item.title}
-      </Text>
-      {/* 🔸 Removed description line */}
-    </View>
-  </TouchableOpacity>
-);
+const { width: screenWidth } = Dimensions.get("window");
 
-export default function NewsPage1() {
-  const navigation = useNavigation();
-  const [news, setNews] = useState([]);   // ✅ renamed state to `news`
-  const [loading, setLoading] = useState(true);
+export default function NewsPage2({ navigation, route }) {
+  const [playVideo, setPlayVideo] = useState(false);
+  const news = route?.params?.news;
 
-  useEffect(() => {
-    const loadNews = async () => {
-      const data = await fetchNews();
-      setNews(data);     // ✅ assign API result to state
-      setLoading(false);
-    };
-    loadNews();
-  }, []);
+  if (!news) {
+    return (
+      <View style={styles.noData}>
+        <Text style={styles.noDataText}>No news available</Text>
+        <TouchableOpacity onPress={() => navigation.goBack()}>
+          <Text style={styles.backBtn}>Go Back</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
+
+  // ✅ Extract videoId from YouTube link
+  let videoId = null;
+  if (news.videoLink) {
+    const match = news.videoLink.match(
+      /(?:youtube\.com\/(?:.*v=|v\/|embed\/)|youtu\.be\/)([^&?]+)/i
+    );
+    videoId = match ? match[1] : null;
+  }
+
+  const thumbnailUrl = videoId
+    ? `https://i.ytimg.com/vi/${videoId}/hq720.jpg`
+    : null;
 
   return (
-    <SafeAreaView style={styles.mainContainer1}>
-      <StatusBar barStyle="light-content" />
+    <View style={styles.container}>
+      {/* 🔹 Header Bar */}
+      <View style={styles.headerBar}>
+        <TouchableOpacity onPress={() => navigation.goBack()}>
+          <Ionicons name="arrow-back" size={26} color="#fff" />
+        </TouchableOpacity>
 
-      {/* Header */}
-      <View style={styles.header}>
-        <Ionicons
-          name="arrow-back"
-          size={24}
-          color="#fff"
-          onPress={() => navigation.goBack()}
-        />
-        <Text style={styles.headerTitle1}>Latest News</Text>
+        <Text style={styles.headerTitle} numberOfLines={1}>
+          {news.type || "News"}
+        </Text>
+
+        <View style={styles.headerIcons}>
+          <TouchableOpacity style={styles.iconBtn}>
+            <Ionicons name="bookmark-outline" size={22} color="#fff" />
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.iconBtn}>
+            <Ionicons name="share-social-outline" size={22} color="#fff" />
+          </TouchableOpacity>
+        </View>
       </View>
 
-      {/* Loader */}
-      {loading ? (
-        <ActivityIndicator size="large" color="#93210A" style={{ marginTop: 20 }} />
-      ) : (
-        <ScrollView showsVerticalScrollIndicator={false}>
-          {news.map((item) => (
-            <ListCard
-              key={item.id}
-              item={item}
-              onPress={() => navigation.navigate("Newspage2", { news: item })}
-            />
-          ))}
-        </ScrollView>
-      )}
-    </SafeAreaView>
+      {/* 🔹 Scrollable Content */}
+      <ScrollView contentContainerStyle={styles.scrollContent}>
+        {/* 🔹 Banner Image (Full Width) */}
+        <ImageBackground
+          source={{ uri: news.image }}
+          style={styles.headerImage}
+        >
+          <View style={styles.overlay} />
+        </ImageBackground>
+
+        {/* 🔹 Title */}
+        <View style={styles.textContainer}>
+          <Text style={styles.newsTitle}>{news.title}</Text>
+
+          {/* 🔹 Full Description */}
+          <Text style={styles.newsText}>
+            {news.description || "No detailed content available."}
+          </Text>
+        </View>
+
+        {/* 🔹 Video Section (Full Width) */}
+        {videoId && (
+          <View style={styles.fullWidthVideoSection}>
+            <Text style={styles.subHeading}>Watch Video</Text>
+            {playVideo ? (
+              <View style={styles.videoWrapper}>
+                <YoutubePlayer
+                  height={220}
+                  play={true}
+                  videoId={videoId}
+                  width={screenWidth}
+                />
+              </View>
+            ) : (
+              <TouchableOpacity onPress={() => setPlayVideo(true)}>
+                <Image
+                  source={{ uri: thumbnailUrl }}
+                  style={styles.videoThumb}
+                />
+              </TouchableOpacity>
+            )}
+          </View>
+        )}
+      </ScrollView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  mainContainer1: { flex: 1, backgroundColor: "#f4f4f4" },
-  header: {
+  container: { flex: 1, backgroundColor: "#fff" },
+
+  noData: { flex: 1, justifyContent: "center", alignItems: "center" },
+  noDataText: { fontSize: 16, color: "gray", marginBottom: 10 },
+  backBtn: { color: "#93210A", fontSize: 15, fontWeight: "bold" },
+
+  headerBar: {
     flexDirection: "row",
     alignItems: "center",
     padding: 15,
     marginTop: 32,
     backgroundColor: "#93210A",
   },
-  headerTitle1: { color: "white", fontWeight: "bold", fontSize: 20, marginLeft: 19},
-  listCardRow1: {
-    flexDirection: "row",
-    backgroundColor: "#fff",
-    borderRadius: 12,
-    marginHorizontal: 15,
-    marginTop: 25,
-    padding: 10,
-    elevation: 2,
-    shadowColor: "#000",
-    shadowOpacity: 0.1,
-    shadowRadius: 6,
-    
+  headerTitle: {
+    color: "#fff",
+    fontWeight: "bold",
+    fontSize: 20,
+    marginLeft: 19,
   },
-  listCardImage1: { width: 100, height: 100, borderRadius: 10, marginRight: 12 },
-  listCardContent1: { flex: 1, justifyContent: "center" },
-  listCardCategory: { fontSize: 12, color: "#93210A", fontWeight: "600", marginBottom: 5 },
-  listCardTitle1: { fontSize: 12, fontWeight: "bold", color: "#222", marginBottom: 15 },
- 
+  headerIcons: { flexDirection: "row", alignItems: "center", marginLeft: "auto" },
+  iconBtn: { marginLeft: 12 },
+
+  scrollContent: {
+    paddingBottom: 20,
+  },
+
+  headerImage: {
+  width: screenWidth,
+  height: 230,
+  justifyContent: "flex-end",
+  marginTop: 25, // ✅ Adds a small gap above the image
+  borderRadius: 8, // (optional) gives a soft curve look
+  overflow: "hidden", // keeps corners clean if borderRadius used
+},
+
+  overlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: "rgba(0,0,0,0.3)",
+  },
+
+  textContainer: {
+    paddingHorizontal: 15,
+    paddingTop: 10,
+  },
+
+  newsTitle: {
+    fontSize: 18,
+    fontWeight: "bold",
+    color: "#93210A",
+    marginVertical: 12,
+  },
+  newsText: {
+    fontSize: 14,
+    color: "#333",
+    lineHeight: 20,
+    textAlign: "justify",
+    marginBottom: 10,
+  },
+
+subHeading: {
+  fontSize: 19,
+  fontWeight: "bold",
+  marginVertical: 12,
+  color: "#93210A",
+  paddingHorizontal: 15,
+  marginBottom: 20, // ✅ Adds space below "Watch Video" text
+},
+
+videoWrapper: {
+  width: screenWidth,
+  height: 220,
+  borderRadius: 0,
+  overflow: "hidden",
+  marginBottom: 15, // optional, adds space below video if needed
+},
+
+  fullWidthVideoSection: {
+    width: screenWidth,
+    alignSelf: "center",
+  },
+
+ videoWrapper: {
+  width: screenWidth,
+  height: 220,
+  borderRadius: 0,
+  overflow: "hidden",
+  marginBottom: 15, // optional, adds space below video if needed
+},
+  videoThumb: {
+    width: screenWidth,
+    height: 220,
+    backgroundColor: "#ccc",
+  },
 });

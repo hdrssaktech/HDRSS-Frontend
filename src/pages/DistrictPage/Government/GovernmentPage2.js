@@ -9,11 +9,12 @@ import {
   TouchableOpacity,
   Linking,
 } from "react-native";
-import { useRoute } from "@react-navigation/native";
+import { useRoute, useNavigation } from "@react-navigation/native";
 import Icon from "react-native-vector-icons/Ionicons"; // ✅ for icons
 
 const GovernmentPage2 = () => {
   const route = useRoute();
+  const navigation = useNavigation();
   const { governmentId } = route.params;
   const [services, setServices] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -22,7 +23,7 @@ const GovernmentPage2 = () => {
     const fetchServices = async () => {
       try {
         const response = await fetch(
-          `https://hdrss-backend.onrender.com/api/governments/services/${governmentId}`
+         `https://hdrss-backend.onrender.com/api/governments/services/${governmentId}`
         );
         const data = await response.json();
         console.log("✅ Government Services:", data);
@@ -43,7 +44,7 @@ const GovernmentPage2 = () => {
   };
 
   const callNumber = (number) => {
-    if (number) Linking.openURL(`tel:${number}`);
+   if (number) Linking.openURL(`tel:${number}`);
   };
 
   if (loading) {
@@ -58,6 +59,15 @@ const GovernmentPage2 = () => {
   if (services.length === 0) {
     return (
       <View style={styles.container}>
+        <View style={styles.headerBox}>
+          <TouchableOpacity
+            onPress={() => navigation.goBack()}
+            style={styles.backButton}
+          >
+            <Icon name="chevron-back" size={26} color="#fff" />
+          </TouchableOpacity>
+          <Text style={styles.headerText}>Services under this Government</Text>
+        </View>
         <Text style={styles.emptyText}>
           No services found for this government.
         </Text>
@@ -67,8 +77,14 @@ const GovernmentPage2 = () => {
 
   return (
     <View style={styles.container}>
-      {/* ✅ Header with background color */}
+      {/* ✅ Header with Back Button */}
       <View style={styles.headerBox}>
+        <TouchableOpacity
+          onPress={() => navigation.goBack()}
+          style={styles.backButton}
+        >
+          <Icon name="chevron-back" size={22} color="#fff" />
+        </TouchableOpacity>
         <Text style={styles.headerText}>Services under this Government</Text>
       </View>
 
@@ -140,16 +156,29 @@ const styles = StyleSheet.create({
   },
   headerBox: {
     backgroundColor: "#93210A",
-    padding: 12,
-    borderRadius: 8,
+    paddingVertical: 14,
+    paddingHorizontal: 12,
+    borderRadius: 10,
+    flexDirection: "row",
     alignItems: "center",
     marginBottom: 15,
     marginTop: 40,
+    elevation: 5,
+    shadowColor: "#93210A",
+    shadowOpacity: 0.25,
+    shadowOffset: { width: 0, height: 3 },
+  },
+  backButton: {
+    marginRight: 10,
+    marginTop: -2, // 👈 slightly raised
+    padding: 4,
   },
   headerText: {
     color: "#fff",
     fontSize: 18,
     fontWeight: "bold",
+    textAlign: "left",
+    flex: 1,
   },
   card: {
     backgroundColor: "#fff",

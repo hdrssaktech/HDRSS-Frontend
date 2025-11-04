@@ -422,17 +422,31 @@ export const createMember = async (memberData) => {
 };
 
 
-export const sendIdCard = async (formData) => {
+export const sendIdCard = async (memberId) => {
   try {
-    const res = await axios.post(`${BASE_URL}/idcards`, formData, {
+    // Call your backend API to send the email with PDF attached
+    const response = await fetch("https://hdrss-backend.onrender.com/api/email/send-pdf", {
+      method: "POST",
       headers: {
-        "Content-Type": "multipart/form-data",
+        "Content-Type": "application/json",
       },
+      body: JSON.stringify({
+        memberId: memberId,
+        toEmail: "nk3472514@gmail.com", // your manager email (don’t change this)
+      }),
     });
-    return res.data;
+
+    const result = await response.json();
+    console.log("Email send response:", result);
+
+    if (response.ok) {
+      Alert.alert("📧 Email Sent", "The PDF has been sent to your manager.");
+    } else {
+      Alert.alert("⚠️ Failed", result.message || "Unable to send email.");
+    }
   } catch (error) {
-    console.error("Error uploading ID card:", error.response?.data || error.message);
-    throw error.response?.data || error;
+    console.error("Error sending email:", error);
+    Alert.alert("❌ Error", "Failed to send the PDF email.");
   }
 };
 

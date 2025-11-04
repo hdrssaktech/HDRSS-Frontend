@@ -10,7 +10,7 @@ import {
   StatusBar,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { Video } from "expo-av";
+import YoutubePlayer from "react-native-youtube-iframe";
 
 const { width } = Dimensions.get("window");
 
@@ -29,43 +29,41 @@ export default function StoryPage2({ route, navigation }) {
   const description = String(storyItem.description || "");
   const bannerImage = storyItem.bannerImage || null;
   const image = storyItem.image || null;
-  const video = storyItem.video || null;
+  const video =
+    storyItem.video || "https://www.youtube.com/watch?v=sjQw5YBPj3Y"; // ✅ default video
   const gallery = Array.isArray(storyItem.gallery) ? storyItem.gallery : [];
+
+  // ✅ Extract YouTube video ID
+  const getYouTubeId = (url) => {
+    const regex =
+      /(?:youtube\.com\/(?:[^\/\n\s]+\/\S+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([a-zA-Z0-9_-]{11})/;
+    const match = url?.match(regex);
+    return match ? match[1] : null;
+  };
+
+  const videoId = getYouTubeId(video);
 
   return (
     <View style={styles.container}>
       <StatusBar backgroundColor="#93210A" barStyle="light-content" />
 
-      {/* 🔹 Custom Header */}
+      {/* 🔹 Header */}
       <View style={styles.header}>
-        <TouchableOpacity
-          onPress={() => navigation.goBack()}
-          style={styles.backButton}
-        >
+        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
           <Ionicons name="chevron-back" size={26} color="#fff" />
         </TouchableOpacity>
-        <Text
-          style={styles.headerTitle}
-          numberOfLines={1}
-          ellipsizeMode="tail"
-        >
+        <Text style={styles.headerTitle} numberOfLines={1} ellipsizeMode="tail">
           {title}
         </Text>
       </View>
 
       <ScrollView showsVerticalScrollIndicator={false}>
-        {/* 🔹 Banner Image (with consistent old design) */}
+        {/* 🔹 Banner Image */}
         {bannerImage && (
-          <View style={styles.bannerWrapper}>
-            <Image
-              source={{ uri: bannerImage }}
-              style={styles.bannerImage}
-              resizeMode="cover"
-            />
-          </View>
+          <Image source={{ uri: bannerImage }} style={styles.bannerImage} resizeMode="cover" />
         )}
 
-        {/* 🔹 Description Section */}
+        {/* 🔹 Description */}
         {description ? (
           <View style={styles.content}>
             <Text style={styles.description}>{description}</Text>
@@ -74,25 +72,18 @@ export default function StoryPage2({ route, navigation }) {
 
         {/* 🔹 Main Image */}
         {image ? (
-          <Image
-            source={{ uri: image }}
-            style={styles.mainImage}
-            resizeMode="cover"
-          />
+          <Image source={{ uri: image }} style={styles.mainImage} resizeMode="cover" />
         ) : null}
 
-        {/* 🔹 Video Section */}
-        {video ? (
-          <View style={styles.videoContainer}>
-            <Text style={styles.sectionTitle}>Video</Text>
-            <Video
-              source={{ uri: video }}
-              useNativeControls
-              resizeMode="cover"
-              style={styles.video}
-            />
+        {/* 🎥 Video Section with Title */}
+        {videoId && (
+          <View style={styles.videoSection}>
+            <Text style={styles.videoTitle}>Video</Text>
+            <View style={styles.fullVideoWrapper}>
+              <YoutubePlayer height={230} width={width} play={false} videoId={videoId} />
+            </View>
           </View>
-        ) : null}
+        )}
 
         {/* 🔹 Gallery Section */}
         {gallery.length > 0 && (
@@ -104,11 +95,7 @@ export default function StoryPage2({ route, navigation }) {
               contentContainerStyle={styles.galleryScroll}
             >
               {gallery.map((img, index) => (
-                <Image
-                  key={index}
-                  source={{ uri: img }}
-                  style={styles.galleryImage}
-                />
+                <Image key={index} source={{ uri: img }} style={styles.galleryImage} />
               ))}
             </ScrollView>
           </View>
@@ -121,13 +108,12 @@ export default function StoryPage2({ route, navigation }) {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#fff" },
 
-  // ✅ Header same as older page (consistent theme)
   header: {
-     flexDirection: "row",
+    flexDirection: "row",
     alignItems: "center",
     padding: 15,
     marginTop: 32,
-    backgroundColor: "#93210A",  
+    backgroundColor: "#93210A",
   },
   backButton: { marginBottom: 4, marginRight: 8 },
   headerTitle: {
@@ -137,19 +123,11 @@ const styles = StyleSheet.create({
     flexShrink: 1,
   },
 
-  // ✅ Banner Image section styled like older design
-  bannerWrapper: {
-    marginTop: 10,
-    alignItems: "center",
-  },
   bannerImage: {
-    width: "100%",
-    height: 220,
-    
-   
+    width: width,
+    height: 180,
   },
 
-  // Description
   content: { padding: 16 },
   description: {
     fontSize: 16,
@@ -158,42 +136,52 @@ const styles = StyleSheet.create({
     textAlign: "justify",
   },
 
-  // Main Image
   mainImage: {
     width: width - 40,
-    height: 250,
+    height: 210,
     borderRadius: 15,
     alignSelf: "center",
     marginVertical: 20,
   },
 
-  // Video
-  videoContainer: { alignItems: "center", marginVertical: 20 },
+  /* 🔹 Video Styles */
+  videoSection: {
+    marginTop: 10,
+    marginBottom: 20,
+  },
+  videoTitle: {
+    fontSize: 20,
+    fontWeight: "bold",
+    color: "#93210A",
+    textAlign: "left",
+    marginLeft: 16,
+    marginBottom: 10,
+  },
+  fullVideoWrapper: {
+    width: width,
+    alignSelf: "center",
+    backgroundColor: "#000",
+    marginVertical: 10,
+  },
+
+  /* 🔹 Gallery Styles */
   sectionTitle: {
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: "bold",
     color: "#93210A",
     marginBottom: 10,
-    alignSelf: "flex-start",
     marginLeft: 20,
   },
-  video: {
-    width: width - 40,
-    height: 220,
-    borderRadius: 15,
-  },
 
-  // Gallery
   galleryContainer: { marginVertical: 20 },
   galleryScroll: { paddingHorizontal: 16 },
   galleryImage: {
-    width: 140,
+    width: 170,
     height: 140,
     borderRadius: 12,
     marginRight: 10,
   },
 
-  // No data
   centered: {
     flex: 1,
     justifyContent: "center",

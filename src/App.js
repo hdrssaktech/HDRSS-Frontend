@@ -30,7 +30,6 @@ import AboutPage1 from "./pages/AboutPage/AboutPage1";
 import AboutPage2 from   "./pages/AboutPage/AboutPage2";
 import DistrictCategorysPage1 from "./pages/DistrictCategorysPage/DistrictCategorysPage1";
 import DistrictCategorysPage2 from "./pages/DistrictCategorysPage/DistrictCategorysPage2";
-// import RecoveryPage from "./pages/AuthPage/RecoveryPage";
 import InterviewPage1 from "./pages/InterviewPage/InterviewPage1";
 import InterviewPage2 from "./pages/InterviewPage/InterviewPage2";
 import DistrictCategorysPage0 from "./pages/DistrictCategorysPage/DistrictCategorysPage0";
@@ -62,14 +61,6 @@ import TownPage2 from "./pages/DistrictPage/TownPage/TownPage2";
 import GovernmentPage from "./pages/DistrictPage/Government/GovernmentPage1";
 import PartiesPage1 from "./pages/DistrictPage/Parties/PartiesPage1.js";
 import PartiesPage2 from "./pages/DistrictPage/Parties/PartiesPage2";
-
-// import GovernmentPage from "./pages/DistrictPage/Government/GovernmentPage1";
-// import GovernmentPage2 from "./pages/DistrictPage/Government/GovernmentPage2.js";
-// import PartiesPage1 from "./pages/DistrictPage/Parties/PartiesPage1";
-// import PartiesPage2 from "./pages/DistrictPage/Parties/PartiesPage2";
-// import TownPage1 from "./pages/DistrictPage/TownPage/TownPage1";
-// import TownPage2 from "./pages/DistrictPage/TownPage/TownPage2";
-
 
 
 const AuthStack = createStackNavigator();
