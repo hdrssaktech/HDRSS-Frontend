@@ -6,7 +6,7 @@ import {
   StyleSheet,
   FlatList,
   Image,
-  PanResponder,
+  // PanResponder,
   Animated,
   Dimensions,
   ScrollView,
@@ -55,20 +55,20 @@ export default function HomePage() {
     }, [])
   );
 
-  // 👇 Swipe Navigation
-  const panResponder = useRef(
-    PanResponder.create({
-      onMoveShouldSetPanResponder: (evt, gestureState) =>
-        Math.abs(gestureState.dx) > Math.abs(gestureState.dy),
-      onPanResponderRelease: (evt, gestureState) => {
-        if (gestureState.dx > 100) {
-          navigation.navigate("ElectionPage");
-        } else if (gestureState.dx < -100) {
-          navigation.navigate("HomePage");
-        }
-      },
-    })
-  ).current;
+  // // 👇 Swipe Navigation
+  // const panResponder = useRef(
+  //   PanResponder.create({
+  //     onMoveShouldSetPanResponder: (evt, gestureState) =>
+  //       Math.abs(gestureState.dx) > Math.abs(gestureState.dy),
+  //     onPanResponderRelease: (evt, gestureState) => {
+  //       if (gestureState.dx > 100) {
+  //         navigation.navigate("ElectionPage");
+  //       } else if (gestureState.dx < -100) {
+  //         navigation.navigate("HomePage");
+  //       }
+  //     },
+  //   })
+  // ).current;
 
   const navigateToElection = () => {
     navigation.navigate("ElectionVotePage1");
@@ -85,7 +85,7 @@ export default function HomePage() {
   ];
 
   return (
-    <View style={styles.container} {...panResponder.panHandlers}>
+    <View style={styles.container} >
       <Header toggleSidebar={() => setShowSidebar(!showSidebar)} />
 
       {showSidebar && (

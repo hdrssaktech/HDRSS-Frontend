@@ -16,16 +16,14 @@ import { useNavigation } from '@react-navigation/native';
 import * as ImagePicker from 'expo-image-picker';
 
 export default function ProfilePage() {
-  const [profileImage, setProfileImage] = useState(
-    'https://t3.ftcdn.net/jpg/06/99/46/60/360_F_699466075_DaPTBNlNQTOwwjkOiFEoOvzDV0ByXR9E.jpg'
-  );
-  const [name, setName] = useState("Abinesh Kumar");
+  const { logout, userData } = useContext(AuthContext);
+  const navigation = useNavigation();
+
+  const [profileImage, setProfileImage] = useState(userData?.image || null);
+  const [name, setName] = useState(userData?.name || "User");
   const [isEditingName, setIsEditingName] = useState(false);
 
-  const navigation = useNavigation();
-  const { logout } = useContext(AuthContext);
-
-  // Pick image from gallery
+  // ✅ Image picker
   const handleImagePick = async () => {
     const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (!permissionResult.granted) {
@@ -66,7 +64,15 @@ export default function ProfilePage() {
           <Text style={styles.headerText}>PROFILE</Text>
 
           <TouchableOpacity onPress={handleImagePick} style={styles.imageWrapper}>
-            <Image source={{ uri: profileImage }} style={styles.profileImage} />
+            <Image
+              source={{
+                uri:
+                  profileImage ||
+                  userData?.image ||
+                  "https://t3.ftcdn.net/jpg/06/99/46/60/360_F_699466075_DaPTBNlNQTOwwjkOiFEoOvzDV0ByXR9E.jpg",
+              }}
+              style={styles.profileImage}
+            />
           </TouchableOpacity>
 
           <View style={styles.nameRow}>
@@ -79,7 +85,7 @@ export default function ProfilePage() {
                 autoFocus
               />
             ) : (
-              <Text style={styles.name}>{name}</Text>
+              <Text style={styles.name}>{userData?.name || "No Name"}</Text>
             )}
 
             <TouchableOpacity onPress={toggleEditName} style={styles.editIcon}>
@@ -87,14 +93,31 @@ export default function ProfilePage() {
             </TouchableOpacity>
           </View>
 
-          <Text style={styles.membership}>Membership No: 767465</Text>
+          {/* Optional: show designation */}
+          {userData?.designation && (
+            <Text style={styles.membership}>{userData.designation}</Text>
+          )}
         </View>
 
         {/* Details */}
         <View style={styles.detailsContainer}>
           <View style={styles.detailRow}>
             <Ionicons name="call" size={20} color="#971A01" />
-            <Text style={styles.detailText}>9876543210</Text>
+            <Text style={styles.detailText}>
+              {userData?.contactDetails || "No contact"}
+            </Text>
+          </View>
+
+          <View style={styles.detailRow}>
+            <Ionicons name="mail" size={20} color="#971A01" />
+            <Text style={styles.detailText}>{userData?.email || "No email"}</Text>
+          </View>
+
+          <View style={styles.detailRow}>
+            <Ionicons name="location" size={20} color="#971A01" />
+            <Text style={styles.detailText}>
+              {userData?.district || userData?.cityTown || "No address"}
+            </Text>
           </View>
 
           <TouchableOpacity
@@ -102,7 +125,7 @@ export default function ProfilePage() {
             onPress={() => navigation.navigate("RecoveryPage")}
           >
             <Ionicons name="lock-closed" size={20} color="#971A01" />
-            <Text style={styles.detailText}>Change password</Text>
+            <Text style={styles.detailText}>Change Password</Text>
             <Ionicons
               name="chevron-forward"
               size={20}
@@ -122,16 +145,14 @@ export default function ProfilePage() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#fff' },
-
   backButton: {
     position: 'absolute',
     top: 50,
     left: 20,
     zIndex: 10,
-   borderRadius: 30,
+    borderRadius: 30,
     padding: 6,
   },
-
   profileCard: {
     backgroundColor: '#971A01',
     borderBottomLeftRadius: 40,
@@ -142,7 +163,6 @@ const styles = StyleSheet.create({
     elevation: 8,
     shadowColor: '#000',
   },
-
   headerText: { color: '#fff', fontSize: 22, fontWeight: 'bold', marginBottom: 25 },
   imageWrapper: { position: 'relative' },
   profileImage: {

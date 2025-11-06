@@ -260,7 +260,10 @@ export default function DistrictPage2() {
           <View style={styles.Menucontainer}>
             <TouchableOpacity
               style={styles.menubutton}
-              onPress={() => navigation.navigate("ComplainPage1")}
+              onPress={() => navigation.navigate("ComplainPage1",{
+                districtId: district.id,
+                districtName: district.name,
+              })}
             >
               <Text style={styles.menubuttonText}>Complaint</Text>
             </TouchableOpacity>

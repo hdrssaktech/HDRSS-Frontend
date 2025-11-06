@@ -35,6 +35,7 @@ export default function ComplaintPage2({ route, navigation }) {
         if (!complaintId) return;
         const data = await fetchReviewsByComplaintId(complaintId);
         setReviews(Array.isArray(data) ? data : []);
+        console.log("myreviews data:", data);
       } catch (error) {
         console.error("❌ Failed to load reviews:", error.message);
       } finally {
@@ -197,12 +198,12 @@ export default function ComplaintPage2({ route, navigation }) {
                 </View>
                 <Text style={styles.reviewText}>{review.comment}</Text>
                 <View style={styles.reviewMetaBox}>
-                  <Text style={styles.reviewMeta}>
-                    👤 {review.userName || "Anonymous"}
-                  </Text>
-                  <Text style={styles.reviewMeta}>
+                  {/* <Text style={styles.reviewMeta}>
+                    👤 {review.name  || "Anonymous"}
+                  </Text> */}
+                  {/* <Text style={styles.reviewMeta}>
                     📍 {review.address || "No address"}
-                  </Text>
+                  </Text> */}
                   <Text style={styles.reviewMeta}>
                     📅{" "}
                     {review.createdAt

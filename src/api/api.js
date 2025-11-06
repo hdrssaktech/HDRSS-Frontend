@@ -1,169 +1,6 @@
-// // src/api/api.js
-// import axios from "axios";
-
-// const BASE_URL = "https://hdrss-backend.onrender.com/api";
-
-// /* ---------------------------
-//    🧩 Common Fetch Wrapper
-// ---------------------------- */
-// export const fetchAPI = async (endpoint, options = {}) => {
-//   try {
-//     const response = await fetch(`${BASE_URL}${endpoint}`, {
-//       headers: { "Content-Type": "application/json" },
-//       ...options,
-//     });
-
-//     if (!response.ok) throw new Error(`API error: ${response.status}`);
-//     return await response.json();
-//   } catch (error) {
-//     console.error("API Fetch Error:", error);
-//     throw error;
-//   }
-// };
-
-// /* ---------------------------
-//    🧍 Auth APIs
-// ---------------------------- */
-// export const signupApi = async (userData) => {
-//   try {
-//     const response = await fetch(`${BASE_URL}/auth/signup`, {
-//       method: "POST",
-//       headers: { "Content-Type": "application/json" },
-//       body: JSON.stringify(userData),
-//     });
-//     const data = await response.json();
-//     if (!response.ok) throw new Error(data.error || "Signup failed");
-//     return data;
-//   } catch (error) {
-//     console.error("Signup API Error:", error);
-//     throw error;
-//   }
-// };
-
-// export const loginApi = async (userData) => {
-//   try {
-//     const response = await fetch(`${BASE_URL}/auth/login`, {
-//       method: "POST",
-//       headers: { "Content-Type": "application/json" },
-//       body: JSON.stringify(userData),
-//     });
-//     return await response.json();
-//   } catch (error) {
-//     console.error("Login API Error:", error);
-//     throw error;
-//   }
-// };
-
-
-
-// /* 🏙️ District Places by Category */
-// export const getPlacesByCategory = async (districtId, categoryName, foodType) => {
-//   try {
-//     let url = `${BASE_URL}/districts/${districtId}/places/category/${encodeURIComponent(
-//       categoryName
-//     )}`;
-
-//     if (foodType) {
-//       url += `/${encodeURIComponent(foodType.toLowerCase())}`;
-//     }
-
-//     console.log("🌐 Fetching from:", url);
-
-//     const response = await axios.get(url);
-
-//     console.log("✅ API Response Data:", response.data);
-
-//     // ✅ Handle all possible response formats safely
-//     if (response.data) {
-//       if (Array.isArray(response.data)) {
-//         return response.data;
-//       } else if (Array.isArray(response.data.data)) {
-//         return response.data.data;
-//       } else if (Array.isArray(response.data.places)) {
-//         return response.data.places;
-//       }
-//     }
-
-//     console.warn("⚠️ Unexpected API structure:", response.data);
-//     return [];
-//   } catch (error) {
-//     console.error("❌ API Error (getPlacesByCategory):", error.message);
-//     throw error;
-//   }
-// };
-
-
-
-// /* ---------------------------
-//    🖼️ Image Upload
-// ---------------------------- */
-// export const uploadImage = async (formData) => {
-//   try {
-//     const res = await axios.post(`${BASE_URL}/upload`, formData, {
-//       headers: { "Content-Type": "multipart/form-data" },
-//     });
-//     return res.data;
-//   } catch (err) {
-//     console.error(err);
-//     throw err;
-//   }
-// };
-
-// /* ---------------------------
-//    💝 Charities
-// ---------------------------- */
-// export const fetchCharities = async () => {
-//   try {
-//     const response = await fetch(`${BASE_URL}/charity`);
-//     if (!response.ok) throw new Error("Failed to fetch charity data");
-//     return await response.json();
-//   } catch (error) {
-//     console.error("❌ Error fetching charities:", error);
-//     throw error;
-//   }
-// };
-
-// /* ---------------------------
-//    🖼️ Gallery
-// ---------------------------- */
-// export const getGalleryList = async () => {
-//   try {
-//     const response = await axios.get(`${BASE_URL}/gallery`);
-//     return response.data;
-//   } catch (error) {
-//     console.error("❌ API Error (getGalleryList):", error);
-//     throw error;
-//   }
-// };
-
-// /* ---------------------------
-//    🎉 Events
-// ---------------------------- */
-// export const fetchEvents = async () => {
-//   try {
-//     const response = await fetch(`${BASE_URL}/events`);
-//     if (!response.ok) throw new Error("Failed to fetch events");
-//     const data = await response.json();
-//     return Array.isArray(data) ? data : [];
-//   } catch (error) {
-//     console.error("❌ Error fetching events:", error);
-//     return [];
-//   }
-// };
-
-
-
-
-
-
-
-
-
-
-
-
 // src/api/api.js
 import axios from "axios";
+import * as FileSystem from "expo-file-system";
 
 const BASE_URL = "https://hdrss-backend.onrender.com/api";
 // const BASE_URL = "http://192.168.1.3:5000/api"
@@ -422,25 +259,31 @@ export const createMember = async (memberData) => {
 };
 
 
-export const sendIdCard = async (memberId) => {
+export const sendIdCard = async (pdfUri) => {
   try {
-    // Call your backend API to send the email with PDF attached
+    const formData = new FormData();
+
+    formData.append("file", {
+      uri: pdfUri,
+      name: "idcard.pdf",
+      type: "application/pdf",
+    });
+
+    formData.append("subject", "New HDRSS Member ID Card");
+
     const response = await fetch("https://hdrss-backend.onrender.com/api/email/send-pdf", {
       method: "POST",
+      body: formData,
       headers: {
-        "Content-Type": "application/json",
+        "Content-Type": "multipart/form-data",
       },
-      body: JSON.stringify({
-        memberId: memberId,
-        toEmail: "nk3472514@gmail.com", // your manager email (don’t change this)
-      }),
     });
 
     const result = await response.json();
-    console.log("Email send response:", result);
+    console.log("📧 Email send response:", result);
 
     if (response.ok) {
-      Alert.alert("📧 Email Sent", "The PDF has been sent to your manager.");
+      Alert.alert("✅ Email Sent", "The ID card has been emailed to your manager!");
     } else {
       Alert.alert("⚠️ Failed", result.message || "Unable to send email.");
     }
@@ -449,6 +292,7 @@ export const sendIdCard = async (memberId) => {
     Alert.alert("❌ Error", "Failed to send the PDF email.");
   }
 };
+
 
 
 

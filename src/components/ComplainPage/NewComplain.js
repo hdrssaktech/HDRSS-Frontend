@@ -17,10 +17,11 @@ import * as ImagePicker from "expo-image-picker";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { createComplaint } from "../../Controller/ComplaintController/ComplaintController";
 
-export default function ComplaintPage3({ navigation }) {
+export default function ComplaintPage3({ navigation,route }) {
+  const { districtName } = route.params || {};
   const [date, setDate] = useState(new Date());
   const [showDatePicker, setShowDatePicker] = useState(false);
-  const [title, setTitle] = useState("");
+  const [title, setTitle] = useState(districtName || "");
   const [description, setDescription] = useState("");
   const [address, setAddress] = useState("");
   const [images, setImages] = useState([]);
@@ -71,8 +72,12 @@ export default function ComplaintPage3({ navigation }) {
       };
 
       const res = await createComplaint(payload);
-      Alert.alert("Success", "Complaint submitted successfully");
-      navigation.navigate("ComplainPage1", { newComplaint: res.complaint });
+      Alert.alert("Success", "Complaint submitted successfully", [
+      {
+        text: "OK",
+        onPress: () => navigation.goBack(),
+      },
+    ]);
     } catch (error) {
       console.error("Error submitting complaint:", error);
       Alert.alert("Error", "Something went wrong while submitting complaint");
@@ -122,19 +127,20 @@ export default function ComplaintPage3({ navigation }) {
           />
 
           {/* Title */}
-          <Text style={styles.label}>Title</Text>
+          <Text style={styles.label}>District</Text>
           <TextInput
             style={styles.input}
-            placeholder="Enter complaint title"
+            placeholder="Enter complaint District"
             value={title}
             onChangeText={setTitle}
+             editable={false}
           />
 
           {/* Description */}
           <Text style={styles.label}>Description</Text>
           <TextInput
             style={[styles.input, { height: 100, textAlignVertical: "top" }]}
-            placeholder="Enter detailed description"
+            placeholder="Enter detailed description about complain"
             multiline
             value={description}
             onChangeText={setDescription}

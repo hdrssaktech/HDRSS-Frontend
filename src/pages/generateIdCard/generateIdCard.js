@@ -1,6 +1,6 @@
 import * as Print from "expo-print";
 import * as Sharing from "expo-sharing";
-import * as FileSystem from "expo-file-system/legacy"; 
+import * as FileSystem from "expo-file-system/legacy";
 import { Asset } from "expo-asset";
 
 export async function generateIdCard(member) {
@@ -17,7 +17,7 @@ export async function generateIdCard(member) {
     <head>
       <style>
         body {
-          font-family: Arial, sans-serif;
+          font-family: 'Poppins', sans-serif;
           width: 350px;
           height: auto;
           margin: 0;
@@ -206,11 +206,11 @@ export async function generateIdCard(member) {
     const { uri } = await Print.printToFileAsync({ html: htmlContent });
     console.log("✅ PDF generated:", uri);
 
-    if (await Sharing.isAvailableAsync()) {
-      await Sharing.shareAsync(uri);
-    } else {
-      alert("Sharing not available on this device");
-    }
+    // if (await Sharing.isAvailableAsync()) {
+    //   await Sharing.shareAsync(uri);
+    // } else {
+    //   alert("Sharing not available on this device");
+    // }
 
     return uri;
   } catch (error) {
@@ -223,7 +223,8 @@ async function convertAssetToBase64(assetModule) {
   const asset = Asset.fromModule(assetModule);
   await asset.downloadAsync();
   const base64 = await FileSystem.readAsStringAsync(asset.localUri, {
-    encoding: FileSystem.EncodingType.Base64,
+    encoding: "base64"
+    // encoding: FileSystem.EncodingType.Base64,
   });
   return `data:image/jpeg;base64,${base64}`;
 }

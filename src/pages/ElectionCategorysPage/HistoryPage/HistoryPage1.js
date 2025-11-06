@@ -29,7 +29,7 @@ export default function HistoryPage1() {
   return (
     <ScrollView style={styles.container}>
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.navigate("ElectionPage")} style={styles.backButton}>
+        <TouchableOpacity  onPress={() => navigation.goBack()} style={styles.backButton}>
         <Ionicons name="chevron-back" size={26} color="white" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>History</Text>

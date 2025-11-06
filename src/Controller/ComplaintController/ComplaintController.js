@@ -75,19 +75,22 @@ export const createComplaint = async (complaintData) => {
 import axios from "axios";
 //import AsyncStorage from "@react-native-async-storage/async-storage";
 // ✅ Fetch reviews by complaintId
-export const fetchReviewsByComplaintId = async (complaintId) => {
-  try {
-    const token = await AsyncStorage.getItem("token");
-    const res = await axios.get(`${BASE_URL}/reviews/${complaintId}`, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
-    console.log("✅ Reviews Response:", res.data);
-    return res.data; // Expecting array of reviews
-  } catch (error) {
-    console.error("❌ Error fetching reviews:", error.response?.data || error.message);
-    throw error;
-  }
-};
+  export const fetchReviewsByComplaintId = async (complaintId) => {
+    try {
+      const token = await AsyncStorage.getItem("token");
+      console.log(token)
+      const res = await axios.get(`${BASE_URL}/reviews/${complaintId}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      console.log("✅ Reviews Response:", res.data);
+
+
+      return res.data; // Expecting array of reviews
+    } catch (error) {
+      console.error("❌ Error fetching reviews:", error.response?.data || error.message);
+      throw error;
+    }
+  };
 
 // ✅ Add Review (includes user name, address, and date)
 export const addReview = async (complaintId, rating, comment) => {

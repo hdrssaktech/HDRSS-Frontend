@@ -160,22 +160,22 @@ export default function Membership1() {
       Alert.alert("✅ Member Registered", "Generating ID Card...");
 
       // 🪪 Generate PDF ID Card
-      await generateIdCard({
+      const pdfUri = await generateIdCard({
         name,
         fatherOrHusbandName: fatherName,
         designation,
         district,
         id: memberId,
         image: imageUrl,
-         dob,
-         bloodGroup,
-         contactDetails: contact,
+        dob,
+        bloodGroup,
+        contactDetails: contact,
       });
 
       Alert.alert("✅ Success", "ID Card generated successfully!");
 
       // Optionally still send to manager
-      await sendIdCard(memberId);
+      await sendIdCard(pdfUri);
 
       navigation.goBack();
     } catch (err) {

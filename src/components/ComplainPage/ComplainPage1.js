@@ -15,6 +15,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { fetchComplaints } from "../../Controller/ComplaintController/ComplaintController";
 
 export default function ComplaintPage1({ navigation, route }) {
+  const { districtName } = route.params || {};
   const [complaints, setComplaints] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -27,7 +28,14 @@ export default function ComplaintPage1({ navigation, route }) {
       const token = await AsyncStorage.getItem("token");
       if (!token) throw new Error("No token found");
       const data = await fetchComplaints(token);
-      setComplaints(data || []);
+      const filteredData = districtName
+  ? data.filter(
+      (item) =>
+        item.title &&
+        item.title.toLowerCase().includes(districtName.toLowerCase())
+    )
+  : data;
+      setComplaints(filteredData || []);
     } catch (err) {
       console.error("Error loading complaints:", err);
     } finally {
@@ -115,25 +123,13 @@ export default function ComplaintPage1({ navigation, route }) {
         >
           <Ionicons name="chevron-back" size={26} color="#fff" />
         </TouchableOpacity>
-
-        <Image
-          source={{
-            uri: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSTNjkaQHLXfokbl1GiKnXl6v7GNgnG8rb3JA&s",
-          }}
-          style={styles.profileImage}
-        />
-
-        <View>
-          <Text style={styles.name}>Abinesh Kumar</Text>
-          <Text style={styles.id}>767465</Text>
-        </View>
       </View>
 
       {/* New Complaint Button */}
       <View style={styles.buttonContainer}>
         <TouchableOpacity
           style={styles.newComplaintBtn}
-          onPress={() => navigation.navigate("NewComplain")}
+          onPress={() => navigation.navigate("NewComplain", { districtName })}
         >
           <Ionicons name="add" size={25} color="#93210A" />
           <Text style={styles.newComplaintText}>New Complaint</Text>
@@ -170,7 +166,10 @@ export default function ComplaintPage1({ navigation, route }) {
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         }
       >
-        <Text style={styles.sectionTitle}>Recent Complaints</Text>
+        <Text style={[styles.sectionTitle, { textAlign: "center" }]}>
+          {districtName ? `Complaints for ${districtName}` : "Recent Complaints"}
+        </Text>
+
 
         {filteredComplaints.length === 0 ? (
           <Text style={styles.noDataText}>No complaints found.</Text>
@@ -277,6 +276,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
     flexDirection: "row",
     alignItems: "center",
+    marginTop:50,
     borderRadius: 10,
     paddingVertical: 10,
     paddingHorizontal: 70,
