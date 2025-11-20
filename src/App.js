@@ -61,6 +61,10 @@ import TownPage2 from "./pages/DistrictPage/TownPage/TownPage2";
 import GovernmentPage from "./pages/DistrictPage/Government/GovernmentPage1";
 import PartiesPage1 from "./pages/DistrictPage/Parties/PartiesPage1.js";
 import PartiesPage2 from "./pages/DistrictPage/Parties/PartiesPage2";
+import TownBusinessPage from "./pages/DistrictPage/TownPage/BusinessTownPage/TownBusinessPage.js";
+import TownBusinessPage1 from "./pages/DistrictPage/TownPage/BusinessTownPage/TownBusinessPage1.js";
+import TownBusinessPage2 from "./pages/DistrictPage/TownPage/BusinessTownPage/TownBusinessPage2.js";
+import TownBusinessPage3 from "./pages/DistrictPage/TownPage/BusinessTownPage/TownBusinessPage3.js";
 
 
 const AuthStack = createStackNavigator();
@@ -111,7 +115,7 @@ function MainStackScreen() {
     <MainStack.Screen name="ComplainDetails" component={withFooter(ComplaintScreen)}/>
     <MainStack.Screen name="AboutPage1" component={withFooter(AboutPage1)}/>
     <MainStack.Screen name="AboutPage2" component={withFooter(AboutPage2)}/>
-     <MainStack.Screen name="DistrictCategorysPage0" component={withFooter(DistrictCategorysPage0)}/>
+    <MainStack.Screen name="DistrictCategorysPage0" component={withFooter(DistrictCategorysPage0)}/>
     <MainStack.Screen name="DistrictCategorysPage1" component={withFooter(DistrictCategorysPage1)}/>
     <MainStack.Screen name="DistrictCategorysPage2" component={withFooter(DistrictCategorysPage2)}/>
     <MainStack.Screen name="InterviewPage1" component={withFooter(InterviewPage1)}/>
@@ -122,28 +126,31 @@ function MainStackScreen() {
     <MainStack.Screen name="HistoryPage3" component={withFooter(HistoryPage3)}/>
     <MainStack.Screen name="StoryPage1" component={withFooter(StoryPage1)}/>
     <MainStack.Screen name="StoryPage2" component={withFooter(StoryPage2)}/>
-     <MainStack.Screen name="PoojaPage1" component={withFooter(PoojaPage1)}/>
+    <MainStack.Screen name="PoojaPage1" component={withFooter(PoojaPage1)}/>
     <MainStack.Screen name="PoojaPage2" component={withFooter(PoojaPage2)}/>
     <MainStack.Screen name="LeaderPage1" component={withFooter(LeaderPage1)}/> 
     <MainStack.Screen name="LeaderPage2" component={withFooter(LeaderPage2)}/>
     <MainStack.Screen name="LeaderPage3" component={withFooter(LeaderPage3)}/>
-   <MainStack.Screen name="TourismPage1" component={withFooter(TourismPage1)}/>
-   <MainStack.Screen name="TourismPage2" component={withFooter(TourismPage2)}/>
-   <MainStack.Screen name="TourismPage3" component={withFooter(TourismPage3)}/>
-  <MainStack.Screen name="VaasthuPage" component={withFooter(VaasthuPage)}/>
-  <MainStack.Screen name="ElectionVotePage1" component={withFooter(ElectionVotePage1)}/>
-  <MainStack.Screen name="ElectionVotePage2" component={withFooter(ElectionVotePage2)}/>
-  <MainStack.Screen name="AstrologyPage1" component={withFooter(AstrologyPage1)}/>
-  <MainStack.Screen name="AstrologyPage2" component={withFooter(AstrologyPage2)}/>
-  <MainStack.Screen name="AstrologyPage3" component={withFooter(AstrologyPage3)}/>
-   <MainStack.Screen name="Member0" component={withFooter(Member0)}/>
+    <MainStack.Screen name="TourismPage1" component={withFooter(TourismPage1)}/>
+    <MainStack.Screen name="TourismPage2" component={withFooter(TourismPage2)}/>
+    <MainStack.Screen name="TourismPage3" component={withFooter(TourismPage3)}/>
+    <MainStack.Screen name="VaasthuPage" component={withFooter(VaasthuPage)}/>
+    <MainStack.Screen name="ElectionVotePage1" component={withFooter(ElectionVotePage1)}/>
+    <MainStack.Screen name="ElectionVotePage2" component={withFooter(ElectionVotePage2)}/>
+    <MainStack.Screen name="AstrologyPage1" component={withFooter(AstrologyPage1)}/>
+    <MainStack.Screen name="AstrologyPage2" component={withFooter(AstrologyPage2)}/>
+    <MainStack.Screen name="AstrologyPage3" component={withFooter(AstrologyPage3)}/>
+    <MainStack.Screen name="Member0" component={withFooter(Member0)}/>
     <MainStack.Screen name="GovernmentPage1" component={withFooter(GovernmentPage)}/>
     <MainStack.Screen name="GovernmentPage2" component={withFooter(GovernmentPage2)}/>
     <MainStack.Screen name="Partiespage1" component={withFooter(PartiesPage1)}/>
     <MainStack.Screen name="Partiespage2" component={withFooter(PartiesPage2)}/> 
     <MainStack.Screen name="TownPage1" component={withFooter(TownPage1)}/> 
     <MainStack.Screen name="TownPage2" component={withFooter(TownPage2)}/> 
-
+    <MainStack.Screen name ="TownBusiness1" component={withFooter(TownBusinessPage)}/>
+    <MainStack.Screen name ="TownBusiness2" component={withFooter(TownBusinessPage1)}/>
+    <MainStack.Screen name ="TownBusiness3" component={withFooter(TownBusinessPage2)}/>
+    <MainStack.Screen name ="TownBusiness4" component={withFooter(TownBusinessPage3)}/>
     </MainStack.Navigator> 
   );
 }
