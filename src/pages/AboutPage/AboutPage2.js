@@ -51,7 +51,7 @@ export default function AboutPage2() {
   // 🗺️ Location
   const handleLocation = () => {
     let url =
-      "https://www.google.com/maps/search/?api=1&query=13.0827,80.2707"; // example coords (Chennai)
+      "https://www.google.com/maps/search/?api=1&query=13.0827,80.2707";
     Linking.openURL(url).catch(() =>
       Alert.alert("Error", "Unable to open Google Maps")
     );

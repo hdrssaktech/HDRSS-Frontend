@@ -267,6 +267,18 @@ export default function DistrictPage2() {
             >
               <Text style={styles.menubuttonText}>Complaint</Text>
             </TouchableOpacity>
+            {/* Business (CENTER BUTTON) */}
+            <TouchableOpacity
+              style={styles.menubutton}
+              onPress={() =>
+                navigation.navigate("DistrictBusinessPage0", {
+                  districtId: district.id,
+                  districtName: district.name,
+                })
+              }
+            >
+              <Text style={styles.menubuttonText}>Business</Text>
+            </TouchableOpacity>
 
             <TouchableOpacity
               style={styles.menubutton}
@@ -446,56 +458,6 @@ export default function DistrictPage2() {
     )}
   </View>
 )}
-
-
-
-          {/* 🏢 Business Platform */}
-          {district.places?.length > 0 && (
-            <View style={styles.section}>
-              <Text style={styles.sectionTitle1}>Business Platform</Text>
-              <View style={styles.categoryRow}>
-                {[
-                  ...district.places.filter(
-                    (place, index, self) =>
-                      index ===
-                        self.findIndex((p) => p.category === place.category) &&
-                      place.category?.toLowerCase() !== "tourism" &&
-                      place.category?.toLowerCase() !== "temple"
-                  ),
-                ].map((p, i) => (
-                  <TouchableOpacity
-                    key={i}
-                    style={styles.categoryPill}
-                    onPress={() => {
-                      const category = p.category?.toLowerCase();
-                      if ( category === "restaurant") {
-                        navigation.navigate("DistrictCategorysPage0", {
-                          districtId: p.districtId,
-                          categoryName: p.category,
-                        });
-                      } else {
-                        navigation.navigate("DistrictCategorysPage1", {
-                          districtId: p.districtId,
-                          categoryName: p.category,
-                        });
-                      }
-                    }}
-                  >
-                    <Image
-                      source={{
-                        uri:
-                          typeof p.image === "string"
-                            ? p.image
-                            : p.image?.url,
-                      }}
-                      style={styles.categoryIcon}
-                    />
-                    <Text style={styles.categoryLabel}>{p.category}</Text>
-                  </TouchableOpacity>
-                ))}
-              </View>
-            </View>
-          )}
 
           {/* 🎥 District Video Section */}
           <View style={styles.videoContainer}>

@@ -15,20 +15,54 @@ import { useRoute, useNavigation } from "@react-navigation/native";
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from "@expo/vector-icons";
 
-const { width, height } = Dimensions.get("window");
-const isSmallDevice = width < 375;
-const isTablet = width > 768;
-
 export default function TownBusinessPage3() {
   const route = useRoute();
   const navigation = useNavigation();
-
   const { subcategoryItemId } = route.params;
-  console.log("Subcategory Item ID:", subcategoryItemId);
 
   const [businesses, setBusinesses] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [screenInfo, setScreenInfo] = useState({
+    width: 375,
+    height: 667,
+    isSmallDevice: false,
+    isTablet: false
+  });
+
+  // Initialize dimensions safely
+  useEffect(() => {
+    const updateDimensions = () => {
+      try {
+        const window = Dimensions.get("window");
+        const isSmallDevice = window.width < 375;
+        const isTablet = window.width > 768;
+        
+        setScreenInfo({
+          width: window.width,
+          height: window.height,
+          isSmallDevice,
+          isTablet
+        });
+      } catch (error) {
+        console.log("Error getting dimensions, using defaults");
+        setScreenInfo({
+          width: 375,
+          height: 667,
+          isSmallDevice: false,
+          isTablet: false
+        });
+      }
+    };
+
+    updateDimensions();
+
+    const subscription = Dimensions.addEventListener('change', updateDimensions);
+
+    return () => {
+       subscription?.remove?.(); // Safe removal
+    };
+  }, []);
 
   // Fetch businesses using the API
   useEffect(() => {
@@ -38,7 +72,7 @@ export default function TownBusinessPage3() {
         setError(null);
         
         const response = await fetch(
-          `https://hdrss-backend.onrender.com/api/business/by-subcategory/${subcategoryItemId}`
+          `https://hdrss-backend.onrender.com/api/tb/business/by-subcategory/${subcategoryItemId}`
         );
         
         if (!response.ok) {
@@ -47,7 +81,6 @@ export default function TownBusinessPage3() {
         
         const result = await response.json();
         setBusinesses(result);
-        console.log("Fetched businesses:", result);
       } catch (error) {
         console.log("Error fetching businesses:", error);
         setError(error.message);
@@ -60,6 +93,30 @@ export default function TownBusinessPage3() {
       fetchBusinesses();
     }
   }, [subcategoryItemId]);
+
+  const handleRetry = () => {
+    setLoading(true);
+    setError(null);
+    const fetchBusinesses = async () => {
+      try {
+        const response = await fetch(
+          `https://hdrss-backend.onrender.com/api/business/by-subcategory/${subcategoryItemId}`
+        );
+        
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const result = await response.json();
+        setBusinesses(result);
+      } catch (error) {
+        setError(error.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchBusinesses();
+  };
 
   if (loading) {
     return (
@@ -85,7 +142,7 @@ export default function TownBusinessPage3() {
           </TouchableOpacity>
           <TouchableOpacity 
             style={[styles.retryButton, styles.secondaryButton]}
-            onPress={() => window.location.reload()}
+            onPress={handleRetry}
           >
             <Text style={[styles.retryButtonText, styles.secondaryButtonText]}>Retry</Text>
           </TouchableOpacity>
@@ -96,17 +153,22 @@ export default function TownBusinessPage3() {
 
   return (
     <View style={styles.container}>
-      <StatusBar barStyle="dark-content" backgroundColor="#f8f9fa" />
+      <StatusBar barStyle="light-content" backgroundColor="#93210A" />
       
-      {/* Header */}
+      {/* Header with #93210A color */}
       <View style={styles.header}>
         <TouchableOpacity
           style={styles.backButton}
           onPress={() => navigation.goBack()}
         >
-          <Ionicons name="chevron-back" size={28} color="#333" />
+          <Ionicons name="chevron-back" size={28} color="#fff" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Businesses</Text>
+        <Text style={[
+          styles.headerTitle,
+          screenInfo.isSmallDevice && styles.smallHeaderTitle
+        ]}>
+          Businesses
+        </Text>
         <View style={styles.headerPlaceholder} />
       </View>
 
@@ -115,148 +177,72 @@ export default function TownBusinessPage3() {
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.scrollContent}
       >
-        {/* Stats Bar */}
-        {/* <View style={styles.statsContainer}>
-          <View style={styles.statItem}>
-            <Text style={styles.statNumber}>{businesses.length}</Text>
-            <Text style={styles.statLabel}>Total Businesses</Text>
-          </View>
-          <View style={styles.statDivider} />
-          <View style={styles.statItem}>
-            <Text style={styles.statNumber}>
-              {businesses.filter(b => b.contact).length}
-            </Text>
-            <Text style={styles.statLabel}>With Contact</Text>
-          </View>
-          <View style={styles.statDivider} />
-          <View style={styles.statItem}>
-            <Text style={styles.statNumber}>
-              {businesses.filter(b => b.address).length}
-            </Text>
-            <Text style={styles.statLabel}>With Address</Text>
-          </View>
-        </View> */}
-
-        {/* Business List/Grid */}
-        {isTablet ? (
-          // Tablet Grid Layout
-          <View style={styles.gridContainer}>
-            {businesses.map((business) => (
-              <TouchableOpacity
-                key={business.id}
-                style={styles.gridCard}
-                onPress={() => navigation.navigate("TownBusiness4", { 
-                  businessData: business
-                })}
-                activeOpacity={0.8}
-              >
-                <View style={styles.gridImageContainer}>
-                  <Image 
-                    source={{ uri: business.image }} 
-                    style={styles.gridImage}
-                    resizeMode="cover"
-                  />
-                  <LinearGradient
-                    colors={['transparent', 'rgba(0,0,0,0.6)']}
-                    style={styles.gridGradient}
-                  />
-                  <View style={styles.gridBadge}>
-                    <Ionicons name="business" size={14} color="#fff" />
-                  </View>
+        {/* Business List - New Design */}
+        <View style={styles.listContainer}>
+          {businesses.map((business, index) => (
+            <TouchableOpacity
+              key={business.id || index}
+              style={styles.businessCard}
+              onPress={() => navigation.navigate("TownBusiness4", { 
+                businessData: business
+              })}
+              activeOpacity={0.8}
+            >
+              {/* Image on Left */}
+              <View style={styles.imageContainer}>
+                <Image 
+                  source={{ uri: business.image }} 
+                  style={styles.businessImage}
+                  resizeMode="cover"
+                  onError={() => console.log("Image failed to load")}
+                />
+                <LinearGradient
+                  colors={['transparent', 'rgba(0,0,0,0.1)']}
+                  style={styles.imageGradient}
+                />
+              </View>
+              
+              {/* Content on Right */}
+              <View style={styles.contentContainer}>
+                {/* Title */}
+                <View style={styles.titleContainer}>
+                  <Text style={styles.businessTitle} numberOfLines={2}>
+                    {business.title || 'Untitled Business'}
+                  </Text>
                 </View>
                 
-                <View style={styles.gridContent}>
-                  <Text style={styles.gridName} numberOfLines={2}>
-                    {business.title}
-                  </Text>
-                  <Text style={styles.gridDescription} numberOfLines={2}>
-                    {business.description || "No description available"}
-                  </Text>
+                {/* Icons Row */}
+                <View style={styles.iconsContainer}>
+                  {/* Phone Icon */}
+                  {business.phone && (
+                    <View style={[styles.iconWrapper, styles.phoneIcon]}>
+                      <Ionicons name="call" size={18} color="#fff" />
+                    </View>
+                  )}
                   
-                  <View style={styles.gridContactInfo}>
-                    {business.contact && (
-                      <View style={styles.contactItem}>
-                        <Ionicons name="call" size={14} color="#93210A" />
-                        <Text style={styles.contactText} numberOfLines={1}>
-                          {business.contact}
-                        </Text>
-                      </View>
-                    )}
-                    
-                    {business.address && (
-                      <View style={styles.contactItem}>
-                        <Ionicons name="location" size={14} color="#93210A" />
-                        <Text style={styles.contactText} numberOfLines={1}>
-                          {business.address}
-                        </Text>
-                      </View>
-                    )}
-                  </View>
-                </View>
-                
-                <View style={styles.gridArrow}>
-                  <Ionicons name="chevron-forward" size={18} color="#93210A" />
-                </View>
-              </TouchableOpacity>
-            ))}
-          </View>
-        ) : (
-          // Phone List Layout
-          <View style={styles.listContainer}>
-            {businesses.map((business) => (
-              <TouchableOpacity
-                key={business.id}
-                style={styles.listCard}
-                onPress={() => navigation.navigate("TownBusiness4", { 
-                  businessData: business
-                })}
-                activeOpacity={0.8}
-              >
-                <View style={styles.listImageContainer}>
-                  <Image 
-                    source={{ uri: business.image }} 
-                    style={styles.listImage}
-                    resizeMode="cover"
-                  />
-                  <View style={styles.listImageOverlay} />
-                </View>
-                
-                <View style={styles.listContent}>
-                  <Text style={styles.listName} numberOfLines={2}>
-                    {business.title}
-                  </Text>
-                  <Text style={styles.listDescription} numberOfLines={2}>
-                    {business.description || "No description available"}
-                  </Text>
+                  {/* Location Icon */}
+                  {business.location && (
+                    <View style={[styles.iconWrapper, styles.locationIcon]}>
+                      <Ionicons name="location" size={18} color="#fff" />
+                    </View>
+                  )}
                   
-                  <View style={styles.listContactInfo}>
-                    {business.contact && (
-                      <View style={styles.contactItem}>
-                        <Ionicons name="call" size={14} color="#93210A" />
-                        <Text style={styles.contactText} numberOfLines={1}>
-                          {business.phone}
-                        </Text>
-                      </View>
-                    )}
-                    
-                    {business.address && (
-                      <View style={styles.contactItem}>
-                        <Ionicons name="location" size={14} color="#93210A" />
-                        <Text style={styles.contactText} numberOfLines={1}>
-                          {business.address}
-                        </Text>
-                      </View>
-                    )}
-                  </View>
+                  {/* WhatsApp Icon */}
+                  {business.whatsapp && (
+                    <View style={[styles.iconWrapper, styles.whatsappIcon]}>
+                      <Ionicons name="logo-whatsapp" size={18} color="#fff" />
+                    </View>
+                  )}
                 </View>
-                
-                <View style={styles.listArrow}>
-                  <Ionicons name="chevron-forward" size={18} color="#93210A" />
-                </View>
-              </TouchableOpacity>
-            ))}
-          </View>
-        )}
+              </View>
+              
+              {/* Arrow Indicator */}
+              <View style={styles.arrowContainer}>
+                <Ionicons name="chevron-forward" size={20} color="#93210A" />
+              </View>
+            </TouchableOpacity>
+          ))}
+        </View>
 
         {/* Empty State */}
         {businesses.length === 0 && !loading && (
@@ -285,7 +271,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#f8f9fa",
   },
   
-  // Header
+  // Header with #93210A color
   header: {
     flexDirection: "row",
     alignItems: "center",
@@ -293,17 +279,19 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingTop: Platform.OS === 'ios' ? 50 : 40,
     paddingBottom: 15,
-    backgroundColor: "#fff",
-    borderBottomWidth: 1,
-    borderBottomColor: "#e0e0e0",
+    backgroundColor: "#93210A",
+    borderBottomWidth: 0,
   },
   backButton: {
     padding: 5,
   },
   headerTitle: {
-    fontSize: isSmallDevice ? 18 : 20,
+    fontSize: 20,
     fontWeight: "bold",
-    color: "#1a1a1a",
+    color: "#fff",
+  },
+  smallHeaderTitle: {
+    fontSize: 18,
   },
   headerPlaceholder: {
     width: 28,
@@ -315,6 +303,7 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     paddingBottom: 30,
+    paddingTop: 16,
   },
 
   // Loading State
@@ -380,172 +369,80 @@ const styles = StyleSheet.create({
     color: "#93210A",
   },
 
-  // Stats Bar
-  statsContainer: {
-    flexDirection: "row",
-    backgroundColor: "#fff",
-    margin: 16,
-    padding: 20,
-    borderRadius: 16,
-    elevation: 2,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    alignItems: "center",
-    justifyContent: "space-around",
-  },
-  statItem: {
-    alignItems: "center",
-    flex: 1,
-  },
-  statNumber: {
-    fontSize: isSmallDevice ? 18 : 20,
-    fontWeight: "bold",
-    color: "#93210A",
-    marginBottom: 4,
-  },
-  statLabel: {
-    fontSize: 11,
-    color: "#666",
-    fontWeight: "500",
-    textAlign: "center",
-  },
-  statDivider: {
-    width: 1,
-    height: 25,
-    backgroundColor: "#e0e0e0",
-  },
-
-  // Tablet Grid Layout
-  gridContainer: {
+  // Business Card Design
+  listContainer: {
     paddingHorizontal: 16,
-    flexDirection: "row",
-    flexWrap: "wrap",
-    justifyContent: "space-between",
   },
-  gridCard: {
-    width: (width - 48) / 2, // 2 columns with padding
+  businessCard: {
+    flexDirection: "row",
     backgroundColor: "#fff",
     borderRadius: 16,
-    marginBottom: 16,
+    marginBottom: 12,
+    padding: 16,
     elevation: 3,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
-    shadowRadius: 8,
-    overflow: "hidden",
+    shadowRadius: 6,
+    alignItems: "center",
+    minHeight: 120,
+    borderLeftWidth: 4,
+    borderLeftColor: "#93210A",
   },
-  gridImageContainer: {
+  imageContainer: {
     position: "relative",
-    height: 140,
+    borderRadius: 12,
+    overflow: "hidden",
+    marginRight: 16,
   },
-  gridImage: {
-    width: "100%",
-    height: "100%",
+  businessImage: {
+    width: 100,
+    height: 100,
+    borderRadius: 12,
   },
-  gridGradient: {
+  imageGradient: {
     ...StyleSheet.absoluteFillObject,
+    borderRadius: 12,
   },
-  gridBadge: {
-    position: "absolute",
-    top: 10,
-    right: 10,
-    backgroundColor: "rgba(147, 33, 10, 0.9)",
-    borderRadius: 10,
-    padding: 5,
+  contentContainer: {
+    flex: 1,
+    justifyContent: "space-between",
   },
-  gridContent: {
-    padding: 16,
+  titleContainer: {
+    marginBottom: 12,
   },
-  gridName: {
+  businessTitle: {
     fontSize: 16,
     fontWeight: "bold",
     color: "#1a1a1a",
-    marginBottom: 6,
     lineHeight: 20,
   },
-  gridDescription: {
-    fontSize: 13,
-    color: "#666",
-    lineHeight: 18,
-    marginBottom: 12,
-  },
-  gridContactInfo: {
-    gap: 6,
-  },
-  gridArrow: {
-    position: "absolute",
-    bottom: 16,
-    right: 16,
-  },
-
-  // Phone List Layout
-  listContainer: {
-    paddingHorizontal: 16,
-  },
-  listCard: {
+  iconsContainer: {
     flexDirection: "row",
-    backgroundColor: "#fff",
-    borderRadius: 16,
-    marginBottom: 12,
-    padding: 16,
+    alignItems: "center",
+    gap: 10,
+  },
+  iconWrapper: {
+    padding: 8,
+    borderRadius: 8,
     elevation: 2,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    alignItems: "center",
+    shadowOpacity: 0.2,
+    shadowRadius: 2,
   },
-  listImageContainer: {
-    position: "relative",
-    borderRadius: 12,
-    overflow: "hidden",
+  phoneIcon: {
+    backgroundColor: "#93210A",
   },
-  listImage: {
-    width: isSmallDevice ? 80 : 90,
-    height: isSmallDevice ? 80 : 90,
-    borderRadius: 12,
+  locationIcon: {
+    backgroundColor: "#2E8B57",
   },
-  listImageOverlay: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: "rgba(0,0,0,0.1)",
-    borderRadius: 12,
+  whatsappIcon: {
+    backgroundColor: "#25D366",
   },
-  listContent: {
-    flex: 1,
-    marginLeft: 16,
-  },
-  listName: {
-    fontSize: isSmallDevice ? 16 : 17,
-    fontWeight: "bold",
-    color: "#1a1a1a",
-    marginBottom: 4,
-    lineHeight: 20,
-  },
-  listDescription: {
-    fontSize: 13,
-    color: "#666",
-    lineHeight: 18,
-    marginBottom: 8,
-  },
-  listContactInfo: {
-    gap: 4,
-  },
-  listArrow: {
+  arrowContainer: {
     padding: 8,
-  },
-
-  // Contact Item (Shared)
-  contactItem: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 6,
-  },
-  contactText: {
-    fontSize: 12,
-    color: "#666",
-    flex: 1,
+    marginLeft: 8,
   },
 
   // Empty State

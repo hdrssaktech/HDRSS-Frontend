@@ -2,7 +2,6 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const BASE_URL = "https://hdrss-backend.onrender.com/api";
-// const BASE_URL = "http://localhost:5000/api";
 
 // ✅ LOGIN
 export const handleLogin = async (phoneNumber, password) => {
@@ -73,8 +72,7 @@ export const createComplaint = async (complaintData) => {
 
 
 import axios from "axios";
-//import AsyncStorage from "@react-native-async-storage/async-storage";
-// ✅ Fetch reviews by complaintId
+
   export const fetchReviewsByComplaintId = async (complaintId) => {
     try {
       const token = await AsyncStorage.getItem("token");

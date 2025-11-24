@@ -8,40 +8,40 @@ import {
   TouchableOpacity,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useNavigation } from '@react-navigation/native';   // ✅ navigation hook
+import { useNavigation } from '@react-navigation/native';  
 const DATA = [
   {
     id: '1',
     name: 'Swami Vivekananda',
     birth: '12 January 1863',
     death: '4 July 1902',
-    image: require('../../../../assets/Leader/swami.jpg'),       // ✅ corrected path
+    image: require('../../../../assets/Leader/swami.jpg'),       
   },
   {
     id: '2',
     name: 'S. R. Ranganathan',
     birth: '1892',
     death: '1972',
-    image: require('../../../../assets/Leader/ranganathan.jpg'), // ✅
+    image: require('../../../../assets/Leader/ranganathan.jpg'),
   },
   {
     id: '3',
     name: 'K. K. Mathew',
     birth: '1911',
     death: '1992',
-    image: require('../../../../assets/Leader/mathew.jpg'),      // ✅
+    image: require('../../../../assets/Leader/mathew.jpg'),     
   },
   {
     id: '4',
     name: 'Marshal Nesamony',
     birth: '1895',
     death: '1968',
-    image: require('../../../../assets/Leader/nesamony.jpg'),    // ✅
+    image: require('../../../../assets/Leader/nesamony.jpg'),   
   },
 ];
 
 export default function LeaderPage2() {
-  const navigation = useNavigation();   // ✅ get navigation
+  const navigation = useNavigation();   
 
   const renderItem = ({ item }) => (
     <TouchableOpacity
@@ -137,4 +137,3 @@ const styles = StyleSheet.create({
     marginBottom: 2,
   },
 });
-

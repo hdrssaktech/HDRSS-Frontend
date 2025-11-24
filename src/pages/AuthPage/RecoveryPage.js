@@ -48,7 +48,7 @@ export default function Recovery({ navigation }) {
         </View>
 
         <TouchableOpacity style={styles.arrowButton} onPress={() => navigation.navigate("Login")
-          // Add your reset password logic here
+        
     
         }>
           <Ionicons name="arrow-forward" size={20} color="#fff" />
@@ -60,7 +60,7 @@ export default function Recovery({ navigation }) {
         <Text style={styles.bottomText}>Don’t have an Account </Text>
         <TouchableOpacity
           style={styles.LogInButton}
-          onPress={() => navigation.navigate('SigninPage')} // Make sure this matches your navigator's screen name
+          onPress={() => navigation.navigate('SigninPage')} 
         >
           <Text style={styles.LoginText}>SIGN IN</Text>
         </TouchableOpacity>

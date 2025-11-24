@@ -6,7 +6,7 @@ import { AuthContext } from "../../context/AuthContext";
 import * as Notifications from "expo-notifications";
 import * as Device from "expo-device";
 import { Platform } from "react-native";
-import { handleLogin as handleLoginAPI } from "../../Controller/ComplaintController/ComplaintController"; // ✅ rename imported function
+import { handleLogin as handleLoginAPI } from "../../Controller/ComplaintController/ComplaintController"; 
 
 export default function Loginpage() {
   const navigation = useNavigation();
@@ -76,7 +76,7 @@ async function sendLocalNotification() {
     outputRange: ["0deg", "360deg"],
   });
 
-  // ✅ renamed local function to avoid overriding imported handleLogin
+
   const onLoginPress = async () => {
     if (!phoneNumber || !password) {
       alert("Please enter mobile number and password");

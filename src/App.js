@@ -1,7 +1,6 @@
 import React, { useContext } from "react";
 import { NavigationContainer } from "@react-navigation/native";
 import { createStackNavigator } from "@react-navigation/stack";
-import { createDrawerNavigator } from "@react-navigation/drawer";
 import { AuthContext, AuthProvider } from "./context/AuthContext";
 
 // Import screens
@@ -11,7 +10,6 @@ import SigninPage from "./pages/AuthPage/SigninPage";
 import HomePage from "./pages/HomePage/HomePage";
 import ProfilePage from "./components/Profile/Profile";
 import Footer from "./components/Footer/Footer";
-import Header from "./components/Header/Header";
 import NewsPage1 from "./pages/NewsPage/NewsPage1";
 import DistrictList from "./pages/DistrictPage/DistrictPage2";
 import NewsPage2 from "./pages/NewsPage/NewsPage2";
@@ -34,7 +32,6 @@ import InterviewPage1 from "./pages/InterviewPage/InterviewPage1";
 import InterviewPage2 from "./pages/InterviewPage/InterviewPage2";
 import DistrictCategorysPage0 from "./pages/DistrictCategorysPage/DistrictCategorysPage0";
 import ElectionPage from "./pages/ElectionPage/ElectionPage";
-import HistoryPge1 from "./pages/ElectionCategorysPage/HistoryPage/HistoryPage1";
 import HistoryPage1 from "./pages/ElectionCategorysPage/HistoryPage/HistoryPage1";
 import HistoryPage2 from "./pages/ElectionCategorysPage/HistoryPage/HistoryPage2";
 import HistoryPage3 from "./pages/ElectionCategorysPage/HistoryPage/HistoryPage3";
@@ -65,6 +62,11 @@ import TownBusinessPage from "./pages/DistrictPage/TownPage/BusinessTownPage/Tow
 import TownBusinessPage1 from "./pages/DistrictPage/TownPage/BusinessTownPage/TownBusinessPage1.js";
 import TownBusinessPage2 from "./pages/DistrictPage/TownPage/BusinessTownPage/TownBusinessPage2.js";
 import TownBusinessPage3 from "./pages/DistrictPage/TownPage/BusinessTownPage/TownBusinessPage3.js";
+import DistrictBusinessPage1 from "./pages/DistrictPage/DistrictBusiness/DistrictBusinessPage1.js";
+import DistrictBusinessPage2 from "./pages/DistrictPage/DistrictBusiness/DistrictBusinessPage2.js";
+import DistrictBusinessPage3 from "./pages/DistrictPage/DistrictBusiness/DistrictBusinessPage3.js";
+import DistrictBusinessPage4 from "./pages/DistrictPage/DistrictBusiness/DistrictBusinessPage4.js";
+import DistrictBusinessPage0 from "./pages/DistrictPage/DistrictBusiness/DistrictBusinessPage0.js";
 
 
 const AuthStack = createStackNavigator();
@@ -151,6 +153,11 @@ function MainStackScreen() {
     <MainStack.Screen name ="TownBusiness2" component={withFooter(TownBusinessPage1)}/>
     <MainStack.Screen name ="TownBusiness3" component={withFooter(TownBusinessPage2)}/>
     <MainStack.Screen name ="TownBusiness4" component={withFooter(TownBusinessPage3)}/>
+    <MainStack.Screen name="DistrictBusinessPage0" component={withFooter(DistrictBusinessPage0)} />
+    <MainStack.Screen name="DistrictBusinessPage1" component={withFooter(DistrictBusinessPage1)} />
+    <MainStack.Screen name="DistrictBusinessPage2" component={withFooter(DistrictBusinessPage2)} />
+    <MainStack.Screen name="DistrictBusinessPage3" component={withFooter(DistrictBusinessPage3)} />
+    <MainStack.Screen name="DistrictBusinessPage4" component={withFooter(DistrictBusinessPage4)} />
     </MainStack.Navigator> 
   );
 }

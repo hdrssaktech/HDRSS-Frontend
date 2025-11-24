@@ -11,16 +11,17 @@ import {
   Animated,
   StatusBar,
   Platform,
+  ActivityIndicator // Added missing import
 } from "react-native";
 import { useRoute, useNavigation } from "@react-navigation/native";
 import { WebView } from "react-native-webview";
 import { Ionicons } from "@expo/vector-icons";
 
-const { width, height } = Dimensions.get("window");
-const isSmallDevice = width < 375;
-const isTablet = width > 768;
-
 export default function TownPage2() {
+  const { width, height } = Dimensions.get("window");
+  const isSmallDevice = width < 375;
+  const isTablet = width > 768;
+  
   const route = useRoute();
   const navigation = useNavigation();
   const { town } = route.params;
@@ -51,12 +52,72 @@ export default function TownPage2() {
     ? town.about
     : town.about?.slice(0, 180) + (town.about?.length > 180 ? "..." : "");
 
+  // ✅ Create dynamic styles that can use component variables
+  const dynamicStyles = {
+    bannerContainer: {
+      height: isTablet ? 350 : 280,
+      position: "relative",
+    },
+    bannerTitle: {
+      color: "#fff",
+      fontSize: isTablet ? 32 : isSmallDevice ? 22 : 28,
+      fontWeight: "bold",
+      textShadowColor: "rgba(0,0,0,0.75)",
+      textShadowOffset: { width: 1, height: 1 },
+      textShadowRadius: 8,
+      marginBottom: 8,
+    },
+    businessButtonText: {
+      color: "#fff",
+      fontWeight: "bold",
+      fontSize: isSmallDevice ? 16 : 18,
+      marginHorizontal: 12,
+    },
+    sectionTitle: {
+      fontSize: isSmallDevice ? 18 : 20,
+      fontWeight: "bold",
+      color: "#93210A",
+      marginLeft: 8,
+    },
+    aboutText: {
+      fontSize: isSmallDevice ? 14 : 16,
+      color: "#555",
+      lineHeight: 24,
+      textAlign: "left",
+    },
+    galleryImage: {
+      width: "100%",
+      height: isTablet ? 200 : 160,
+      borderRadius: 12,
+    },
+    placeImage: {
+      width: isTablet ? 120 : 80,
+      height: isTablet ? 120 : 80,
+      borderRadius: 12,
+    },
+    placeDescription: {
+      fontSize: isSmallDevice ? 13 : 14,
+      color: "#555",
+      lineHeight: 20,
+    },
+    spotName: {
+      fontSize: isSmallDevice ? 15 : 16,
+      fontWeight: "600",
+      color: "#333",
+      marginBottom: 6,
+    },
+    videoPlayer: {
+      width: "100%",
+      height: isTablet ? 220 : 200,
+    },
+  };
+
   return (
     <View style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor="transparent" translucent />
       
       {/* 🏙 Header Banner with Gradient Overlay */}
-      <View style={styles.bannerContainer}>
+      <View style={[styles.bannerContainer, dynamicStyles.bannerContainer]}>
         {town.bannerImage && (
           <Image 
             source={{ uri: town.bannerImage }} 
@@ -77,7 +138,7 @@ export default function TownPage2() {
 
         {/* Title */}
         <View style={styles.titleContainer}>
-          <Text style={styles.bannerTitle}>{town.title || town.townname}</Text>
+          <Text style={[styles.bannerTitle, dynamicStyles.bannerTitle]}>{town.title || town.townname}</Text>
           <View style={styles.titleUnderline} />
         </View>
       </View>
@@ -93,7 +154,7 @@ export default function TownPage2() {
           onPress={() => navigation.navigate("TownBusiness1", { town })}
         >
           <Ionicons name="business" size={20} color="#fff" />
-          <Text style={styles.businessButtonText}>Explore Businesses</Text>
+          <Text style={[styles.businessButtonText, dynamicStyles.businessButtonText]}>Explore Businesses</Text>
           <Ionicons name="chevron-forward" size={18} color="#fff" />
         </TouchableOpacity>
 
@@ -102,9 +163,9 @@ export default function TownPage2() {
           <View style={styles.sectionCard}>
             <View style={styles.sectionHeader}>
               <Ionicons name="information-circle" size={24} color="#93210A" />
-              <Text style={styles.sectionTitle}>About</Text>
+              <Text style={[styles.sectionTitle, dynamicStyles.sectionTitle]}>About</Text>
             </View>
-            <Text style={styles.aboutText}>{aboutText}</Text>
+            <Text style={[styles.aboutText, dynamicStyles.aboutText]}>{aboutText}</Text>
             {town.about?.length > 180 && (
               <TouchableOpacity
                 onPress={() => setShowMore(!showMore)}
@@ -122,66 +183,12 @@ export default function TownPage2() {
             )}
           </View>
         )}
-
-        {/* 🖼 Gallery / Ads Carousel */}
-        {town.add && town.add.length > 0 && (
-          <View style={styles.sectionCard}>
-            <View style={styles.sectionHeader}>
-              <Ionicons name="images" size={24} color="#93210A" />
-              <Text style={styles.sectionTitle}>Gallery</Text>
-            </View>
-            <FlatList
-              ref={flatListRef}
-              horizontal
-              data={town.add}
-              keyExtractor={(item, index) => index.toString()}
-              renderItem={({ item }) => (
-                <View style={styles.galleryItem}>
-                  <Image 
-                    source={{ uri: item.image }} 
-                    style={styles.galleryImage} 
-                    resizeMode="cover"
-                  />
-                </View>
-              )}
-              showsHorizontalScrollIndicator={false}
-              pagingEnabled
-              snapToInterval={width - 40}
-              decelerationRate="fast"
-            />
-            {town.add.length > 1 && (
-              <View style={styles.carouselDots}>
-                {town.add.map((_, index) => {
-                  const dotSize = scrollX.interpolate({
-                    inputRange: [
-                      (index - 1) * width,
-                      index * width,
-                      (index + 1) * width,
-                    ],
-                    outputRange: [8, 12, 8],
-                    extrapolate: 'clamp',
-                  });
-                  return (
-                    <Animated.View
-                      key={index}
-                      style={[
-                        styles.dot,
-                        { width: dotSize, height: dotSize },
-                      ]}
-                    />
-                  );
-                })}
-              </View>
-            )}
-          </View>
-        )}
-
         {/* 🌄 Famous Places */}
         {town.famousPlaces && town.famousPlaces.length > 0 && (
           <View style={styles.sectionCard}>
             <View style={styles.sectionHeader}>
               <Ionicons name="star" size={24} color="#93210A" />
-              <Text style={styles.sectionTitle}>Famous Places</Text>
+              <Text style={[styles.sectionTitle, dynamicStyles.sectionTitle]}>Famous Places</Text>
             </View>
             {town.famousPlaces.map((place, index) => (
               <View
@@ -193,11 +200,11 @@ export default function TownPage2() {
               >
                 <Image 
                   source={{ uri: place.image }} 
-                  style={styles.placeImage} 
+                  style={[styles.placeImage, dynamicStyles.placeImage]} 
                   resizeMode="cover"
                 />
                 <View style={styles.placeContent}>
-                  <Text style={styles.placeDescription}>{place.description}</Text>
+                  <Text style={[styles.placeDescription, dynamicStyles.placeDescription]}>{place.description}</Text>
                 </View>
               </View>
             ))}
@@ -209,7 +216,7 @@ export default function TownPage2() {
           <View style={styles.sectionCard}>
             <View style={styles.sectionHeader}>
               <Ionicons name="car" size={24} color="#93210A" />
-              <Text style={styles.sectionTitle}>Tourist Spots</Text>
+              <Text style={[styles.sectionTitle, dynamicStyles.sectionTitle]}>Tourist Spots</Text>
             </View>
             {town.tourist.map((spot, index) => (
               <View
@@ -221,11 +228,11 @@ export default function TownPage2() {
               >
                 <Image 
                   source={{ uri: spot.image }} 
-                  style={styles.placeImage} 
+                  style={[styles.placeImage, dynamicStyles.placeImage]} 
                   resizeMode="cover"
                 />
                 <View style={styles.placeContent}>
-                  <Text style={styles.spotName}>{spot.name}</Text>
+                  <Text style={[styles.spotName, dynamicStyles.spotName]}>{spot.name}</Text>
                   <View style={styles.distanceBadge}>
                     <Ionicons name="location" size={12} color="#93210A" />
                     <Text style={styles.spotDistance}>{spot.distance}</Text>
@@ -235,13 +242,71 @@ export default function TownPage2() {
             ))}
           </View>
         )}
+             {/* 🖼 Gallery / Ads Carousel */}
+        {town.add && town.add.length > 0 && (
+          <View style={styles.sectionCard}>
+            <View style={styles.sectionHeader}>
+              <Ionicons name="images" size={24} color="#93210A" />
+              <Text style={[styles.sectionTitle, dynamicStyles.sectionTitle]}>Gallery</Text>
+            </View>
+            <FlatList
+              ref={flatListRef}
+              horizontal
+              data={town.add}
+              keyExtractor={(item, index) => index.toString()}
+              renderItem={({ item }) => (
+                <View style={styles.galleryItem}>
+                  <Image 
+                    source={{ uri: item.image }} 
+                    style={[styles.galleryImage, dynamicStyles.galleryImage]} 
+                    resizeMode="cover"
+                  />
+                </View>
+              )}
+              showsHorizontalScrollIndicator={false}
+              pagingEnabled
+              snapToInterval={width - 40}
+              decelerationRate="fast"
+                onScroll={Animated.event(
+              [{ nativeEvent: { contentOffset: { x: scrollX } } }],
+              { useNativeDriver: false }
+            )}
+            scrollEventThrottle={16}
+                      />
+                      {town.add.length > 1 && (
+                        <View style={styles.carouselDots}>
+                          {town.add.map((_, index) => {
+                            const dotSize = scrollX.interpolate({
+                              inputRange: [
+                                (index - 1) * width,
+                                index * width,
+                                (index + 1) * width,
+                              ],
+                              outputRange: [8, 12, 8],
+                              extrapolate: 'clamp',
+                            });
+                            return (
+                              <Animated.View
+                                key={index}
+                                style={[
+                                  styles.dot,
+                                  { width: dotSize, height: dotSize },
+                                ]}
+                              />
+                            );
+                          })}
+                        </View>
+                      )}
+                    </View>
+                  )}
+
 
         {/* 🎥 Videos */}
         {town.videos && town.videos.length > 0 && (
           <View style={styles.sectionCard}>
             <View style={styles.sectionHeader}>
               <Ionicons name="videocam" size={24} color="#93210A" />
-              <Text style={styles.sectionTitle}>Videos</Text>
+              <Text style={[styles.sectionTitle, dynamicStyles.sectionTitle]}>Videos</Text>
             </View>
             {town.videos.map((vid, index) => {
               const videoId = extractYouTubeId(vid.videoUrl);
@@ -250,7 +315,7 @@ export default function TownPage2() {
                 <View key={index} style={styles.videoCard}>
                   <WebView
                     source={{ uri: embedUrl }}
-                    style={styles.videoPlayer}
+                    style={[styles.videoPlayer, dynamicStyles.videoPlayer]}
                     javaScriptEnabled
                     domStorageEnabled
                     startInLoadingState
@@ -277,6 +342,7 @@ function extractYouTubeId(url) {
   return match ? match[1] : null;
 }
 
+// ✅ Static styles (without device-specific logic)
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -291,12 +357,11 @@ const styles = StyleSheet.create({
   
   // Banner Section
   bannerContainer: {
-    height: isTablet ? 350 : 280,
     position: "relative",
   },
   bannerImage: {
     width: "100%",
-    height: "100%",
+    flex: 1,
   },
   gradientOverlay: {
     ...StyleSheet.absoluteFillObject,
@@ -319,7 +384,6 @@ const styles = StyleSheet.create({
   },
   bannerTitle: {
     color: "#fff",
-    fontSize: isTablet ? 32 : isSmallDevice ? 22 : 28,
     fontWeight: "bold",
     textShadowColor: "rgba(0,0,0,0.75)",
     textShadowOffset: { width: 1, height: 1 },
@@ -352,7 +416,6 @@ const styles = StyleSheet.create({
   businessButtonText: {
     color: "#fff",
     fontWeight: "bold",
-    fontSize: isSmallDevice ? 16 : 18,
     marginHorizontal: 12,
   },
 
@@ -375,7 +438,6 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   sectionTitle: {
-    fontSize: isSmallDevice ? 18 : 20,
     fontWeight: "bold",
     color: "#93210A",
     marginLeft: 8,
@@ -383,7 +445,6 @@ const styles = StyleSheet.create({
 
   // About Section
   aboutText: {
-    fontSize: isSmallDevice ? 14 : 16,
     color: "#555",
     lineHeight: 24,
     textAlign: "left",
@@ -407,14 +468,12 @@ const styles = StyleSheet.create({
 
   // Gallery Section
   galleryItem: {
-    width: width - 40,
     marginRight: 16,
     borderRadius: 12,
     overflow: "hidden",
   },
   galleryImage: {
     width: "100%",
-    height: isTablet ? 200 : 160,
     borderRadius: 12,
   },
   carouselDots: {
@@ -424,8 +483,6 @@ const styles = StyleSheet.create({
     marginTop: 12,
   },
   dot: {
-    width: 8,
-    height: 8,
     borderRadius: 4,
     backgroundColor: "#93210A",
     marginHorizontal: 4,
@@ -447,8 +504,6 @@ const styles = StyleSheet.create({
     flexDirection: "row-reverse",
   },
   placeImage: {
-    width: isTablet ? 120 : 80,
-    height: isTablet ? 120 : 80,
     borderRadius: 12,
   },
   placeContent: {
@@ -457,12 +512,10 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   placeDescription: {
-    fontSize: isSmallDevice ? 13 : 14,
     color: "#555",
     lineHeight: 20,
   },
   spotName: {
-    fontSize: isSmallDevice ? 15 : 16,
     fontWeight: "600",
     color: "#333",
     marginBottom: 6,
@@ -492,7 +545,6 @@ const styles = StyleSheet.create({
   },
   videoPlayer: {
     width: "100%",
-    height: isTablet ? 220 : 200,
   },
   videoLoading: {
     position: "absolute",

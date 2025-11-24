@@ -44,6 +44,3 @@ export const fetchPlacesByCategory = async (districtId, category, foodType) => {
   }
 };
 
-
-
-
