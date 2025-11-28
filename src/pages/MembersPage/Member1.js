@@ -1,3 +1,4 @@
+// my code 
 import React, { useState } from "react";
 import {
   View,
@@ -19,7 +20,7 @@ import { useNavigation } from "@react-navigation/native";
 import * as ImagePicker from "expo-image-picker";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { createMember, uploadImage, sendIdCard } from "../../api/api";
-import {generateIdCard} from "../../pages/generateIdCard/generateIdCard";
+import { generateIdCard } from "../../pages/generateIdCard/generateIdCard";
 
 export default function Membership1() {
   const navigation = useNavigation();
@@ -34,7 +35,7 @@ export default function Membership1() {
   const [name, setName] = useState("");
   const [fatherName, setFatherName] = useState("");
   const [bloodGroup, setBloodGroup] = useState("");
-  const [address, setAddress] = useState("");
+  const [address, setAddress] = useState("");          // <-- Address already here
   const [city, setCity] = useState("");
   const [taluk, setTaluk] = useState("");
   const [district, setDistrict] = useState("");
@@ -110,6 +111,29 @@ export default function Membership1() {
 
     setAadhaar(formatted);
   };
+  const handleContactChange = (text) => {
+  const cleaned = text.replace(/[^0-9]/g, ""); // only digits
+  if (cleaned.length <= 10) {
+    setContact(cleaned);
+  }
+};
+const handlePinChange = (text) => {
+  const cleaned = text.replace(/[^0-9]/g, "");
+  if (cleaned.length <= 6) {
+    setPin(cleaned);
+  }
+};
+
+const handleEmailChange = (text) => {
+  setEmail(text);
+};
+
+const handleAddressChange = (text) => {
+  setAddress(text);
+};
+
+
+
 
   // ✅ Handle Submit
   const handleSubmit = async () => {
@@ -117,6 +141,7 @@ export default function Membership1() {
       Alert.alert("Error", "Please upload a photo.");
       return;
     }
+
 
     try {
       const formData = new FormData();
@@ -149,13 +174,16 @@ export default function Membership1() {
         professionalDetails: professionalDetails.trim(),
         designation: designation.trim(),
         experience: experience.trim(),
-       //categoryType: categoryType.trim(),
       };
 
       console.log("Member Data:", memberData);
 
       const createRes = await createMember(memberData);
       const memberId = createRes.member?.id || createRes.id;
+      const memberuniqueId = createRes.member?.uniqueId || createRes.uniqueId;
+      console.log(memberId);
+      console.log(memberuniqueId)
+
 
       Alert.alert("✅ Member Registered", "Generating ID Card...");
 
@@ -170,11 +198,14 @@ export default function Membership1() {
         dob,
         bloodGroup,
         contactDetails: contact,
+        
+        // 🔥 ADDED: Residential Address 
+        residentialAddress: address,  
+        uniqueId:memberuniqueId
       });
 
       Alert.alert("✅ Success", "ID Card generated successfully!");
 
-      // Optionally still send to manager
       await sendIdCard(pdfUri);
 
       navigation.goBack();
@@ -239,7 +270,7 @@ export default function Membership1() {
             </TouchableOpacity>
           </View>
 
-          {/* Photo */}
+          {/* Photo Upload */}
           <View style={styles.datePhotoRow}>
             <TouchableOpacity style={styles.photoBox} onPress={pickImage}>
               {photo ? (
@@ -289,13 +320,15 @@ export default function Membership1() {
             />
           )}
 
-          <Text style={styles.label}>Residential Address:</Text>
+         <Text style={styles.label}>Residential Address:</Text>
           <TextInput
             style={[styles.input, { height: 70, textAlignVertical: "top" }]}
             multiline
             value={address}
-            onChangeText={setAddress}
+            onChangeText={handleAddressChange}
+            placeholder="Door No / Street / Area"
           />
+
 
           <Text style={styles.label}>City/Town:</Text>
           <TextInput style={styles.input} value={city} onChangeText={setCity} />
@@ -313,15 +346,15 @@ export default function Membership1() {
             value={district}
             onChangeText={setDistrict}
           />
-
           <Text style={styles.label}>Pin:</Text>
           <TextInput
             style={styles.input}
             value={pin}
-            onChangeText={setPin}
+            onChangeText={handlePinChange}
             keyboardType="numeric"
+            maxLength={6}
+            placeholder="6-digit PIN code"
           />
-
           <Text style={styles.label}>Education:</Text>
           <TextInput
             style={styles.input}
@@ -349,17 +382,20 @@ export default function Membership1() {
           <TextInput
             style={styles.input}
             value={email}
-            onChangeText={setEmail}
+            onChangeText={handleEmailChange}
             keyboardType="email-address"
+            placeholder="example@gmail.com"
           />
 
-          <Text style={styles.label}>Contact Details:</Text>
-          <TextInput
-            style={styles.input}
-            value={contact}
-            onChangeText={setContact}
-            keyboardType="phone-pad"
-          />
+        <Text style={styles.label}>Contact Details:</Text>
+        <TextInput
+          style={styles.input}
+          value={contact}
+          onChangeText={handleContactChange}
+          keyboardType="numeric"
+          maxLength={10}
+          placeholder="Enter 10-digit number"
+        />
 
           <Text style={styles.label}>Aadhaar No:</Text>
           <TextInput

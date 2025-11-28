@@ -55,6 +55,17 @@ export const loginApi = async (userData) => {
   }
 };
 
+export const getProfileApi = async (token) => {
+  const res = await fetch(`${BASE_URL}/profile`, {
+    method: "GET",
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  return res.json();
+};
+
 
 /* ---------------------------
    🏙️ District Places by Category
@@ -236,13 +247,12 @@ export const getComplaints = async (token) => {
 export const getMembers = async () => {
   try {
     const response = await axios.get(`${BASE_URL}/members`);
-    return response.data; // Array of members
+    return response.data;
   } catch (error) {
     console.error("Error fetching members:", error);
     return [];
   }
 };
-
 
 export const createMember = async (memberData) => {
   try {
@@ -271,19 +281,22 @@ export const sendIdCard = async (pdfUri) => {
 
     formData.append("subject", "New HDRSS Member ID Card");
 
-    const response = await fetch("https://hdrss-backend.onrender.com/api/email/send-pdf", {
-      method: "POST",
-      body: formData,
-      headers: {
-        "Content-Type": "multipart/form-data",
-      },
-    });
+    const response = await fetch(
+      "https://hdrss-backend.onrender.com/api/email/send-pdf",
+      {
+        method: "POST",
+        headers: {
+          Accept: "application/json",
+        },
+        body: formData,
+      }
+    );
 
     const result = await response.json();
     console.log("📧 Email send response:", result);
 
     if (response.ok) {
-      Alert.alert("✅ Email Sent", "The ID card has been emailed to your manager!");
+      Alert.alert("✅ Email Sent", "The ID card has been emailed!");
     } else {
       Alert.alert("⚠️ Failed", result.message || "Unable to send email.");
     }
@@ -292,13 +305,6 @@ export const sendIdCard = async (pdfUri) => {
     Alert.alert("❌ Error", "Failed to send the PDF email.");
   }
 };
-
-
-
-
-
-
-
 
 
 // src/API/ElectionAPI.js
