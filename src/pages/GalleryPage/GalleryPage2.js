@@ -91,15 +91,27 @@ export default function GalleryInformation() {
 }
 
 const styles = StyleSheet.create({
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-    padding: 15,
-    marginTop: 32,
-    backgroundColor: "#93210A",
-  },
-  backButton: { marginRight: 10 },
-  title: { fontSize: 20, color: "white", fontWeight: "bold" },
+header: {
+  backgroundColor: "#93210A",
+  padding: 40,
+  alignItems: "center",
+  justifyContent: "center",
+ 
+  position: "relative",
+  flexDirection: "column",
+},
+
+backButton: {
+  position: "absolute",
+  left: 15,    // keep back button on left
+},
+
+title: {
+  fontSize: 22,
+  fontWeight: "bold",
+  color: "white",
+},
+
   section: { padding: 15 },
   mainTitle: { marginTop: 15, fontSize: 24, fontWeight: "600", color: "#93210A" },
   mainImage: {

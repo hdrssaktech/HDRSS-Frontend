@@ -2,6 +2,7 @@
 import * as Print from "expo-print";
 import * as Sharing from "expo-sharing";
 import * as FileSystem from "expo-file-system/legacy";
+// import * as FileSystem from "expo-file-system";
 import { Asset } from "expo-asset";
 
 export async function generateIdCard(member) {
@@ -81,13 +82,13 @@ export async function generateIdCard(member) {
         }
 
         .profile-img {
-          width: 100px;
-          height: 100px;
-          border: 1px solid #e73200ff;
+          width: 100px;        /* Passport width */
+          height: 130px;       /* Passport height */
+          border: 2px solid #e73200;
           margin: 5px auto;
           overflow: hidden;
+          object-fit: cover;   /* Makes image fit perfectly */
         }
-
         .profile-img img {
           width: 100%;
           height: 100%;
@@ -268,8 +269,10 @@ export async function generateIdCard(member) {
 
   try {
     const { uri } = await Print.printToFileAsync({ html: htmlContent });
-    console.log("PDF generated:", uri);
-    return uri;
+    const newUri = `${FileSystem.cacheDirectory}idcard.pdf`;
+    await FileSystem.copyAsync({ from: uri, to: newUri });
+    console.log("PDF generated:", newUri);
+    return newUri;
   } catch (error) {
     console.error("Error generating ID:", error);
   }

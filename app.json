@@ -18,7 +18,9 @@
       "googleServicesFile": "./google-services.json",
       "package": "com.aktech.hdrss",
       "permissions":[
-        "INTERNET"
+        "INTERNET",
+        "READ_EXTERNAL_STORAGE",
+        "WRITE_EXTERNAL_STORAGE"
       ]
     },
     "web": {

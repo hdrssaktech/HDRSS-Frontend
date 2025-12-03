@@ -44,7 +44,7 @@ export default function Gallery() {
             key={item.id}
             style={styles.imageContainer}
             onPress={() =>
-              navigation.navigate("GalleryPage2", {
+              navigation.navigate("GalleryPage1", {
                 title: item.title,
                 mainImage: { uri: item.thumbnail },
                 description: item.description,

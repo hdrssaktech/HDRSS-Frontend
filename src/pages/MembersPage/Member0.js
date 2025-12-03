@@ -75,7 +75,7 @@ const { districtId, districtName } = route.params || {};
       <View style={styles.joinContainer}>
         <TouchableOpacity
           style={styles.joinButton}
-          onPress={() => navigation.navigate("Member1")}
+          onPress={() => navigation.navigate("Member1",{districtName})}
         >
           <Ionicons name="person-add-outline" size={26} color="#fff" />
           <Text style={styles.joinButtonText}>Join With Us</Text>
@@ -86,13 +86,13 @@ const { districtId, districtName } = route.params || {};
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#fff", paddingHorizontal: 20 },
+  container: { flex: 1, backgroundColor: "#fff" },
 
   header: {
     backgroundColor: "#93210A",
-    paddingVertical: 20,
+    paddingVertical: 50,
     alignItems: "center",
-    marginTop: 35,
+    // marginTop: 35,
     borderRadius: 12,
     shadowColor: "#000",
     shadowOpacity: 0.3,
@@ -105,7 +105,7 @@ const styles = StyleSheet.create({
   backButton: {
     position: "absolute",
     left: 15,
-    top: 15,
+    top: 45,
     padding: 6,
   },
 

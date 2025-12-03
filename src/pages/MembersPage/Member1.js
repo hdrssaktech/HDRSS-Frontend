@@ -16,14 +16,17 @@ import {
 } from "react-native";
 import Icon from "react-native-vector-icons/MaterialIcons";
 import { Ionicons } from "@expo/vector-icons";
-import { useNavigation } from "@react-navigation/native";
+import { useNavigation,useRoute } from "@react-navigation/native";
 import * as ImagePicker from "expo-image-picker";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { createMember, uploadImage, sendIdCard } from "../../api/api";
 import { generateIdCard } from "../../pages/generateIdCard/generateIdCard";
 
 export default function Membership1() {
+  const route = useRoute();
   const navigation = useNavigation();
+  const { districtName} = route.params || {};
+  // console.log("District Name in Member1:", districtName);
 
   const [categoryType, setCategoryType] = useState("District");
   const [isChecked, setIsChecked] = useState(false);
@@ -38,7 +41,7 @@ export default function Membership1() {
   const [address, setAddress] = useState("");          // <-- Address already here
   const [city, setCity] = useState("");
   const [taluk, setTaluk] = useState("");
-  const [district, setDistrict] = useState("");
+  const [district, setDistrict] = useState(districtName || "");
   const [pin, setPin] = useState("");
   const [education, setEducation] = useState("");
   const [familyMembers, setFamilyMembers] = useState("");
@@ -84,7 +87,7 @@ export default function Membership1() {
 
   // 💸 GPay Payment
   const openGPay = () => {
-    const upiId = "9876543210@upi";
+    const upiId = "9345339088@upi";
     const name = "ManagerName";
     const amount = categoryType === "District" ? "100" : "500";
     const url = `upi://pay?pa=${upiId}&pn=${name}&am=${amount}&cu=INR`;
@@ -111,6 +114,7 @@ export default function Membership1() {
 
     setAadhaar(formatted);
   };
+
   const handleContactChange = (text) => {
   const cleaned = text.replace(/[^0-9]/g, ""); // only digits
   if (cleaned.length <= 10) {
@@ -185,7 +189,7 @@ const handleAddressChange = (text) => {
       console.log(memberuniqueId)
 
 
-      Alert.alert("✅ Member Registered", "Generating ID Card...");
+      // Alert.alert("✅ Member Registered", "Generating ID Card...");
 
       // 🪪 Generate PDF ID Card
       const pdfUri = await generateIdCard({
@@ -198,8 +202,6 @@ const handleAddressChange = (text) => {
         dob,
         bloodGroup,
         contactDetails: contact,
-        
-        // 🔥 ADDED: Residential Address 
         residentialAddress: address,  
         uniqueId:memberuniqueId
       });
@@ -211,9 +213,10 @@ const handleAddressChange = (text) => {
       navigation.goBack();
     } catch (err) {
       console.log("Error uploading:", err);
-      Alert.alert("❌ Error", "Failed to submit form or generate ID card");
+      // Alert.alert("❌ Error", "Failed to submit form or generate ID card");
     }
   };
+  
 
   return (
     <SafeAreaView style={styles.container}>
@@ -344,6 +347,7 @@ const handleAddressChange = (text) => {
           <TextInput
             style={styles.input}
             value={district}
+            
             onChangeText={setDistrict}
           />
           <Text style={styles.label}>Pin:</Text>
@@ -468,15 +472,17 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: "row",
     alignItems: "center",
-    padding: 15,
-    marginTop: 32,
+    paddingVertical: 30,
+    paddingHorizontal: 20,
+    paddingTop: 50,
+    // marginTop: 32,
     backgroundColor: "#93210A",
   },
   headerText: {
     color: "#fff",
     fontSize: 20,
     fontWeight: "bold",
-    marginLeft: 15,
+    marginLeft: 90,
   },
   formContainer: { padding: 15, paddingBottom: 20 },
   formTitleButton: {

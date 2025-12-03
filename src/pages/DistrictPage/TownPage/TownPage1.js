@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState, useRef,useContext } from "react";
 import {
   View,
   Text,
@@ -15,6 +15,7 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { getTownsByDistrict } from "../../../Controller/TownController/TownPageController";
+import { LocationContext } from "../../../context/LocationContext";
 
 export default function TownPage1() {
   const route = useRoute();
@@ -28,6 +29,8 @@ export default function TownPage1() {
   const [selectedTown, setSelectedTown] = useState(null);
 
   const fadeAnim = useRef(new Animated.Value(0)).current;
+    const { TownName } =useContext(LocationContext);
+    console.log("Town Name from Context:", TownName);
 
   useEffect(() => {
     const fetchTowns = async () => {
@@ -53,6 +56,7 @@ export default function TownPage1() {
     searchText.length > 0 ? filteredTowns : towns; // No "See More" logic
 
   const imageSize = 100;
+  
 
   useEffect(() => {
     Animated.timing(fadeAnim, {
@@ -69,6 +73,14 @@ export default function TownPage1() {
     setShowDropdown(false);
     Keyboard.dismiss();
   };
+  const finalTowns =
+  TownName.trim() === ""        // if NO location selected
+    ? towns                          // show ALL towns
+    : towns.filter(
+        (item) =>
+          item.townname.toLowerCase() === TownName.toLowerCase()
+      );
+
 
   if (loading) {
     return (
@@ -188,7 +200,11 @@ export default function TownPage1() {
         <>
           {/* 🏙 Horizontal Scroll List */}
           <FlatList
-            data={displayedTowns}
+            data={displayedTowns.filter((item)=>
+              TownName
+                ? item.townname.toLowerCase() === TownName.toLowerCase()
+                : displayedTowns
+            )}
             horizontal
             showsHorizontalScrollIndicator={false}
             keyExtractor={(item) => item.id.toString()}

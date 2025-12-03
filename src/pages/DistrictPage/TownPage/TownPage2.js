@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useContext } from "react";
 import {
   View,
   Text,
@@ -16,6 +16,7 @@ import {
 import { useRoute, useNavigation } from "@react-navigation/native";
 import { WebView } from "react-native-webview";
 import { Ionicons } from "@expo/vector-icons";
+import { LocationContext } from "../../../context/LocationContext";
 
 export default function TownPage2() {
   const { width, height } = Dimensions.get("window");
@@ -28,6 +29,7 @@ export default function TownPage2() {
   const [showMore, setShowMore] = useState(false);
   const scrollX = useRef(new Animated.Value(0)).current;
   const flatListRef = useRef(null);
+
 
   useEffect(() => {
     if (town.add && town.add.length > 1) {

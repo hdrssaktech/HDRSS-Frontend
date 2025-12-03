@@ -22,6 +22,7 @@ import Sidebar from "../../components/Sidebar/Sidebar";
 import { INTERVIEW_DATA } from "../InterviewPage/Interviewdata";
 import { fetchNews } from "../../Controller/NewsController/NewsController";
 import { styles } from "./styles";
+import CurrentLocation from "../../components/Location/CurrentLocation";
 
 const { width } = Dimensions.get("window");
 
@@ -100,6 +101,9 @@ export default function HomePage() {
               </TouchableOpacity>
             </Animated.View>
 
+            <View>
+              <CurrentLocation/>
+            </View>
             {/* Advertisement */}
             <View style={styles.advertisementWrapper}>
               <Advertisement />

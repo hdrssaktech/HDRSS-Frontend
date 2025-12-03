@@ -12,14 +12,14 @@ import {
 import { AuthContext } from "../../context/AuthContext";
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
+import ProfileImage from '../../../assets/profile-img.jpg';
 
 export default function ProfilePage() {
   const { logout, userData } = useContext(AuthContext);
   const navigation = useNavigation();
-
   const name = userData?.name || "User";
   const phone = userData?.phoneNumber || "No Phone";
-
+  
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="light-content" />
@@ -40,7 +40,7 @@ export default function ProfilePage() {
           {/* Default Profile Image */}
           <Image
             source={{
-              uri: "https://t3.ftcdn.net/jpg/06/99/46/60/360_F_699466075_DaPTBNlNQTOwwjkOiFEoOvzDV0ByXR9E.jpg",
+              uri: userData?.profileImage || Image.resolveAssetSource(ProfileImage).uri,
             }}
             style={styles.profileImage}
           />

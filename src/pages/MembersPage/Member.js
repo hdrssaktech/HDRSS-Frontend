@@ -110,7 +110,7 @@ useEffect(() => {
         <View style={styles.footer}>
           <TouchableOpacity
             style={styles.joinButton}
-            onPress={() => navigation.navigate("Member1")}
+            onPress={() => navigation.navigate("Member1",{districtName})}
           >
             <Text style={styles.joinButtonText}>Join With Us</Text>
           </TouchableOpacity>
@@ -125,15 +125,17 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: "row",
     alignItems: "center",
-    padding: 15,
-    marginTop: 32,
+    paddingTop: 50,
+    paddingBottom: 20,
+    // paddingVertical:45,
+    paddingHorizontal:10,
     backgroundColor: "#93210A",
   },
   headerText: {
     color: "#fff",
     fontSize: 20,
     fontWeight: "bold",
-    marginLeft: 8,
+    marginLeft: 100,
   },
   card: {
     alignItems: "center",

@@ -147,7 +147,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#FFF8F8",
-    padding: 15,
+    // padding: 15,
   },
   loaderContainer: {
     flex: 1,
@@ -156,13 +156,10 @@ const styles = StyleSheet.create({
   },
   headerBox: {
     backgroundColor: "#93210A",
-    paddingVertical: 14,
-    paddingHorizontal: 12,
-    borderRadius: 10,
+    paddingVertical: 40,
+    paddingHorizontal: 30,
     flexDirection: "row",
     alignItems: "center",
-    marginBottom: 15,
-    marginTop: 40,
     elevation: 5,
     shadowColor: "#93210A",
     shadowOpacity: 0.25,
@@ -184,6 +181,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
     padding: 12,
     marginVertical: 8,
+    marginHorizontal: 15,
     borderRadius: 12,
     elevation: 4,
     shadowColor: "#000",

@@ -140,9 +140,6 @@ export default GovernmentPage;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    paddingHorizontal: 12,
-    paddingTop: 15,
-    marginTop: 30,
   },
   loaderContainer: {
     flex: 1,
@@ -157,8 +154,8 @@ const styles = StyleSheet.create({
   },
   headerBox: {
     backgroundColor: "#93210A",
-    paddingVertical: 20,
-    borderRadius: 15,
+    paddingVertical: 40,
+    
     marginBottom: 18,
     elevation: 6,
     shadowColor: "#93210A",
@@ -170,7 +167,7 @@ const styles = StyleSheet.create({
   },
 backButton: {
   marginRight: 10,
-  marginTop: -40, // 👆 moves the icon slightly upward
+  marginTop: 10, // 👆 moves the icon slightly upward
   padding: -8,
 },
 
@@ -193,6 +190,7 @@ backButton: {
   card: {
     backgroundColor: "#fff",
     borderRadius: 18,
+    marginHorizontal: 10,
     marginBottom: 16,
     width: CARD_WIDTH,
     shadowColor: "#000",

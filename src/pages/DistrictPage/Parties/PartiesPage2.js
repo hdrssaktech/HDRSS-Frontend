@@ -120,7 +120,7 @@ const styles = StyleSheet.create({
 
   image: {
     width: "100%",
-    height: 250,
+    height: 450,
     borderBottomLeftRadius: 20,
     borderBottomRightRadius: 20,
     resizeMode: "cover",

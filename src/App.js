@@ -67,6 +67,7 @@ import DistrictBusinessPage2 from "./pages/DistrictPage/DistrictBusiness/Distric
 import DistrictBusinessPage3 from "./pages/DistrictPage/DistrictBusiness/DistrictBusinessPage3.js";
 import DistrictBusinessPage4 from "./pages/DistrictPage/DistrictBusiness/DistrictBusinessPage4.js";
 import DistrictBusinessPage0 from "./pages/DistrictPage/DistrictBusiness/DistrictBusinessPage0.js";
+import { LocationProvider } from "./context/LocationContext.js";
 
 
 const AuthStack = createStackNavigator();
@@ -176,7 +177,9 @@ function RootNavigator() {
 export default function App() {
   return (
     <AuthProvider>
-      <RootNavigator />
+    <LocationProvider>
+    <RootNavigator />
+    </LocationProvider>
     </AuthProvider>
   );
 }

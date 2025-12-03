@@ -82,12 +82,6 @@ const PartiesPage1 = () => {
     <View style={styles.container}>
       {/* Header Section */}
       <View style={styles.headerBox}>
-        <TouchableOpacity
-          onPress={() => navigation.goBack()}
-          style={styles.backButton}
-        >
-          <Ionicons name="chevron-back" size={24} color="#fff" />
-        </TouchableOpacity>
         <Text style={styles.headerTitle}>Parties </Text>
       </View>
 
@@ -128,8 +122,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#FDF7F7",
-    paddingHorizontal: 15,
-    paddingTop: 15,
+    
   },
 
   // 🔹 Header Styles
@@ -137,14 +130,13 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     backgroundColor: "#93210A",
-    paddingVertical: 15,
-    paddingHorizontal: 10,
+    paddingTop: 40,
+    paddingBottom: 20,
     borderRadius: 10,
-    marginBottom: 20,
-    marginTop: 25,
+    paddingHorizontal: 150,
   },
   backButton: {
-    marginRight: 10,
+    marginRight: 0,
     marginTop: -3, // 👆 slightly raises the arrow
     padding: 4,
   },
@@ -153,7 +145,7 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     color: "#fff",
     letterSpacing: 0.5,
-    textAlign: "left",
+    textAlign: "center",
   },
 
   loaderContainer: {
@@ -171,7 +163,7 @@ const styles = StyleSheet.create({
   card: {
     backgroundColor: "#fff",
     borderRadius: 16,
-    marginBottom: 20,
+    margin: 30,
     overflow: "hidden",
     elevation: 6,
     shadowColor: "#000",
@@ -183,7 +175,8 @@ const styles = StyleSheet.create({
     width: width - 30,
     height: 200,
     borderRadius: 16,
-    resizeMode: "cover",
+    objectFit:'contain',
+    // resizeMode: "cover",
   },
   overlay: {
      backgroundColor: "rgba(0, 0, 0, 0.17)",
@@ -207,8 +200,8 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 18,
     fontWeight: "700",
-    color: "#fff",
-    textShadowColor: "rgba(0,0,0,0.5)",
+    color: "#000000ff",
+    // textShadowColor: "rgba(0,0,0,0.5)",
     textShadowOffset: { width: 0, height: 2 },
     textShadowRadius: 4,
   },

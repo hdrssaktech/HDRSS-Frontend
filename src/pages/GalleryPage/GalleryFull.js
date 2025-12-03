@@ -83,27 +83,26 @@ export default function GalleryFull() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#FAFAFA" },
   header: {
-    flexDirection: "row",
-    alignItems: "center",
     backgroundColor: "#93210A",
-    marginTop: 32,
-    paddingVertical: 15,
-    paddingHorizontal: 12,
-    elevation: 4,
+    paddingTop: 50,
+  padding: 25,
+  alignItems: "center",
+  justifyContent: "center",
+  position: "relative",
+  flexDirection: "row",
   },
-  backBtn: {
-    width: 40,
-    justifyContent: "center",
-    alignItems: "center",
-  },
+ backBtn: {
+  position: "absolute",
+  left: 15,    // keep back button on left
+},
   headerTitle: {
     flex: 1,
     textAlign: "center",
-    fontSize: 20,
+    fontSize: 22,
     fontWeight: "bold",
     color: "#fff",
     letterSpacing: 1,
-    marginRight: 178, // ✅ keeps title centered even with chevron
+    // marginRight: 178, // ✅ keeps title centered even with chevron
   },
   scrollContainer: { padding: 15 },
   card: {

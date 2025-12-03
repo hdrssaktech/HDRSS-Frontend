@@ -1,5 +1,5 @@
 // DistrictPage1.js
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState,useContext } from "react";
 import {
   View,
   Text,
@@ -14,6 +14,7 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import { getDistricts } from "../../Controller/DistrictController/DistrictController";
+import { LocationContext } from "../../context/LocationContext";
 
 export default function DistrictPage1() {
   const navigation = useNavigation();
@@ -22,6 +23,9 @@ export default function DistrictPage1() {
   const [loading, setLoading] = useState(true);
   const [showAll, setShowAll] = useState(false);
   const [searchText, setSearchText] = useState("");
+
+    const { locationName } = useContext(LocationContext);
+    // console.log("Current Location from Context:", locationName);
 
   const { width: screenWidth } = Dimensions.get("window");
   const imageSize = screenWidth / 3 - 20;
@@ -91,7 +95,11 @@ export default function DistrictPage1() {
 
       {/* 🗺️ District List */}
       <FlatList
-        data={visibleDistricts}
+        data={visibleDistricts.filter((item)=>
+          locationName
+            ? item.name.toLowerCase() === locationName.toLowerCase()
+            : visibleDistricts
+        )}
         numColumns={3}
         keyExtractor={(item) => item.id.toString()}
         renderItem={({ item }) => (
