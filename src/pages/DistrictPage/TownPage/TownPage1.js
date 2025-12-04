@@ -30,7 +30,7 @@ export default function TownPage1() {
 
   const fadeAnim = useRef(new Animated.Value(0)).current;
     const { TownName } =useContext(LocationContext);
-    console.log("Town Name from Context:", TownName);
+    // console.log("Town Name from Context:", TownName);
 
   useEffect(() => {
     const fetchTowns = async () => {
@@ -73,13 +73,15 @@ export default function TownPage1() {
     setShowDropdown(false);
     Keyboard.dismiss();
   };
-  const finalTowns =
-  TownName.trim() === ""        // if NO location selected
-    ? towns                          // show ALL towns
-    : towns.filter(
-        (item) =>
-          item.townname.toLowerCase() === TownName.toLowerCase()
-      );
+const finalTownList =
+  searchText.trim() !== ""
+    ? filteredTowns // user searched → show filtered
+    : TownName.trim() !== ""
+    ? towns.filter(
+        (item) => (item.townname.toLowerCase().includes(TownName.toLowerCase()))
+      ) // from context
+    : towns; // default full list
+
 
 
   if (loading) {
@@ -200,34 +202,29 @@ export default function TownPage1() {
         <>
           {/* 🏙 Horizontal Scroll List */}
           <FlatList
-            data={displayedTowns.filter((item)=>
-              TownName
-                ? item.townname.toLowerCase() === TownName.toLowerCase()
-                : displayedTowns
-            )}
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            keyExtractor={(item) => item.id.toString()}
-            contentContainerStyle={styles.horizontalList}
-            renderItem={({ item }) => (
-              <TouchableOpacity
-                style={styles.card}
-                onPress={() =>
-                  navigation.navigate("TownPage2", { town: item })
-                }
-              >
-                <Image
-                  source={{ uri: item.image }}
-                  style={{
-                    width: imageSize,
-                    height: imageSize,
-                    borderRadius: 8,
-                  }}
-                />
-                <Text style={styles.imageText}>{item.townname}</Text>
-              </TouchableOpacity>
-            )}
-          />
+  data={finalTownList}
+  horizontal
+  showsHorizontalScrollIndicator={false}
+  keyExtractor={(item) => item.id.toString()}
+  contentContainerStyle={styles.horizontalList}
+  renderItem={({ item }) => (
+    <TouchableOpacity
+      style={styles.card}
+      onPress={() => navigation.navigate("TownPage2", { town: item })}
+    >
+      <Image
+        source={{ uri: item.image }}
+        style={{
+          width: imageSize,
+          height: imageSize,
+          borderRadius: 8,
+        }}
+      />
+      <Text style={styles.imageText}>{item.townname}</Text>
+    </TouchableOpacity>
+  )}
+/>
+
         </>
       )}
     </View>

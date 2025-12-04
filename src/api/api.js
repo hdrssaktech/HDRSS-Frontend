@@ -272,9 +272,9 @@ export const createMember = async (memberData) => {
 export const sendIdCard = async (pdfUri) => {
   try {
     const formData = new FormData();
-
+    const fixedUri = pdfUri.startsWith("file://") ? pdfUri : "file://" + pdfUri;
     formData.append("file", {
-      uri: pdfUri,
+      uri: fixedUri,
       name: "idcard.pdf",
       type: "application/pdf",
     });

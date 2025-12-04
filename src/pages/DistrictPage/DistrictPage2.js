@@ -29,10 +29,56 @@ export default function DistrictPage2() {
   const [loading, setLoading] = useState(true);
   const [showFullDescription, setShowFullDescription] = useState(false);
   const [playing, setPlaying] = useState(false);
+  const [translatedDescription, setTranslatedDescription] = useState("");
+  const [currentLang, setCurrentLang] = useState("en");
+
 
 
    const adListRef = useRef(null);
   const adIndex = useRef(0);
+
+
+  const detectLanguage = (text) => {
+  const tamilRegex = /[\u0B80-\u0BFF]/; // Tamil Unicode Range
+  return tamilRegex.test(text) ? "ta" : "en";
+};
+const translateText = async (text, targetLang) => {
+  try {
+    const chunkSize = 500;
+    const chunks = [];
+
+    for (let i = 0; i < text.length; i += chunkSize) {
+      chunks.push(text.slice(i, i + chunkSize));
+    }
+
+    let translatedFullText = "";
+
+    // Detect source language automatically
+    const sourceLang = detectLanguage(text);  // "ta" or "en"
+
+    if (sourceLang === targetLang) {
+      // Already translated, no need API call
+      return text;
+    }
+
+    for (const chunk of chunks) {
+      const response = await fetch(
+        `https://api.mymemory.translated.net/get?q=${encodeURIComponent(
+          chunk
+        )}&langpair=${sourceLang}|${targetLang}`
+      );
+
+      const data = await response.json();
+      translatedFullText += data.responseData.translatedText + " ";
+    }
+
+    return translatedFullText.trim();
+  } catch (error) {
+    console.error("Translation error:", error);
+    return text;
+  }
+};
+
 
 
 
@@ -164,34 +210,82 @@ export default function DistrictPage2() {
             </View>
           </ImageBackground>
 
-          {/* 📝 Description */}
-          {district.description ? (
-            <View style={{ margin: 15 }}>
-              <Text style={styles.description}>
-                {showFullDescription
-                  ? district.description
-                  : district.description.slice(0, 300) +
-                    (district.description.length > 300 ? "..." : "")}
-              </Text>
 
-              {district.description.length > 300 && (
-                <TouchableOpacity
-                  style={styles.seeMoreContainer}
-                  onPress={() => setShowFullDescription(!showFullDescription)}
-                >
-                  <Text style={styles.seeMoreText}>
-                    {showFullDescription ? "See Less" : "See More"}
-                  </Text>
-                  <Ionicons
-                    name={showFullDescription ? "chevron-up" : "chevron-forward"}
-                    size={16}
-                    color="#93210A"
-                    style={{ marginLeft: 4 }}
-                  />
-                </TouchableOpacity>
-              )}
-            </View>
-          ) : null}
+          <TouchableOpacity
+            onPress={async () => {
+              const nextLang = currentLang === "en" ? "ta" : "en";
+              setCurrentLang(nextLang);
+
+              const translated = await translateText(district.description, nextLang);
+              setTranslatedDescription(translated);
+            }}
+            style={{
+              flexDirection: "row",
+              alignItems: "center",
+              backgroundColor: "#93210A", // New modern blue
+              paddingVertical: 10,
+              paddingHorizontal: 14,
+              borderRadius: 12,
+              marginBottom: 10,
+              marginTop: 15,
+              marginLeft: 15,
+              alignSelf: "flex-start",
+              shadowColor: "#000",
+              shadowOpacity: 0.18,
+              shadowOffset: { width: 0, height: 2 },
+              shadowRadius: 4,
+              elevation: 3,
+            }}
+            activeOpacity={0.8}
+          >
+            <Ionicons
+              name="language"
+              size={18}
+              color="#fff"
+              style={{ marginRight: 6 }}
+            />
+            <Text style={{ color: "#fff", fontSize: 14, fontWeight: "600" }}>
+              {currentLang === "en" ? "Translate Tamil" : "Translate English"}
+            </Text>
+          </TouchableOpacity>
+
+
+
+
+          {/* 📝 Description */}
+     {district.description ? (
+      <View style={{ margin: 15 }}>
+
+        {/* Description Text with Expand/Collapse */}
+        <Text
+          style={styles.description}
+          numberOfLines={showFullDescription ? undefined : 4} // ⭐ IMPORTANT
+        >
+          {translatedDescription ? translatedDescription : district.description}
+        </Text>
+
+        {/* See More / See Less Button */}
+        {(translatedDescription.length > 300 ||
+          district.description.length > 300) && (
+          <TouchableOpacity
+            style={styles.seeMoreContainer}
+            onPress={() => setShowFullDescription(!showFullDescription)}
+          >
+            <Text style={styles.seeMoreText}>
+              {showFullDescription ? "See Less" : "See More"}
+            </Text>
+            <Ionicons
+              name={showFullDescription ? "chevron-up" : "chevron-forward"}
+              size={16}
+              color="#93210A"
+              style={{ marginLeft: 4 }}
+            />
+          </TouchableOpacity>
+        )}
+
+      </View>
+    ) : null}
+
 
          {/* 🆕 Full-screen centered Advertisement */}
           {adImages.length > 0 && (

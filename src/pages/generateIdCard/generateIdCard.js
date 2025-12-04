@@ -2,7 +2,6 @@
 import * as Print from "expo-print";
 import * as Sharing from "expo-sharing";
 import * as FileSystem from "expo-file-system/legacy";
-// import * as FileSystem from "expo-file-system";
 import { Asset } from "expo-asset";
 
 export async function generateIdCard(member) {
@@ -18,6 +17,20 @@ export async function generateIdCard(member) {
     convertAssetToBase64(require("../../../assets/idcard/sun.png")),
     convertAssetToBase64(require("../../../assets/fonts/impact.ttf")),
   ]);
+  const date = new Date();
+
+  const monthNames = [
+  "JAN", "FEB", "MAR", "APR", "MAY", "JUN",
+  "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"
+];
+
+const currentMonth = monthNames[date.getMonth()];         
+const currentYear = date.getFullYear();                   
+const nextYear = currentYear + 1;                         
+
+const validity = `${currentMonth} ${currentYear} - ${currentMonth} ${nextYear}`;
+
+
 
   const htmlContent = `
   <html>
@@ -65,7 +78,7 @@ export async function generateIdCard(member) {
         }
 
         .header-row img {
-          width: 250px;
+          width: 300px;
           height: auto;
           object-fit: contain;
           margin-top: 15px;
@@ -73,7 +86,7 @@ export async function generateIdCard(member) {
 
         .header-tamil { font-family: 'Impact'; font-size: 18px; font-weight: bold; margin-top: 5px; }
         .header-hindi { font-family: 'Impact'; font-size: 27px; word-spacing: 10px;}
-        .header-eng { font-family: 'Impact'; font-size: 20px; font-weight: bold; }
+        .header-eng { font-family: 'Impact'; font-size: 20px; }
 
         .main {
           text-align: center;
@@ -87,7 +100,9 @@ export async function generateIdCard(member) {
           border: 2px solid #e73200;
           margin: 5px auto;
           overflow: hidden;
+          background-color: #0a630aff;
           object-fit: cover;   /* Makes image fit perfectly */
+          background-color: transparent;
         }
         .profile-img img {
           width: 100%;
@@ -95,7 +110,7 @@ export async function generateIdCard(member) {
           object-fit: cover;
         }
 
-        .id-text { font-size: 13px;margin-bottom: 10px;font-family: 'Impact';color: #000000ff;  }
+        .id-text { font-size: 13px;margin-bottom: 10px;font-family: 'Impact';color: #000000ff;}
 
         .info-box { 
           width: 90%; 
@@ -127,22 +142,28 @@ export async function generateIdCard(member) {
 
         .reg { font-size: 12px;font-family: 'Impact'; color: #000000ff; text-align: left; margin-right: 10px; margin-top: 30px; }
 
-        .signature {
-          text-align: right;
-          margin-right: 10px;
-          margin-top: -47px;
-        }
+       .signature {
+      text-align: right;
+      margin-right: 10px;
+      margin-top: -14px;
+      position: relative; /* important */
+    }
 
-        .signature img {
-          width: 80px;
-          height: 35px;
-        }
+    .signature img {
+      width: 80px;
+      height: 35px;
+      position: absolute;   /* overlap */
+      top: -20px;            /* move image above text */
+      right: 0;
+    }
 
-        .sign-text {
-          font-size: 10px;
-          color: #e72828;
-          font-weight: bold;
-        }
+    .sign-text {
+      font-size: 10px;
+      color: #e72828;
+      font-weight: bold;
+      position: relative;
+      z-index: 1;            /* text stays below image */
+    }
 
        .underline-bar {
           width: 100%;
@@ -154,7 +175,7 @@ export async function generateIdCard(member) {
           background-color: #e73200ff;
           color: white;
           text-align: center;
-          padding: 25px 10px;
+          padding: 25px 5px;
           margin-top: 10px;
           width: 260px;
           height: 350px;
@@ -172,7 +193,7 @@ export async function generateIdCard(member) {
         }
 
         .symbol {
-          width: 150px;
+          width: 180px;
           height: 150px;
           margin-left: 40;
           margin-right: auto;
@@ -185,9 +206,9 @@ export async function generateIdCard(member) {
           color: #ffffff;
         }
 
-        .footer-title { font-family: 'Impact'; font-size: 16px; }
-        .footer-address { font-size: 11px; margin-top: 3px; line-height: 14px; }
-        .footer-email { font-size: 11px; margin-top: 3px; }
+        .footer-title { font-family: 'Impact'; font-size: 16px;margin-right:15px; }
+        .footer-address { font-size: 11px; margin-top: 3px; line-height: 14px;margin-right:12px; }
+        .footer-email { font-size: 11px; margin-top: 3px;margin-right:12px;}
 
       </style>
     </head>
@@ -219,7 +240,7 @@ export async function generateIdCard(member) {
             <div class="row"><div class="label">NAME</div><div class="value">: ${member.name}</div></div>
             <div class="row"><div class="label">S/O</div><div class="value">: ${member.fatherOrHusbandName}</div></div>
             <div class="row"><div class="label">DESIGNATION</div><div class="value">: ${member.designation}</div></div>
-            <div class="row"><div class="label">DISTRICT</div><div class="value">: ${member.district}</div></div>
+            <div class="row"><div class="label">DISTRICT</div><div class="value">: ${member.district.toUpperCase()}</div></div>
           </div>
 
           <div class="reg">Regd. No.: 152 / 2021</div>
@@ -235,7 +256,7 @@ export async function generateIdCard(member) {
         <div class="footer">
           <div class="extra-info">
 
-            <div class="row"><div class="label">Validity</div><div class="value">: JUNE’25 - JULY’26</div></div>
+            <div class="row"><div class="label">Validity</div><div class="value">:${validity}</div></div>
             <div class="row"><div class="label">Date of Birth</div><div class="value">: ${member.dob}</div></div>
             <div class="row"><div class="label">Blood Group</div><div class="value">: ${member.bloodGroup}</div></div>
             <div class="row"><div class="label">Contact No</div><div class="value">: ${member.contactDetails}</div></div>
@@ -254,7 +275,7 @@ export async function generateIdCard(member) {
 
           <div class="footer-address">
             2nd Floor, Sunrise Crystal Avenue,<br/>
-            Thadagam Road Somayampalayam,<br/>
+             Thadagam Road Somayampalayam,<br/>
             Coimbatore - 641 108.
           </div>
 

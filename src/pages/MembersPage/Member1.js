@@ -34,13 +34,13 @@ export default function Membership1() {
   const [dob, setDob] = useState("");
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [selectedDate, setSelectedDate] = useState(new Date());
-
   const [name, setName] = useState("");
   const [fatherName, setFatherName] = useState("");
   const [bloodGroup, setBloodGroup] = useState("");
-  const [address, setAddress] = useState("");          // <-- Address already here
+  const [address, setAddress] = useState("");          
   const [city, setCity] = useState("");
-  const [taluk, setTaluk] = useState("");
+  const [taluk, setTaluk] = useState("")
+  ;
   const [district, setDistrict] = useState(districtName || "");
   const [pin, setPin] = useState("");
   const [education, setEducation] = useState("");
@@ -121,6 +121,7 @@ export default function Membership1() {
     setContact(cleaned);
   }
 };
+
 const handlePinChange = (text) => {
   const cleaned = text.replace(/[^0-9]/g, "");
   if (cleaned.length <= 6) {
@@ -135,9 +136,6 @@ const handleEmailChange = (text) => {
 const handleAddressChange = (text) => {
   setAddress(text);
 };
-
-
-
 
   // ✅ Handle Submit
   const handleSubmit = async () => {
@@ -171,7 +169,7 @@ const handleAddressChange = (text) => {
         education: education.trim(),
         pin: Number(pin),
         familyMembers: Number(familyMembers),
-        age: Number(age),
+        age:23,
         email: email.trim(),
         contactDetails: contact.trim(),
         aadharNo: aadhaar.trim(),
@@ -289,19 +287,21 @@ const handleAddressChange = (text) => {
 
           {/* Form Inputs */}
           <Text style={styles.label}>Name:</Text>
-          <TextInput style={styles.input} value={name} onChangeText={setName} />
+          <TextInput style={styles.input} value={name} autoCapitalize="characters" onChangeText={(text)=>setName(text.toUpperCase())} />
 
           <Text style={styles.label}>Father / Husband Name:</Text>
           <TextInput
             style={styles.input}
             value={fatherName}
-            onChangeText={setFatherName}
+            autoCapitalize="characters"
+            onChangeText={(text)=>setFatherName(text.toUpperCase())}
           />
 
           <Text style={styles.label}>Blood Group:</Text>
           <TextInput
             style={styles.input}
             value={bloodGroup}
+            autoCapitalize="characters"
             onChangeText={setBloodGroup}
           />
 
@@ -328,19 +328,21 @@ const handleAddressChange = (text) => {
             style={[styles.input, { height: 70, textAlignVertical: "top" }]}
             multiline
             value={address}
-            onChangeText={handleAddressChange}
+            onChangeText={(text)=>handleAddressChange(text.toUpperCase())}
             placeholder="Door No / Street / Area"
+            autoCapitalize="characters"
           />
 
 
           <Text style={styles.label}>City/Town:</Text>
-          <TextInput style={styles.input} value={city} onChangeText={setCity} />
+          <TextInput style={styles.input} value={city} autoCapitalize="characters" onChangeText={(text)=>setCity(text.toUpperCase())} />
 
           <Text style={styles.label}>Taluk:</Text>
           <TextInput
             style={styles.input}
             value={taluk}
-            onChangeText={setTaluk}
+            onChangeText={(text)=>setTaluk(text.toUpperCase())}
+            autoCapitalize="characters"
           />
 
           <Text style={styles.label}>District:</Text>
@@ -363,7 +365,8 @@ const handleAddressChange = (text) => {
           <TextInput
             style={styles.input}
             value={education}
-            onChangeText={setEducation}
+            onChangeText={(text)=>setEducation(text.toLocaleUpperCase())}
+            autoCapitalize="characters"
           />
 
           <Text style={styles.label}>How many family members:</Text>
@@ -374,19 +377,14 @@ const handleAddressChange = (text) => {
             keyboardType="numeric"
           />
 
-          <Text style={styles.label}>Age:</Text>
-          <TextInput
-            style={styles.input}
-            value={age}
-            onChangeText={setAge}
-            keyboardType="numeric"
-          />
+         
 
           <Text style={styles.label}>Email:</Text>
           <TextInput
             style={styles.input}
             value={email}
             onChangeText={handleEmailChange}
+            
             keyboardType="email-address"
             placeholder="example@gmail.com"
           />
@@ -415,14 +413,16 @@ const handleAddressChange = (text) => {
             style={[styles.input, { height: 70, textAlignVertical: "top" }]}
             multiline
             value={professionalDetails}
-            onChangeText={setProfessionalDetails}
+            onChangeText={(text)=>setProfessionalDetails(text.toLocaleUpperCase())}
+            autoCapitalize="characters"
           />
 
           <Text style={styles.label}>Designation:</Text>
           <TextInput
             style={styles.input}
             value={designation}
-            onChangeText={setDesignation}
+            onChangeText={(text) => setDesignation(text.toUpperCase())}
+            autoCapitalize="characters"
           />
 
           <Text style={styles.label}>Experience:</Text>
