@@ -208,6 +208,7 @@ const handleAddressChange = (text) => {
 
       await sendIdCard(pdfUri);
 
+      
       navigation.goBack();
     } catch (err) {
       console.log("Error uploading:", err);

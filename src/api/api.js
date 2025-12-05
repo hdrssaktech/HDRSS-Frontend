@@ -278,9 +278,7 @@ export const sendIdCard = async (pdfUri) => {
       name: "idcard.pdf",
       type: "application/pdf",
     });
-
     formData.append("subject", "New HDRSS Member ID Card");
-
     const response = await fetch(
       "https://hdrss-backend.onrender.com/api/email/send-pdf",
       {
@@ -291,7 +289,6 @@ export const sendIdCard = async (pdfUri) => {
         body: formData,
       }
     );
-
     const result = await response.json();
     console.log("📧 Email send response:", result);
 

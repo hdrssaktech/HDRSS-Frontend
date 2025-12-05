@@ -70,16 +70,12 @@ export default function TownPage1() {
   const handleSelectTown = (item) => {
     setSearchText(item.townname);
     setSelectedTown(item);
-    setShowDropdown(false);
+     setTimeout(() => setShowDropdown(false), 100);
     Keyboard.dismiss();
   };
 const finalTownList =
   searchText.trim() !== ""
     ? filteredTowns // user searched → show filtered
-    : TownName.trim() !== ""
-    ? towns.filter(
-        (item) => (item.townname.toLowerCase().includes(TownName.toLowerCase()))
-      ) // from context
     : towns; // default full list
 
 
@@ -98,7 +94,7 @@ const finalTownList =
       <Text style={styles.heading}>
         {districtName ? `${districtName} - Towns` : "Towns"}
       </Text>
-
+      <View style={{ zIndex: 999, elevation: 999, position: "relative" }}></View>
       {/* 🔍 Search Bar */}
       <View style={styles.searchContainer}>
         <Ionicons
@@ -164,6 +160,7 @@ const finalTownList =
           </ScrollView>
         </View>
       )}
+      
 
       {/* 🏙 Selected Town */}
       {selectedTown ? (

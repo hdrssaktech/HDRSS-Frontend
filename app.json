@@ -17,6 +17,7 @@
       "predictiveBackGestureEnabled": false,
       "googleServicesFile": "./google-services.json",
       "package": "com.aktech.hdrss",
+      "networkSecurityConfig": "./network_security_config.xml",
       "permissions":[
         "INTERNET",
         "READ_EXTERNAL_STORAGE",
