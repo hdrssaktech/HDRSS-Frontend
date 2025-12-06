@@ -2,7 +2,6 @@ import React, { useContext } from "react";
 import { NavigationContainer } from "@react-navigation/native";
 import { createStackNavigator } from "@react-navigation/stack";
 import { AuthContext, AuthProvider } from "./context/AuthContext";
-
 // Import screens
 import Loginpage from "./pages/AuthPage/LoginPage";
 import Recovery from "./pages/AuthPage/RecoveryPage";
