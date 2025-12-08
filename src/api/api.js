@@ -2,6 +2,7 @@
 import axios from "axios";
 import * as FileSystem from "expo-file-system";
 import { Alert } from 'react-native';
+import NetInfo from '@react-native-community/netinfo';
 
 const BASE_URL = "https://hdrss-backend.onrender.com/api";
 // const BASE_URL = "http://192.168.1.3:5000/api"
@@ -272,6 +273,22 @@ export const createMember = async (memberData) => {
 
 export const sendIdCard = async (pdfUri) => {
   try {
+    // ✅ CHECK INTERNET CONNECTION FIRST
+    const netInfo = await NetInfo.fetch();
+    console.log("🌐 Network State:", netInfo);
+    console.log("🌐 Is Connected:", netInfo.isConnected);
+    console.log("🌐 Connection Type:", netInfo.type);
+    
+    if (!netInfo.isConnected) {
+      return {
+        success: false,
+        message: "No internet connection. Please check your network."
+      };
+    }
+
+    console.log("📨 Starting email send process...");
+    console.log("📨 PDF URI:", pdfUri);
+    
     const formData = new FormData();
     const fixedUri = pdfUri.startsWith("file://") ? pdfUri : "file://" + pdfUri;
     
@@ -282,11 +299,19 @@ export const sendIdCard = async (pdfUri) => {
     });
     formData.append("subject", "New HDRSS Member ID Card");
 
-    console.log("📨 Sending email with PDF:", fixedUri);
+    console.log("📨 FormData created with file:", fixedUri);
+    console.log("📨 API URL:", "https://hdrss-backend.onrender.com/api/email/send-pdf");
+    console.log("📨 About to make fetch request...");
 
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 60000);
+    const timeoutId = setTimeout(() => {
+      console.log("⏱️ TIMEOUT TRIGGERED - Request taking too long");
+      controller.abort();
+    }, 60000);
 
+    console.log("📨 Fetch request starting NOW...");
+    const fetchStartTime = Date.now();
+    
     const response = await fetch(
       "https://hdrss-backend.onrender.com/api/email/send-pdf",
       {
@@ -299,9 +324,12 @@ export const sendIdCard = async (pdfUri) => {
       }
     );
 
+    const fetchEndTime = Date.now();
+    console.log(`📨 Fetch completed in ${fetchEndTime - fetchStartTime}ms`);
     clearTimeout(timeoutId);
 
     console.log("📧 Response status:", response.status);
+    console.log("📧 Response headers:", JSON.stringify(response.headers));
     
     const responseText = await response.text();
     console.log("📧 Raw response:", responseText);
@@ -316,25 +344,31 @@ export const sendIdCard = async (pdfUri) => {
 
     console.log("📧 Email send response:", result);
 
-    // ✅ RETURN result instead of Alert
     return { 
       success: response.ok, 
       message: response.ok ? "The ID card has been emailed!" : (result.message || "Unable to send email.")
     };
     
   } catch (error) {
-    console.error("❌ Error sending email:", error);
+    console.error("❌ CATCH BLOCK - Error sending email:", error);
+    console.error("❌ Error name:", error.name);
+    console.error("❌ Error message:", error.message);
+    console.error("❌ Error stack:", error.stack);
     
-    // ✅ RETURN error instead of Alert
     if (error.name === 'AbortError') {
       return { 
         success: false, 
-        message: "Email sending is taking too long. Please check your internet connection and try again." 
+        message: "Email sending timeout after 60 seconds. Please check your internet connection." 
+      };
+    } else if (error.message.includes('Network request failed')) {
+      return { 
+        success: false, 
+        message: "Network request failed. Cannot reach server. Check if backend is running." 
       };
     } else {
       return { 
         success: false, 
-        message: `Failed to send the PDF email: ${error.message}` 
+        message: `Failed to send email: ${error.message}` 
       };
     }
   }
