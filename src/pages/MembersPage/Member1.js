@@ -205,14 +205,15 @@ const handleAddressChange = (text) => {
       });
 
       Alert.alert("✅ Success", "ID Card generated successfully!");
-
-      await sendIdCard(pdfUri);
-
-      
-      navigation.goBack();
+        const emailResult = await sendIdCard(pdfUri);
+        if (emailResult.success) {
+          Alert.alert("✅ Email Sent", emailResult.message || "The ID card has been emailed!");
+        } else {
+          Alert.alert("⚠️ Failed", emailResult.message || "Unable to send email.");
+        }
     } catch (err) {
       console.log("Error uploading:", err);
-      // Alert.alert("❌ Error", "Failed to submit form or generate ID card");
+      
     }
   };
   

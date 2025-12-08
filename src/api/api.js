@@ -273,24 +273,50 @@ export const sendIdCard = async (pdfUri) => {
   try {
     const formData = new FormData();
     const fixedUri = pdfUri.startsWith("file://") ? pdfUri : "file://" + pdfUri;
+    
     formData.append("file", {
       uri: fixedUri,
       name: "idcard.pdf",
       type: "application/pdf",
     });
-    console.log("📨 Sending email with PDF:", formData);
     formData.append("subject", "New HDRSS Member ID Card");
+
+    console.log("📨 Sending email with PDF:", fixedUri);
+    console.log("📨 API URL:", "https://hdrss-backend.onrender.com/api/email/send-pdf");
+
+    // ✅ Create abort controller for timeout
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 60000); // 60 seconds timeout
+
     const response = await fetch(
       "https://hdrss-backend.onrender.com/api/email/send-pdf",
       {
         method: "POST",
-        // headers: {
-        //   Accept: "application/json",
-        // },
+        headers: {
+          // ✅ DON'T set Content-Type for FormData - let browser set it with boundary
+          'Accept': 'application/json',
+        },
         body: formData,
+        signal: controller.signal, // ✅ Add timeout signal
       }
     );
-    const result = await response.json();
+
+    clearTimeout(timeoutId); // ✅ Clear timeout if request completes
+
+    console.log("📧 Response status:", response.status);
+    
+    // ✅ Log the raw response first
+    const responseText = await response.text();
+    console.log("📧 Raw response:", responseText);
+    
+    let result;
+    try {
+      result = JSON.parse(responseText);
+    } catch (e) {
+      console.error("Failed to parse response as JSON:", responseText);
+      throw new Error("Invalid server response");
+    }
+
     console.log("📧 Email send response:", result);
 
     if (response.ok) {
@@ -299,11 +325,17 @@ export const sendIdCard = async (pdfUri) => {
       Alert.alert("⚠️ Failed", result.message || "Unable to send email.");
     }
   } catch (error) {
-    console.error("Error sending email:", error);
-    Alert.alert("❌ Error", "Failed to send the PDF email.");
+    console.error("❌ Error sending email:", error);
+    console.error("❌ Error name:", error.name);
+    console.error("❌ Error message:", error.message);
+    
+    if (error.name === 'AbortError') {
+      Alert.alert("⏱️ Timeout", "Email sending is taking too long. Please check your internet connection and try again.");
+    } else {
+      Alert.alert("❌ Error", `Failed to send the PDF email: ${error.message}`);
+    }
   }
 };
-
 
 // src/API/ElectionAPI.js
 
