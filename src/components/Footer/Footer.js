@@ -1,36 +1,51 @@
 import React from "react";
-import { View, StyleSheet } from "react-native";
+import {
+  View,
+  StyleSheet,
+  useWindowDimensions,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { FontAwesome, MaterialCommunityIcons, MaterialIcons } from "@expo/vector-icons";
+import {
+  FontAwesome,
+  MaterialCommunityIcons,
+  MaterialIcons,
+} from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 
 export default function Footer() {
-  const navigation = useNavigation(); // ✅ grab navigation context
+  const navigation = useNavigation();
+  const { width } = useWindowDimensions();
+
+  // Tablet detection
+  const isTablet = width >= 700;
 
   return (
     <SafeAreaView edges={["bottom"]} style={styles.footerSafe}>
-      <View style={styles.navBar}>
+      <View style={[styles.navBar, isTablet && styles.navBarTablet]}>
         <FontAwesome
           name="home"
-          size={30}
+          size={isTablet ? 38 : 30}
           color="#fff"
           onPress={() => navigation.navigate("HomePage")}
         />
+
         <MaterialCommunityIcons
           name="cash-register"
-          size={30}
+          size={isTablet ? 38 : 30}
           color="#fff"
           onPress={() => navigation.navigate("CharitiePage1")}
         />
+
         <MaterialIcons
           name="chat"
-          size={28}
+          size={isTablet ? 36 : 28}
           color="#fff"
           onPress={() => navigation.navigate("ComplainPage1")}
         />
+
         <FontAwesome
           name="user-circle-o"
-          size={28}
+          size={isTablet ? 36 : 28}
           color="#fff"
           onPress={() => navigation.navigate("Profile")}
         />
@@ -43,10 +58,17 @@ const styles = StyleSheet.create({
   footerSafe: {
     backgroundColor: "#93210A",
   },
+
+  // 📱 Mobile
   navBar: {
     flexDirection: "row",
     justifyContent: "space-around",
     alignItems: "center",
-    paddingVertical: 20,
+    paddingVertical: 15,
+  },
+
+  // 📲 Tablet
+  navBarTablet: {
+    paddingVertical: 30,
   },
 });

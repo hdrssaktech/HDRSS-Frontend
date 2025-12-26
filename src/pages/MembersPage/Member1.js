@@ -138,84 +138,88 @@ const handleAddressChange = (text) => {
 };
 
   // ✅ Handle Submit
-  const handleSubmit = async () => {
-    if (!photo) {
-      Alert.alert("Error", "Please upload a photo.");
-      return;
-    }
+const handleSubmit = async () => {
+  console.warn("🔥 HANDLE SUBMIT CLICKED");
 
+  if (!photo) {
+    Alert.alert("Error", "Please upload a photo.");
+    return;
+  }
 
-    try {
-      const formData = new FormData();
-      formData.append("file", {
-        uri: photo,
-        name: "profile.jpg",
-        type: "image/jpeg",
-      });
+  try {
+    console.warn("📤 Uploading image");
 
-      const uploadRes = await uploadImage(formData);
-      const imageUrl = uploadRes.fileUrl;
+    const formData = new FormData();
+    formData.append("file", {
+      uri: photo,
+      name: "profile.jpg",
+      type: "image/jpeg",
+    });
 
-      const memberData = {
-        name: name.trim(),
-        image: imageUrl,
-        bloodGroup: bloodGroup.trim(),
-        fatherOrHusbandName: fatherName.trim(),
-        dob: dob.trim(),
-        residentialAddress: address.trim(),
-        cityTown: city.trim(),
-        district: district.trim(),
-        taluk: taluk.trim(),
-        education: education.trim(),
-        pin: Number(pin),
-        familyMembers: Number(familyMembers),
-        age:23,
-        email: email.trim(),
-        contactDetails: contact.trim(),
-        aadharNo: aadhaar.trim(),
-        professionalDetails: professionalDetails.trim(),
-        designation: designation.trim(),
-        experience: experience.trim(),
-      };
+    const uploadRes = await uploadImage(formData);
+    console.warn("✅ Image uploaded");
 
-      console.log("Member Data:", memberData);
+    const imageUrl = uploadRes.fileUrl;
 
-      const createRes = await createMember(memberData);
-      const memberId = createRes.member?.id || createRes.id;
-      const memberuniqueId = createRes.member?.uniqueId || createRes.uniqueId;
-      console.log(memberId);
-      console.log(memberuniqueId)
+    const memberData = {
+      name: name.trim(),
+      image: imageUrl,
+      bloodGroup: bloodGroup.trim(),
+      fatherOrHusbandName: fatherName.trim(),
+      dob: dob ? dob.trim() : null,
+      residentialAddress: address.trim(),
+      cityTown: city.trim(),
+      district: district?.trim(),
+      taluk: taluk.trim(),
+      education: education.trim(),
+      pin: pin ? pin.toString() : null,
+      familyMembers: Number(familyMembers),
+      age: 23,
+      email: email.trim(),
+      contactDetails: contact.trim(),
+      aadharNo: aadhaar.trim(),
+      professionalDetails: professionalDetails.trim(),
+      designation: designation.trim(),
+      experience: experience.trim(),
+    };
 
+    console.warn("📨 Creating member");
 
-      // Alert.alert("✅ Member Registered", "Generating ID Card...");
+    const createRes = await createMember(memberData);
+    const memberId = createRes.member?.id || createRes.id;
+    const memberuniqueId =
+      createRes.member?.uniqueId || createRes.uniqueId;
 
-      // 🪪 Generate PDF ID Card
-      const pdfUri = await generateIdCard({
-        name,
-        fatherOrHusbandName: fatherName,
-        designation,
-        district,
-        id: memberId,
-        image: imageUrl,
-        dob,
-        bloodGroup,
-        contactDetails: contact,
-        residentialAddress: address,  
-        uniqueId:memberuniqueId
-      });
+    console.warn("🆔 Member ID:", memberId);
 
-      Alert.alert("✅ Success", "ID Card generated successfully!");
-        const emailResult = await sendIdCard(pdfUri);
-        if (emailResult.success) {
-          Alert.alert("✅ Email Sent", emailResult.message || "The ID card has been emailed!");
-        } else {
-          Alert.alert("⚠️ Failed", emailResult.message || "Unable to send email.");
-        }
-    } catch (err) {
-      console.log("Error uploading:", err);
-      
-    }
-  };
+    const pdfUri = await generateIdCard({
+      name,
+      fatherOrHusbandName: fatherName,
+      designation,
+      district,
+      id: memberId,
+      image: imageUrl,
+      dob,
+      bloodGroup,
+      contactDetails: contact,
+      residentialAddress: address,
+      uniqueId: memberuniqueId,
+    });
+
+    console.warn("📄 PDF Generated:", pdfUri);
+
+    const emailResult = await sendIdCard(pdfUri);
+    console.warn("📧 Email result:", emailResult);
+
+    Alert.alert(
+      emailResult.success ? "Success" : "Failed",
+      emailResult.message
+    );
+  } catch (err) {
+    console.error("❌ HANDLE SUBMIT ERROR:", err);
+    Alert.alert("Error", err.message);
+  }
+};
   
 
   return (

@@ -70,7 +70,6 @@ export const createComplaint = async (complaintData) => {
 };
 
 
-
 import axios from "axios";
 
   export const fetchReviewsByComplaintId = async (complaintId) => {

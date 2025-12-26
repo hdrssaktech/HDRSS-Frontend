@@ -1,21 +1,56 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import Icon from 'react-native-vector-icons/MaterialIcons';
+import {forgotPasswordAPI} from '../../api/api'
 
 export default function Recovery({ navigation }) {
-  const [resetCode, setResetCode] = useState('');
+  const [resetCode, setResetCode] = useState(''); // phoneNumber
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+
+
+ const handleResetPassword = async () => {
+  if (!resetCode || !newPassword || !confirmPassword) {
+    Alert.alert("Error", "All fields are required");
+    return;
+  }
+
+  if (newPassword !== confirmPassword) {
+    Alert.alert("Error", "Passwords do not match");
+    return;
+  }
+
+  try {
+    setLoading(true);
+
+    await forgotPasswordAPI({
+      phoneNumber: resetCode,
+      password: newPassword,
+      confirmPassword,
+    });
+
+    Alert.alert("Success", "Password reset successful", [
+      {
+        text: "OK",
+        onPress: () => navigation.navigate("Login"),
+      },
+    ]);
+  } catch (error) {
+    Alert.alert("Error", error.message);
+  } finally {
+    setLoading(false);
+  }
+};
 
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Reset Password</Text>
 
-      {/* Card */}
       <View style={styles.card}>
         <View style={styles.inputRow}>
-        <Ionicons name="call-outline" size={20} color="#888" style={styles.icon} />
+          <Ionicons name="call-outline" size={20} color="#888" style={styles.icon} />
           <TextInput
             style={styles.input}
             placeholder="Mobile Number"
@@ -25,42 +60,60 @@ export default function Recovery({ navigation }) {
           />
         </View>
 
-        <View style={styles.inputRow}>
+         <View style={styles.inputRow}>
           <Ionicons name="lock-closed-outline" size={20} color="#888" style={styles.icon} />
+
           <TextInput
             style={styles.input}
             placeholder="New Password"
-            secureTextEntry
+            secureTextEntry={!showPassword}
             value={newPassword}
             onChangeText={setNewPassword}
           />
-        </View>
 
-        <View style={styles.inputRow}>
+          <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
+            <Ionicons
+              name={showPassword ? "eye-off-outline" : "eye-outline"}
+              size={20}
+              color="#888"
+            />
+          </TouchableOpacity>
+      </View>
+
+         <View style={styles.inputRow}>
           <Ionicons name="lock-closed-outline" size={20} color="#888" style={styles.icon} />
+
           <TextInput
             style={styles.input}
             placeholder="Confirm Password"
-            secureTextEntry
+            secureTextEntry={!showPassword}
             value={confirmPassword}
             onChangeText={setConfirmPassword}
           />
-        </View>
 
-        <TouchableOpacity style={styles.arrowButton} onPress={() => navigation.navigate("Login")
-        
-    
-        }>
+          <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
+            <Ionicons
+              name={showPassword ? "eye-off-outline" : "eye-outline"}
+              size={20}
+              color="#888"
+            />
+          </TouchableOpacity>
+      </View>
+
+        <TouchableOpacity
+          style={styles.arrowButton}
+          onPress={handleResetPassword}
+          disabled={loading}
+        >
           <Ionicons name="arrow-forward" size={20} color="#fff" />
         </TouchableOpacity>
       </View>
 
-      {/* Bottom Card */}
       <View style={styles.bottomCard}>
-        <Text style={styles.bottomText}>Don’t have an Account </Text>
+        <Text style={styles.bottomText}>Don’t have an Account</Text>
         <TouchableOpacity
           style={styles.LogInButton}
-          onPress={() => navigation.navigate('SigninPage')} 
+          onPress={() => navigation.navigate('SigninPage')}
         >
           <Text style={styles.LoginText}>SIGN IN</Text>
         </TouchableOpacity>
@@ -68,6 +121,7 @@ export default function Recovery({ navigation }) {
     </View>
   );
 }
+
 
 const styles = StyleSheet.create({
   container: {

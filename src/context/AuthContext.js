@@ -16,8 +16,6 @@ export function AuthProvider({ children }) {
       if (storedToken) {
         setToken(storedToken);
         setIsLoggedIn(true);
-
-        // Auto-load profile
         fetchUserProfile(storedToken);
       }
     };
@@ -50,8 +48,6 @@ export function AuthProvider({ children }) {
       await AsyncStorage.setItem("token", data.token);
       setToken(data.token);
       setIsLoggedIn(true);
-
-      // fetch profile after login
       fetchUserProfile(data.token);
 
       return true;
@@ -86,3 +82,4 @@ export function AuthProvider({ children }) {
     </AuthContext.Provider>
   );
 }
+

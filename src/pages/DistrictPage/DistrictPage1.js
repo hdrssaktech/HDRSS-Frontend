@@ -1,15 +1,15 @@
-// DistrictPage1.js
-import React, { useEffect, useState,useContext } from "react";
+
+import React, { useEffect, useState, useContext } from "react";
 import {
   View,
   Text,
   TouchableOpacity,
   StyleSheet,
   Image,
-  Dimensions,
   FlatList,
   ActivityIndicator,
   TextInput,
+  useWindowDimensions,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
@@ -18,24 +18,29 @@ import { LocationContext } from "../../context/LocationContext";
 
 export default function DistrictPage1() {
   const navigation = useNavigation();
+  const { locationName } = useContext(LocationContext);
+
   const [districts, setDistricts] = useState([]);
   const [filteredDistricts, setFilteredDistricts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showAll, setShowAll] = useState(false);
   const [searchText, setSearchText] = useState("");
 
-    const { locationName } = useContext(LocationContext);
-    // console.log("Current Location from Context:", locationName);
+  const { width } = useWindowDimensions();
 
-  const { width: screenWidth } = Dimensions.get("window");
-  const imageSize = screenWidth / 3 - 20;
+  // ✅ Tablet detection (works for Android & iPad)
+  const isTablet = width >= 600;
+
+  // ✅ Columns
+  const numColumns = isTablet ? 4 : 3;
+  const imageSize = width / numColumns - 20;
 
   useEffect(() => {
     const loadDistricts = async () => {
       try {
         const data = await getDistricts();
         setDistricts(data);
-        setFilteredDistricts(data); // Initialize filtered list
+        setFilteredDistricts(data);
       } catch (error) {
         console.error("Error fetching districts:", error);
       } finally {
@@ -45,7 +50,7 @@ export default function DistrictPage1() {
     loadDistricts();
   }, []);
 
-  // 🔍 Handle search filtering
+  // 🔍 Search filter
   const handleSearch = (text) => {
     setSearchText(text);
     if (text.trim() === "") {
@@ -58,10 +63,10 @@ export default function DistrictPage1() {
     }
   };
 
-  // Show either all or first 6
+  // Show more items on tablet
   const visibleDistricts = showAll
     ? filteredDistricts
-    : filteredDistricts.slice(0, 6);
+    : filteredDistricts.slice(0, isTablet ? 8 : 6);
 
   if (loading) {
     return (
@@ -72,57 +77,86 @@ export default function DistrictPage1() {
   }
 
   return (
-    <View style={{ flex: 1, padding: 10 }}>
-      <Text style={styles.heading}>Districts</Text>
+    <View style={styles.container}>
+      <Text style={[styles.heading, isTablet && styles.headingTablet]}>
+        Districts
+      </Text>
 
       {/* 🔍 Search Box */}
-    <View style={styles.searchContainer}>
-      <Ionicons name="search" size={20} color="#93210A" style={styles.searchIcon} />
-      <TextInput
-        style={styles.searchInput}
-        placeholder="Search district..."
-        placeholderTextColor="#999"
-        value={searchText}
-        onChangeText={handleSearch}
-      />
-      {searchText.length > 0 && (
-        <TouchableOpacity onPress={() => handleSearch("")}>
-          <Ionicons name="close-circle" size={20} color="#93210A" />
-        </TouchableOpacity>
-      )}
-    </View>
+      <View
+        style={[
+          styles.searchContainer,
+          isTablet && styles.searchContainerTablet,
+        ]}
+      >
+        <Ionicons name="search" size={22} color="#93210A" />
+        <TextInput
+          style={[styles.searchInput, isTablet && styles.searchInputTablet]}
+          placeholder="Search district..."
+          placeholderTextColor="#999"
+          value={searchText}
+          onChangeText={handleSearch}
+        />
+        {searchText.length > 0 && (
+          <TouchableOpacity onPress={() => handleSearch("")}>
+            <Ionicons name="close-circle" size={22} color="#93210A" />
+          </TouchableOpacity>
+        )}
+      </View>
 
-
-      {/* 🗺️ District List */}
+      {/* 🗺️ District Grid */}
       <FlatList
-        data={visibleDistricts.filter((item)=>
+        data={visibleDistricts.filter((item) =>
           locationName
             ? item.name.toLowerCase() === locationName.toLowerCase()
-            : visibleDistricts
+            : true
         )}
-        numColumns={3}
+        key={numColumns}                 // 🔥 REQUIRED
+        numColumns={numColumns}          // 🔥 4 on tablet
         keyExtractor={(item) => item.id.toString()}
         renderItem={({ item }) => (
           <TouchableOpacity
-            style={styles.card}
+            style={[
+              styles.card,
+              isTablet && styles.cardTablet,
+            ]}
             onPress={() =>
               navigation.navigate("DistrictPage2", { districtId: item.id })
             }
           >
             <Image
               source={{ uri: item.image }}
-              style={{ width: imageSize, height: imageSize, borderRadius: 8 }}
+              style={{
+                width: imageSize,
+                height: imageSize,
+                borderRadius: 15,
+              }}
             />
-            <Text style={styles.imageText}>{item.name}</Text>
+            <Text
+              style={[
+                styles.imageText,
+                isTablet && styles.imageTextTablet,
+              ]}
+            >
+              {item.name}
+            </Text>
           </TouchableOpacity>
         )}
         ListFooterComponent={
-          filteredDistricts.length > 6 && (
+          filteredDistricts.length > (isTablet ? 8 : 6) && (
             <TouchableOpacity
-              style={styles.toggleButton}
+              style={[
+                styles.toggleButton,
+                isTablet && styles.toggleButtonTablet,
+              ]}
               onPress={() => setShowAll(!showAll)}
             >
-              <Text style={styles.toggleButtonText}>
+              <Text
+                style={[
+                  styles.toggleButtonText,
+                  isTablet && styles.toggleButtonTextTablet,
+                ]}
+              >
                 {showAll ? "Show Less" : "Show All Districts"}
               </Text>
             </TouchableOpacity>
@@ -134,7 +168,18 @@ export default function DistrictPage1() {
 }
 
 const styles = StyleSheet.create({
-  center: { flex: 1, justifyContent: "center", alignItems: "center" },
+  container: {
+    flex: 1,
+    padding: 10,
+  },
+
+  center: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+
+  /* HEADING */
   heading: {
     fontSize: 22,
     fontWeight: "bold",
@@ -142,45 +187,70 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     marginLeft: 10,
   },
-searchContainer: {
-  flexDirection: "row",
-  alignItems: "center",
-  backgroundColor: "#fff",
-  borderRadius: 12,
-  paddingHorizontal: 12,
-  marginHorizontal: 10,
-  marginBottom: 15,
-  elevation: 4, // Android shadow
-  shadowColor: "#000", // iOS shadow
-  shadowOffset: { width: 0, height: 2 },
-  shadowOpacity: 0.1,
-  shadowRadius: 3,
-  height: 45,
-},
-searchIcon: {
-  marginRight: 8,
-},
-  searchInput: {
-  flex: 1,
-  fontSize: 15,
-  color: "#333",
-},
-  clearButton: {
-    fontSize: 18,
-    color: "#93210A",
-    padding: 4,
-    fontWeight: "bold",
+
+  headingTablet: {
+    fontSize: 28,
+    marginBottom: 15,
   },
-  card: {
+
+  /* SEARCH */
+  searchContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#fff",
+    borderRadius: 12,
+    paddingHorizontal: 12,
+    marginHorizontal: 10,
+    marginBottom: 15,
+    elevation: 4,
+    height: 45,
+  },
+
+  searchContainerTablet: {
+    height: 55,
+    marginBottom: 20,
+  },
+
+  searchInput: {
     flex: 1,
+    fontSize: 15,
+    marginLeft: 8,
+    color: "#333",
+  },
+
+  searchInputTablet: {
+    fontSize: 18,
+  },
+
+  /* CARD */
+  card: {
+   flex: 1,
     alignItems: "center",
     margin: 5,
     backgroundColor: "#fff",
-    borderRadius: 8,
-    padding: 5,
+    borderRadius: 10,
+    padding: 2,
     elevation: 2,
   },
-  imageText: { fontSize: 12, fontWeight: "bold", marginTop: 5 },
+
+  cardTablet: {
+    margin: 10,
+    padding: 5,
+    borderRadius: 14,
+    
+  },
+
+  imageText: {
+    fontSize: 12,
+    fontWeight: "bold",
+    marginTop: 6,
+  },
+
+  imageTextTablet: {
+    fontSize: 16,
+  },
+
+  /* BUTTON */
   toggleButton: {
     marginVertical: 15,
     backgroundColor: "#93210A",
@@ -189,9 +259,23 @@ searchIcon: {
     borderRadius: 8,
     alignSelf: "center",
   },
+
+  toggleButtonTablet: {
+    paddingVertical: 16,
+    paddingHorizontal: 30,
+  },
+
   toggleButtonText: {
     color: "white",
     fontWeight: "bold",
     fontSize: 14,
   },
+
+  toggleButtonTextTablet: {
+    fontSize: 18,
+  },
 });
+
+
+
+

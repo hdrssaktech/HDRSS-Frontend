@@ -1,8 +1,8 @@
 {
   "expo": {
     "name": "HDRSS",
-    "slug": "hdrssfrontent",
-    "owner": "hdrss",
+    "slug": "HDRSS",
+    "owner": "akhdrss",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
@@ -49,7 +49,7 @@
     },
     "extra": {
       "eas": {
-        "projectId": "d4fa1ae7-f0b8-4e5a-8db5-208815e3bc56"
+        "projectId": "24d6cf57-4668-4ea7-9c33-5358b6a9f983"
       }
     }
   }

@@ -14,6 +14,8 @@ export default function Loginpage() {
   const [expoPushToken, setExpoPushToken] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+
 
 
  async function registerForPushNotificationsAsync() {
@@ -131,14 +133,24 @@ async function sendLocalNotification() {
         {/* Password Input */}
         <View style={styles.inputRow}>
           <Ionicons name="lock-closed-outline" size={20} color="#888" style={styles.icon} />
+
           <TextInput
             style={styles.input}
             placeholder="Password"
-            secureTextEntry
+            secureTextEntry={!showPassword}
             value={password}
             onChangeText={setPassword}
           />
-        </View>
+
+          <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
+            <Ionicons
+              name={showPassword ? "eye-off-outline" : "eye-outline"}
+              size={20}
+              color="#888"
+            />
+          </TouchableOpacity>
+      </View>
+
 
         {/* Forgot Password */}
         <TouchableOpacity

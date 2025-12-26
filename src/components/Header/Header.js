@@ -1,12 +1,23 @@
 import React, { useRef, useEffect, useState } from "react";
-import { View, Text, StyleSheet, Image, TouchableOpacity, Animated } from "react-native";
+import {
+  View,
+  Text,
+  StyleSheet,
+  Image,
+  TouchableOpacity,
+  Animated,
+  useWindowDimensions,
+} from "react-native";
 import * as Font from "expo-font";
 
 export default function Header({ toggleSidebar }) {
   const rotateAnim = useRef(new Animated.Value(0)).current;
   const [fontLoaded, setFontLoaded] = useState(false);
+  const { width } = useWindowDimensions();
 
-  // ✅ Load the Impact font (lowercase file name)
+  const isTablet = width >= 600;
+
+  // Load Impact font
   useEffect(() => {
     (async () => {
       await Font.loadAsync({
@@ -16,7 +27,7 @@ export default function Header({ toggleSidebar }) {
     })();
   }, []);
 
-  // ✅ Start rotation animation
+  // Rotation animation
   useEffect(() => {
     Animated.loop(
       Animated.timing(rotateAnim, {
@@ -32,42 +43,100 @@ export default function Header({ toggleSidebar }) {
     outputRange: ["0deg", "360deg"],
   });
 
-  // ✅ Loading fallback
   if (!fontLoaded) {
     return (
-      <View style={{ flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: "#800000" }}>
+      <View style={styles.loader}>
         <Text style={{ color: "white" }}>Loading Impact font...</Text>
       </View>
     );
   }
 
-  // ✅ Main header UI
   return (
-    <View style={styles.header}>
+    <View style={[styles.header, isTablet && styles.headerTablet]}>
+      {/* Menu */}
       <TouchableOpacity onPress={toggleSidebar}>
-        <Text style={styles.menuIcon}>☰</Text>
+        <Text style={[styles.menuIcon, isTablet && styles.menuIconTablet]}>
+          ☰
+        </Text>
       </TouchableOpacity>
 
+      {/* Titles */}
       <View style={styles.titleContainer}>
-  <Text style={[styles.tamilText, { fontFamily: "Impact" }]}>இந்து தர்ம ரக்ஷ சேனா</Text>
-  <Text style={[styles.hinduText, { fontFamily: "Impact" }]}>हिन्दू धर्म रक्षा सेना</Text>
-  <Text style={[styles.englishText, { fontFamily: "Impact" }]}>HINDU DHARMA RAKSHA SENA</Text>
-</View>
+        <Text
+          style={[
+            styles.tamilText,
+            isTablet && styles.tamilTextTablet,
+          ]}
+        >
+          இந்து தர்ம ரக்ஷ சேனா
+        </Text>
 
+        <Text
+          style={[
+            styles.hinduText,
+            isTablet && styles.hinduTextTablet,
+          ]}
+        >
+          हिन्दू धर्म रक्षा सेना
+        </Text>
 
-      <View style={styles.orangeContainer}>
-        <View style={styles.logoBox} />
+        <Text
+          style={[
+            styles.englishText,
+            isTablet && styles.englishTextTablet,
+          ]}
+        >
+          HINDU DHARMA RAKSHA SENA
+        </Text>
+      </View>
+
+      {/* Logo Section */}
+      <View
+        style={[
+          styles.orangeContainer,
+          isTablet && styles.orangeContainerTablet,
+        ]}
+      >
+        <View
+          style={[
+            styles.logoBox,
+            isTablet && styles.logoBoxTablet,
+          ]}
+        />
+
         <View style={styles.sunWrapper}>
           <Animated.Image
             source={require("../../../assets/Header/sunoutline.png")}
-            style={[styles.sunRays, { transform: [{ rotate: spin }] }]}
+            style={[
+              styles.sunRays,
+              isTablet && styles.sunRaysTablet,
+              { transform: [{ rotate: spin }] },
+            ]}
           />
-          <Text style={styles.regNo}>REGD.NO: 152/2021</Text>
+
+          <Text
+            style={[
+              styles.regNo,
+              isTablet && styles.regNoTablet,
+            ]}
+          >
+            REGD.NO: 152/2021
+          </Text>
+
           <Image
             source={require("../../../assets/Header/sunlogo.png")}
-            style={styles.sunCenter}
+            style={[
+              styles.sunCenter,
+              isTablet && styles.sunCenterTablet,
+            ]}
           />
-          <View style={styles.whiteLine} />
+
+          <View
+            style={[
+              styles.whiteLine,
+              isTablet && styles.whiteLineTablet,
+            ]}
+          />
         </View>
       </View>
     </View>
@@ -75,28 +144,51 @@ export default function Header({ toggleSidebar }) {
 }
 
 const styles = StyleSheet.create({
+  loader: {
+    flex: 1,
+    backgroundColor: "#800000",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+
+  /* HEADER */
   header: {
     flexDirection: "row",
     alignItems: "center",
     backgroundColor: "#800000",
     paddingVertical: 30,
     paddingHorizontal: 10,
-    justifyContent: "space-between",
     borderBottomLeftRadius: 50,
     borderBottomRightRadius: 45,
   },
+
+  headerTablet: {
+    paddingVertical: 35,
+    borderBottomLeftRadius: 75,
+   
+  },
+
+  /* MENU */
   menuIcon: {
     fontSize: 20,
     color: "white",
     left: 9,
-    top: -30                                                                                                                                                              ,
+    top: -30,
   },
+
+  menuIconTablet: {
+    fontSize: 34,
+    top: -55,
+  },
+
+  /* TITLES */
   titleContainer: {
     flex: 1,
     alignItems: "center",
   },
+
   tamilText: {
-  color: "white",
+     color: "white",
   fontSize: 16,
   fontWeight: "800",
   fontFamily: "Impact",
@@ -104,10 +196,15 @@ const styles = StyleSheet.create({
   textAlign: "center",
    marginTop: 40,
    left:9,
-},
+  },
 
-hinduText: {
-  color: "white",
+  tamilTextTablet: {
+    fontSize: 25,
+    marginTop: 20,
+  },
+
+  hinduText: {
+   color: "white",
   fontSize: 17,
   fontWeight: "900",
   fontFamily: "Impact",
@@ -115,26 +212,42 @@ hinduText: {
   textAlign: "center",
   marginTop: 4,
    left:9,
-},
+  },
 
-englishText: {
-  color: "white",
+  hinduTextTablet: {
+    fontSize: 25,
+    letterSpacing: 6,
+  },
+
+  englishText: {
+    color: "white",
   fontSize: 17,
   fontWeight: "1200",
   fontFamily: "Impact",
   letterSpacing: -0,
   textAlign: "center",
   marginTop: 2,
- 
   left:9,
-},
+  },
+
+  englishTextTablet: {
+    fontSize: 27,
+  },
+
+  /* ORANGE CONTAINER */
   orangeContainer: {
-    position: "relative",
     width: 120,
     height: 120,
     alignItems: "center",
     justifyContent: "center",
   },
+
+  orangeContainerTablet: {
+    width: 170,
+    height: 170,
+  },
+
+  /* LOGO BOX */
   logoBox: {
     width: 100,
     height: 200,
@@ -143,6 +256,14 @@ englishText: {
     marginRight: 6,
     paddingLeft: 5,
   },
+
+  logoBoxTablet: {
+    width: 140,
+    height: 260,
+    right: -20,
+  },
+
+  /* REG NUMBER */
   regNo: {
     position: "absolute",
     top: 10,
@@ -151,6 +272,14 @@ englishText: {
     fontWeight: "bold",
     color: "#000",
   },
+
+  regNoTablet: {
+    fontSize: 12,
+    top: -40,
+    right: 10,
+  },
+
+  /* SUN */
   sunWrapper: {
     position: "absolute",
     alignItems: "center",
@@ -159,17 +288,33 @@ englishText: {
     bottom: -34,
     height: 159,
   },
+
   sunRays: {
     width: 100,
     height: 150,
     resizeMode: "contain",
   },
+
+  sunRaysTablet: {
+    width: 140,
+    height: 200,
+    bottom:24,
+  },
+
   sunCenter: {
     position: "absolute",
     width: 200,
     height: 67,
     resizeMode: "contain",
   },
+
+  sunCenterTablet: {
+    width: 260,
+    height: 98,
+    bottom:55,
+  },
+
+  /* WHITE LINE */
   whiteLine: {
     width: "100%",
     height: 2,
@@ -178,4 +323,24 @@ englishText: {
     bottom: -1,
     right: -3,
   },
+
+  whiteLineTablet: {
+    height: 3,
+    bottom: -2,
+  },
 });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,3 +1,162 @@
+// import React, { useEffect, useState } from "react";
+// import {
+//   View,
+//   Text,
+//   Image,
+//   ScrollView,
+//   StyleSheet,
+//   TouchableOpacity,
+//   ActivityIndicator,
+//   Dimensions,
+// } from "react-native";
+// import { SafeAreaView } from "react-native-safe-area-context";
+// import { Ionicons } from "@expo/vector-icons";
+// import { useNavigation } from "@react-navigation/native";
+// import { fetchStories } from "../../../Controller/StoriesController/StoriesController";
+
+// const { width } = Dimensions.get("window");
+// const CARD_SIZE = (width - 48) / 2; // spacing calculation
+
+// export default function StoryPage1() {
+//   const navigation = useNavigation();
+//   const [stories, setStories] = useState([]);
+//   const [loading, setLoading] = useState(true);
+
+//   useEffect(() => {
+//     const loadStories = async () => {
+//       try {
+//         const data = await fetchStories();
+//         setStories(data);
+//       } catch (error) {
+//         console.error("Error loading stories:", error);
+//       } finally {
+//         setLoading(false);
+//       }
+//     };
+//     loadStories();
+//   }, []);
+
+//   return (
+//     <SafeAreaView style={styles.safeArea}>
+//       {/* 🔹 Header */}
+//       <View style={styles.header}>
+//         <Ionicons
+//           name="chevron-back"
+//           size={26}
+//           color="#fff"
+//           onPress={() => navigation.goBack()}
+//           style={styles.backIcon}
+//         />
+//         <Text style={styles.title}>Stories</Text>
+//       </View>
+
+//       {/* 🔹 Content */}
+//       <ScrollView contentContainerStyle={styles.scrollContainer}>
+//         {loading ? (
+//           <ActivityIndicator
+//             size="large"
+//             color="#93210A"
+//             style={{ marginTop: 50 }}
+//           />
+//         ) : stories.length === 0 ? (
+//           <Text style={styles.emptyText}>No stories available.</Text>
+//         ) : (
+//           <View style={styles.cardRow}>
+//             {stories.map((story, index) => (
+//               <TouchableOpacity
+//                 key={index}
+//                 style={[
+//                   styles.card,
+//                   // ⬇ Extra space for bottom cards
+//                   index >= stories.length - 2 && { marginBottom: 60 },
+//                 ]}
+//                 onPress={() =>
+//                   navigation.navigate("StoryPage2", { storyItem: story })
+//                 }
+//               >
+//                 <Image source={{ uri: story.image }} style={styles.image} />
+//                 <Text style={styles.cardText}>{story.title}</Text>
+//               </TouchableOpacity>
+//             ))}
+//           </View>
+//         )}
+//       </ScrollView>
+//     </SafeAreaView>
+//   );
+// }
+
+// /* --- Styles --- */
+// const styles = StyleSheet.create({
+//   safeArea: {
+//     flex: 1,
+//     backgroundColor: "#fff",
+//   },
+//   header: {
+//     flexDirection: "row",
+//     alignItems: "center",
+//     backgroundColor: "#93210A",
+//     paddingVertical: 15,
+//     paddingHorizontal: 16,
+//   },
+//   backIcon: {
+//     marginRight: 10,
+//   },
+//   title: {
+//     fontSize: 20,
+//     color: "#fff",
+//     fontWeight: "bold",
+//   },
+//   scrollContainer: {
+//     paddingHorizontal: 16,
+//     paddingTop: 25, // ⬅ added extra top padding to push cards a bit lower
+//     paddingBottom: 50,
+//   },
+//   cardRow: {
+//     flexDirection: "row",
+//     flexWrap: "wrap",
+//     justifyContent: "space-between",
+//     paddingBottom: 30,
+//   },
+//   card: {
+//     width: CARD_SIZE,
+//     height: CARD_SIZE,
+//     backgroundColor: "#fff",
+//     borderRadius: 18,
+//     elevation: 3,
+//     shadowColor: "#000",
+//     shadowOpacity: 0.1,
+//     shadowOffset: { width: 0, height: 2 },
+//     shadowRadius: 3,
+//     marginBottom: 30, // ⬅ increased bottom space for all cards
+//     overflow: "hidden",
+//     alignItems: "center",
+//   },
+//   image: {
+//     width: "100%",
+//     height: "80%",
+//     resizeMode: "cover",
+//     borderRadius: 18,
+//   },
+//   cardText: {
+//     fontSize: 13,
+//     fontWeight: "600",
+//     color: "#333",
+//     textAlign: "center",
+//     paddingTop: 5,
+//   },
+//   emptyText: {
+//     fontSize: 16,
+//     color: "#93210A",
+//     textAlign: "center",
+//     marginTop: 40,
+//   },
+// });
+
+
+
+
+
+
 import React, { useEffect, useState } from "react";
 import {
   View,
@@ -7,20 +166,25 @@ import {
   StyleSheet,
   TouchableOpacity,
   ActivityIndicator,
-  Dimensions,
+  useWindowDimensions,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import { fetchStories } from "../../../Controller/StoriesController/StoriesController";
 
-const { width } = Dimensions.get("window");
-const CARD_SIZE = (width - 48) / 2; // spacing calculation
-
 export default function StoryPage1() {
   const navigation = useNavigation();
+  const { width } = useWindowDimensions();
+  const isTablet = width >= 600;
+
   const [stories, setStories] = useState([]);
   const [loading, setLoading] = useState(true);
+
+  // 🔹 Responsive card size
+  const CARD_SIZE = isTablet
+    ? (width - 64) / 2// 3 cards in tablet
+    : (width - 48) / 2; // 2 cards in mobile
 
   useEffect(() => {
     const loadStories = async () => {
@@ -38,19 +202,21 @@ export default function StoryPage1() {
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      {/* 🔹 Header */}
-      <View style={styles.header}>
+      {/* 🔹 HEADER */}
+      <View style={[styles.header, isTablet && styles.headerTablet]}>
         <Ionicons
           name="chevron-back"
-          size={26}
+          size={isTablet ? 32 : 26}
           color="#fff"
           onPress={() => navigation.goBack()}
           style={styles.backIcon}
         />
-        <Text style={styles.title}>Stories</Text>
+        <Text style={[styles.title, isTablet && styles.titleTablet]}>
+          Stories
+        </Text>
       </View>
 
-      {/* 🔹 Content */}
+      {/* 🔹 CONTENT */}
       <ScrollView contentContainerStyle={styles.scrollContainer}>
         {loading ? (
           <ActivityIndicator
@@ -67,15 +233,26 @@ export default function StoryPage1() {
                 key={index}
                 style={[
                   styles.card,
-                  // ⬇ Extra space for bottom cards
-                  index >= stories.length - 2 && { marginBottom: 60 },
+                  {
+                    width: CARD_SIZE,
+                    height: CARD_SIZE,
+                  },
                 ]}
                 onPress={() =>
-                  navigation.navigate("StoryPage2", { storyItem: story })
+                  navigation.navigate("StoryPage2", {
+                    storyItem: story,
+                  })
                 }
               >
                 <Image source={{ uri: story.image }} style={styles.image} />
-                <Text style={styles.cardText}>{story.title}</Text>
+                <Text
+                  style={[
+                    styles.cardText,
+                    isTablet && styles.cardTextTablet,
+                  ]}
+                >
+                  {story.title}
+                </Text>
               </TouchableOpacity>
             ))}
           </View>
@@ -85,12 +262,15 @@ export default function StoryPage1() {
   );
 }
 
-/* --- Styles --- */
+/* ================= STYLES ================= */
+
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
     backgroundColor: "#fff",
   },
+
+  /* 🔹 HEADER */
   header: {
     flexDirection: "row",
     alignItems: "center",
@@ -98,28 +278,44 @@ const styles = StyleSheet.create({
     paddingVertical: 15,
     paddingHorizontal: 16,
   },
+  headerTablet: {
+    paddingVertical: 35,
+    paddingHorizontal: 24,
+    marginTop:-28,
+  },
   backIcon: {
     marginRight: 10,
   },
-  title: {
-    fontSize: 20,
+
+ title: {
     color: "#fff",
-    fontWeight: "bold",
+    fontWeight: "700",
+    fontSize: 22, marginLeft: 65,
+    padding:8,
+   
+
   },
+
+  titleTablet: {
+    fontSize: 28,
+    padding:8,
+    left:125,
+  },
+
+  /* 🔹 CONTENT */
   scrollContainer: {
     paddingHorizontal: 16,
-    paddingTop: 25, // ⬅ added extra top padding to push cards a bit lower
+    paddingTop: 25,
     paddingBottom: 50,
   },
+
   cardRow: {
     flexDirection: "row",
     flexWrap: "wrap",
     justifyContent: "space-between",
-    paddingBottom: 30,
   },
+
   card: {
-    width: CARD_SIZE,
-    height: CARD_SIZE,
     backgroundColor: "#fff",
     borderRadius: 18,
     elevation: 3,
@@ -127,23 +323,29 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowOffset: { width: 0, height: 2 },
     shadowRadius: 3,
-    marginBottom: 30, // ⬅ increased bottom space for all cards
+    marginBottom: 30,
     overflow: "hidden",
     alignItems: "center",
   },
+
   image: {
     width: "100%",
     height: "80%",
     resizeMode: "cover",
-    borderRadius: 18,
   },
+
   cardText: {
     fontSize: 13,
     fontWeight: "600",
     color: "#333",
     textAlign: "center",
-    paddingTop: 5,
+    paddingTop: 6,
+    paddingHorizontal: 6,
   },
+  cardTextTablet: {
+    fontSize: 16,
+  },
+
   emptyText: {
     fontSize: 16,
     color: "#93210A",

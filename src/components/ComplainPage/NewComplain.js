@@ -1,5 +1,3 @@
-
-/// src/pages/ComplaintPage3.js
 import React, { useState } from "react";
 import {
   View,
@@ -11,13 +9,22 @@ import {
   Alert,
   Image,
   ActivityIndicator,
+  Dimensions,
+  SafeAreaView,
+  StatusBar,
+  Platform,
+  KeyboardAvoidingView,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { createComplaint } from "../../Controller/ComplaintController/ComplaintController";
 
-export default function ComplaintPage3({ navigation,route }) {
+const { width: screenWidth, height: screenHeight } = Dimensions.get("window");
+const isTablet = screenWidth >= 600;
+const isLargeTablet = screenWidth >= 1024;
+
+export default function ComplaintPage3({ navigation, route }) {
   const { districtName } = route.params || {};
   const [date, setDate] = useState(new Date());
   const [showDatePicker, setShowDatePicker] = useState(false);
@@ -73,11 +80,11 @@ export default function ComplaintPage3({ navigation,route }) {
 
       const res = await createComplaint(payload);
       Alert.alert("Success", "Complaint submitted successfully", [
-      {
-        text: "OK",
-        onPress: () => navigation.goBack(),
-      },
-    ]);
+        {
+          text: "OK",
+          onPress: () => navigation.goBack(),
+        },
+      ]);
     } catch (error) {
       console.error("Error submitting complaint:", error);
       Alert.alert("Error", "Something went wrong while submitting complaint");
@@ -86,149 +93,314 @@ export default function ComplaintPage3({ navigation,route }) {
     }
   };
 
+  // Remove single image
+  const removeImage = (index) => {
+    setImages(images.filter((_, i) => i !== index));
+  };
+
   return (
-    <View style={styles.container}>
-      {/* 🔴 Fixed Header */}
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()}>
-          <Ionicons name="chevron-back" size={26} color="#fff" />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>New Complaint</Text>
-      </View>
+    <SafeAreaView style={styles.safeArea}>
+      <StatusBar barStyle="light-content" backgroundColor="#93210A" />
+      
+      <KeyboardAvoidingView 
+        style={styles.keyboardAvoid}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+      >
+        <View style={styles.container}>
+          {/* 🔴 Header */}
+          <View style={[styles.header, isTablet && styles.headerTablet]}>
+            <TouchableOpacity 
+              style={styles.backButton} 
+              onPress={() => navigation.goBack()}
+              activeOpacity={0.7}
+            >
+              <Ionicons 
+                name="chevron-back" 
+                size={isTablet ? 30 : 26} 
+                color="#fff" 
+              />
+            </TouchableOpacity>
+            <Text style={[styles.headerTitle, isTablet && styles.headerTitleTablet]}>
+              New Complaint
+            </Text>
+            <View style={styles.rightPlaceholder} />
+          </View>
 
-      {/* Scrollable Content */}
-      <ScrollView style={styles.scrollArea} contentContainerStyle={{ paddingBottom: 40 }}>
-        <View style={styles.form}>
-          {/* Date */}
-          <Text style={styles.label}>Date</Text>
-          <TouchableOpacity onPress={() => setShowDatePicker(true)}>
-            <View style={[styles.input, styles.dateField]}>
-              <Ionicons name="calendar" size={20} color="#93210A" />
-              <Text style={styles.dateText}>{date.toLocaleDateString()}</Text>
-            </View>
-          </TouchableOpacity>
-
-          {showDatePicker && (
-            <DateTimePicker
-              value={date}
-              mode="date"
-              display="default"
-              onChange={handleDateChange}
-            />
-          )}
-
-          {/* Address */}
-          <Text style={styles.label}>Address</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="Enter address"
-            value={address}
-            onChangeText={setAddress}
-          />
-
-          {/* Title */}
-          <Text style={styles.label}>District</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="Enter complaint District"
-            value={title}
-            onChangeText={setTitle}
-             editable={false}
-          />
-
-          {/* Description */}
-          <Text style={styles.label}>Description</Text>
-          <TextInput
-            style={[styles.input, { height: 100, textAlignVertical: "top" }]}
-            placeholder="Enter detailed description about complain"
-            multiline
-            value={description}
-            onChangeText={setDescription}
-          />
-
-              {/* Upload Images */}
-          <Text style={styles.label}>Upload Images</Text>
-          <TouchableOpacity style={styles.uploadButton} onPress={pickImages}>
-            <Ionicons name="image" size={20} color="#fff" />
-            <Text style={styles.uploadText}>Choose Images</Text>
-          </TouchableOpacity>
-
-          {/* Preview Images with Remove Button */}
-          <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-            {images.map((img, idx) => (
-              <View key={idx} style={{ position: "relative", marginRight: 10 }}>
-                <Image source={{ uri: img }} style={styles.previewImage} />
-                <TouchableOpacity
-                  style={styles.removeButton}
-                  onPress={() => setImages(images.filter((_, i) => i !== idx))}
-                >
-                  <Ionicons name="close-circle" size={22} color="#93210A" />
-                </TouchableOpacity>
-              </View>
-            ))}
-          </ScrollView>
-
-          {/* Submit */}
-          <TouchableOpacity
-            style={styles.button}
-            onPress={handleSubmit}
-            disabled={loading}
+          {/* Scrollable Content */}
+          <ScrollView 
+            style={styles.scrollArea} 
+            contentContainerStyle={[
+              styles.scrollContent, 
+              isTablet && styles.scrollContentTablet
+            ]}
+            showsVerticalScrollIndicator={false}
+            keyboardShouldPersistTaps="handled"
           >
-            {loading ? (
-              <ActivityIndicator color="#fff" />
-            ) : (
-              <Text style={styles.buttonText}>Submit</Text>
-            )}
-          </TouchableOpacity>
+            <View style={[styles.form, isTablet && styles.formTablet]}>
+              {/* Date Field */}
+              <Text style={[styles.label, isTablet && styles.labelTablet]}>Date</Text>
+              <TouchableOpacity 
+                onPress={() => setShowDatePicker(true)}
+                activeOpacity={0.7}
+              >
+                <View style={[styles.input, styles.dateField, isTablet && styles.dateFieldTablet]}>
+                  <Ionicons 
+                    name="calendar" 
+                    size={isTablet ? 24 : 20} 
+                    color="#93210A" 
+                  />
+                  <Text style={[styles.dateText, isTablet && styles.dateTextTablet]}>
+                    {date.toLocaleDateString()}
+                  </Text>
+                </View>
+              </TouchableOpacity>
+
+              {showDatePicker && (
+                <DateTimePicker
+                  value={date}
+                  mode="date"
+                  display={isTablet ? "spinner" : "default"}
+                  onChange={handleDateChange}
+                />
+              )}
+
+              {/* Address Field */}
+              <Text style={[styles.label, isTablet && styles.labelTablet]}>Address</Text>
+              <TextInput
+                style={[styles.input, isTablet && styles.inputTablet]}
+                placeholder="Enter address"
+                placeholderTextColor="#999"
+                value={address}
+                onChangeText={setAddress}
+              />
+
+              {/* District Field (Read-only) */}
+              <Text style={[styles.label, isTablet && styles.labelTablet]}>District</Text>
+              <TextInput
+                style={[styles.input, isTablet && styles.inputTablet]}
+                placeholder="Enter complaint District"
+                placeholderTextColor="#999"
+                value={title}
+                onChangeText={setTitle}
+                editable={false}
+              />
+
+              {/* Description Field */}
+              <Text style={[styles.label, isTablet && styles.labelTablet]}>Description</Text>
+              <TextInput
+                style={[
+                  styles.input, 
+                  styles.textArea, 
+                  isTablet && styles.textAreaTablet
+                ]}
+                placeholder="Enter detailed description about complain"
+                placeholderTextColor="#999"
+                multiline
+                value={description}
+                onChangeText={setDescription}
+                numberOfLines={4}
+              />
+
+              {/* Upload Images Section */}
+              <Text style={[styles.label, isTablet && styles.labelTablet]}>Upload Images</Text>
+              <TouchableOpacity 
+                style={[styles.uploadButton, isTablet && styles.uploadButtonTablet]} 
+                onPress={pickImages}
+                activeOpacity={0.8}
+              >
+                <Ionicons 
+                  name="image" 
+                  size={isTablet ? 24 : 20} 
+                  color="#fff" 
+                />
+                <Text style={[styles.uploadText, isTablet && styles.uploadTextTablet]}>
+                  Choose Images
+                </Text>
+              </TouchableOpacity>
+
+              {/* Preview Images */}
+              {images.length > 0 && (
+                <View style={styles.previewContainer}>
+                  <Text style={[styles.previewTitle, isTablet && styles.previewTitleTablet]}>
+                    Selected Images ({images.length})
+                  </Text>
+                  <ScrollView 
+                    horizontal 
+                    showsHorizontalScrollIndicator={false}
+                    style={styles.previewScroll}
+                  >
+                    {images.map((img, idx) => (
+                      <View 
+                        key={idx} 
+                        style={[
+                          styles.imageContainer, 
+                          isTablet && styles.imageContainerTablet
+                        ]}
+                      >
+                        <Image 
+                          source={{ uri: img }} 
+                          style={[
+                            styles.previewImage, 
+                            isTablet && styles.previewImageTablet
+                          ]} 
+                        />
+                        <TouchableOpacity
+                          style={styles.removeButton}
+                          onPress={() => removeImage(idx)}
+                          activeOpacity={0.8}
+                        >
+                          <Ionicons name="close-circle" size={isTablet ? 26 : 22} color="#93210A" />
+                        </TouchableOpacity>
+                      </View>
+                    ))}
+                  </ScrollView>
+                </View>
+              )}
+
+              {/* Submit Button */}
+              <TouchableOpacity
+                style={[styles.button, isTablet && styles.buttonTablet]}
+                onPress={handleSubmit}
+                disabled={loading}
+                activeOpacity={0.8}
+              >
+                {loading ? (
+                  <ActivityIndicator color="#fff" size={isTablet ? "large" : "small"} />
+                ) : (
+                  <Text style={[styles.buttonText, isTablet && styles.buttonTextTablet]}>
+                    Submit Complaint
+                  </Text>
+                )}
+              </TouchableOpacity>
+            </View>
+          </ScrollView>
         </View>
-      </ScrollView>
-    </View>
+      </KeyboardAvoidingView>
+    </SafeAreaView>
   );
 }
 
-//  Styles
+// ============ STYLES ============
 const styles = StyleSheet.create({
+  // ============ BASE STYLES ============
+  safeArea: {
+    flex: 1,
+    backgroundColor: "#93210A",
+  },
+  keyboardAvoid: {
+    flex: 1,
+  },
   container: {
     flex: 1,
     backgroundColor: "#fff",
   },
-
-  // Fixed Header
+  
+  // ============ HEADER ============
+  // Mobile Header
   header: {
     backgroundColor: "#93210A",
-    padding: 16,
     flexDirection: "row",
     alignItems: "center",
-    marginVertical:34,
+    justifyContent: "space-between",
+    paddingHorizontal: 16,
+    paddingTop: Platform.OS === 'ios' ? 10 : 33,
+    paddingBottom: 15,
+    elevation: 4,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+  },
+  backButton: {
+    padding: 5,
   },
   headerTitle: {
     color: "#fff",
     fontSize: 18,
     fontWeight: "bold",
-    marginLeft: 10,
+    textAlign: 'center',
+    flex: 1,
   },
-
+  rightPlaceholder: {
+    width: 40,
+  },
+  
+  // Tablet Header
+  headerTablet: {
+    paddingHorizontal: 24,
+    paddingTop: Platform.OS === 'ios' ? 15 : 35,
+    paddingBottom: 20,
+  },
+  headerTitleTablet: {
+    fontSize: 24,
+  },
+  
+  // ============ SCROLL CONTENT ============
+  // Mobile Scroll
   scrollArea: {
     flex: 1,
   },
-
+  scrollContent: {
+    paddingBottom: 40,
+  },
+  
+  // Tablet Scroll
+  scrollContentTablet: {
+    paddingBottom: 60,
+  },
+  
+  // ============ FORM ============
+  // Mobile Form
   form: {
     padding: 20,
   },
+  
+  // Tablet Form
+  formTablet: {
+    paddingHorizontal: isLargeTablet ? 80 : 40,
+    paddingVertical: 30,
+  },
+  
+  // ============ LABELS ============
+  // Mobile Label
   label: {
     fontWeight: "bold",
     color: "#93210A",
-    marginBottom: 9,
-    fontSize: 16,
+    marginBottom: 8,
+    fontSize: 15,
   },
+  
+  // Tablet Label
+  labelTablet: {
+    fontSize: 18,
+    marginBottom: 10,
+  },
+  
+  // ============ INPUT FIELDS ============
+  // Mobile Input
   input: {
     borderWidth: 1,
     borderColor: "#93210A",
-    borderRadius: 8,
-    marginBottom: 15,
-    padding: 10,
-    fontSize: 14,
+    borderRadius: 10,
+    marginBottom: 20,
+    paddingHorizontal: 15,
+    paddingVertical: 12,
+    fontSize: 15,
+    color: "#333",
+    backgroundColor: "#fff",
   },
+  
+  // Tablet Input
+  inputTablet: {
+    fontSize: 17,
+    paddingVertical: 15,
+    paddingHorizontal: 20,
+    borderRadius: 12,
+    marginBottom: 25,
+  },
+  
+  // ============ DATE FIELD ============
+  // Mobile Date Field
   dateField: {
     flexDirection: "row",
     alignItems: "center",
@@ -236,40 +408,140 @@ const styles = StyleSheet.create({
   },
   dateText: {
     color: "#333",
-    fontSize: 14,
+    fontSize: 15,
   },
-
+  
+  // Tablet Date Field
+  dateFieldTablet: {
+    gap: 12,
+  },
+  dateTextTablet: {
+    fontSize: 17,
+  },
+  
+  // ============ TEXT AREA ============
+  // Mobile Text Area
+  textArea: {
+    height: 100,
+    textAlignVertical: "top",
+    paddingTop: 12,
+  },
+  
+  // Tablet Text Area
+  textAreaTablet: {
+    height: 140,
+    fontSize: 17,
+    paddingTop: 15,
+  },
+  
+  // ============ UPLOAD BUTTON ============
+  // Mobile Upload Button
   uploadButton: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
     backgroundColor: "#93210A",
-    padding: 12,
-    borderRadius: 8,
-    marginBottom: 10,
+    paddingVertical: 14,
+    borderRadius: 10,
+    marginBottom: 20,
+    elevation: 3,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 3,
   },
   uploadText: {
     color: "#fff",
     fontWeight: "bold",
-    marginLeft: 5,
+    marginLeft: 8,
+    fontSize: 15,
+  },
+  
+  // Tablet Upload Button
+  uploadButtonTablet: {
+    paddingVertical: 18,
+    borderRadius: 12,
+    marginBottom: 25,
+  },
+  uploadTextTablet: {
+    fontSize: 18,
+    marginLeft: 10,
+  },
+  
+  // ============ IMAGE PREVIEW ============
+  // Mobile Image Preview
+  previewContainer: {
+    marginBottom: 25,
+  },
+  previewTitle: {
+    color: "#93210A",
+    fontWeight: "600",
+    marginBottom: 10,
+    fontSize: 15,
+  },
+  previewScroll: {
+    flexDirection: 'row',
+  },
+  imageContainer: {
+    position: "relative",
+    marginRight: 12,
   },
   previewImage: {
     width: 100,
-    height: 80,
-    borderRadius: 8,
-    marginRight: 10,
-    marginTop: 5,
+    height: 90,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: "#ddd",
   },
+  removeButton: {
+    position: "absolute",
+    top: -8,
+    right: -8,
+    backgroundColor: "#fff",
+    borderRadius: 12,
+  },
+  
+  // Tablet Image Preview
+  previewTitleTablet: {
+    fontSize: 18,
+    marginBottom: 15,
+  },
+  imageContainerTablet: {
+    marginRight: 16,
+  },
+  previewImageTablet: {
+    width: 140,
+    height: 120,
+    borderRadius: 12,
+  },
+  
+  // ============ SUBMIT BUTTON ============
+  // Mobile Submit Button
   button: {
     backgroundColor: "#93210A",
-    borderRadius: 8,
-    padding: 10,
+    borderRadius: 10,
+    paddingVertical: 16,
     alignItems: "center",
-    marginTop: 15,
+    marginTop: 10,
+    elevation: 4,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
   },
   buttonText: {
     color: "#fff",
     fontWeight: "bold",
     fontSize: 16,
+  },
+  
+  // Tablet Submit Button
+  buttonTablet: {
+    borderRadius: 12,
+    paddingVertical: 20,
+    marginTop: 20,
+  },
+  buttonTextTablet: {
+    fontSize: 20,
   },
 });

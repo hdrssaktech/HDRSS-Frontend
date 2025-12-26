@@ -1,11 +1,9 @@
 // src/api/api.js
 import axios from "axios";
-import * as FileSystem from "expo-file-system";
-import { Alert } from 'react-native';
 import NetInfo from '@react-native-community/netinfo';
 
 const BASE_URL = "https://hdrss-backend.onrender.com/api";
-// const BASE_URL = "http://192.168.1.3:5000/api"
+// const BASE_URL = "http://192.168.1.13:5000/api"
 /* ---------------------------
    🧩 Common Fetch Wrapper
 ---------------------------- */
@@ -55,6 +53,23 @@ export const loginApi = async (userData) => {
     console.error("Login API Error:", error);
     throw error;
   }
+};
+export const forgotPasswordAPI = async (payload) => {
+  const response = await fetch(`${BASE_URL}/auth/forgot-password`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(payload),
+  });
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    throw new Error(data.error || "Something went wrong");
+  }
+
+  return data;
 };
 
 export const getProfileApi = async (token) => {
@@ -237,15 +252,11 @@ export const getComplaints = async (token) => {
 //     return [];
 //   }
 // };
-
-
-
-
 //import axios from "axios";
-
 //const BASE_URL = "https://hdrss-backend.onrender.com/api";
 
 // ✅ Get all members
+
 export const getMembers = async () => {
   try {
     const response = await axios.get(`${BASE_URL}/members`);
@@ -270,109 +281,61 @@ export const createMember = async (memberData) => {
   }
 };
 
-
 export const sendIdCard = async (pdfUri) => {
   try {
-    // ✅ CHECK INTERNET CONNECTION FIRST
+    console.warn("🔥 sendIdCard STARTED");
+
     const netInfo = await NetInfo.fetch();
-    console.log("🌐 Network State:", netInfo);
-    console.log("🌐 Is Connected:", netInfo.isConnected);
-    console.log("🌐 Connection Type:", netInfo.type);
-    
+    console.warn("🌐 Internet:", netInfo.isConnected);
+
     if (!netInfo.isConnected) {
       return {
         success: false,
-        message: "No internet connection. Please check your network."
+        message: "No internet connection",
       };
     }
 
-    console.log("📨 Starting email send process...");
-    console.log("📨 PDF URI:", pdfUri);
-    
     const formData = new FormData();
-    const fixedUri = pdfUri.startsWith("file://") ? pdfUri : "file://" + pdfUri;
-    
+    const fixedUri = pdfUri.startsWith("file://")
+      ? pdfUri
+      : "file://" + pdfUri;
+
     formData.append("file", {
       uri: fixedUri,
       name: "idcard.pdf",
       type: "application/pdf",
     });
+
     formData.append("subject", "New HDRSS Member ID Card");
 
-    console.log("📨 FormData created with file:", fixedUri);
-    console.log("📨 API URL:", "https://hdrss-backend.onrender.com/api/email/send-pdf");
-    console.log("📨 About to make fetch request...");
+    console.warn("📨 Sending request...");
 
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => {
-      console.log("⏱️ TIMEOUT TRIGGERED - Request taking too long");
-      controller.abort();
-    }, 60000);
-
-    console.log("📨 Fetch request starting NOW...");
-    const fetchStartTime = Date.now();
-    
     const response = await fetch(
       "https://hdrss-backend.onrender.com/api/email/send-pdf",
       {
         method: "POST",
-        headers: {
-          'Accept': 'application/json',
-        },
-        body: formData,
-        signal: controller.signal,
+        body: formData, // ❗ NO headers, NO signal
       }
     );
 
-    const fetchEndTime = Date.now();
-    console.log(`📨 Fetch completed in ${fetchEndTime - fetchStartTime}ms`);
-    clearTimeout(timeoutId);
+    console.warn("📧 Status:", response.status);
 
-    console.log("📧 Response status:", response.status);
-    console.log("📧 Response headers:", JSON.stringify(response.headers));
-    
-    const responseText = await response.text();
-    console.log("📧 Raw response:", responseText);
-    
-    let result;
-    try {
-      result = JSON.parse(responseText);
-    } catch (e) {
-      console.error("Failed to parse response as JSON:", responseText);
-      throw new Error("Invalid server response");
-    }
+    const text = await response.text();
+    console.warn("📧 Response:", text);
 
-    console.log("📧 Email send response:", result);
-
-    return { 
-      success: response.ok, 
-      message: response.ok ? "The ID card has been emailed!" : (result.message || "Unable to send email.")
+    return {
+      success: response.ok,
+      message: response.ok ? "Email sent" : text,
     };
-    
   } catch (error) {
-    console.error("❌ CATCH BLOCK - Error sending email:", error);
-    console.error("❌ Error name:", error.name);
-    console.error("❌ Error message:", error.message);
-    console.error("❌ Error stack:", error.stack);
-    
-    if (error.name === 'AbortError') {
-      return { 
-        success: false, 
-        message: "Email sending timeout after 60 seconds. Please check your internet connection." 
-      };
-    } else if (error.message.includes('Network request failed')) {
-      return { 
-        success: false, 
-        message: "Network request failed. Cannot reach server. Check if backend is running." 
-      };
-    } else {
-      return { 
-        success: false, 
-        message: `Failed to send email: ${error.message}` 
-      };
-    }
+    console.error("❌ sendIdCard error:", error);
+    return {
+      success: false,
+      message: error.message,
+    };
   }
 };
+
 
 // src/API/ElectionAPI.js
 

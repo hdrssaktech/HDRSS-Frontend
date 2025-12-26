@@ -67,6 +67,16 @@ import DistrictBusinessPage3 from "./pages/DistrictPage/DistrictBusiness/Distric
 import DistrictBusinessPage4 from "./pages/DistrictPage/DistrictBusiness/DistrictBusinessPage4.js";
 import DistrictBusinessPage0 from "./pages/DistrictPage/DistrictBusiness/DistrictBusinessPage0.js";
 import { LocationProvider } from "./context/LocationContext.js";
+import TownGovernmentPage1 from "./pages/DistrictPage/TownPage/BusinessCategory/TownGovernmentPage1.js";
+import TownGovernmentPage2 from "./pages/DistrictPage/TownPage/BusinessCategory/TownGovernmentPage2.js";
+import FamousPlaceDetails from "./pages/DistrictPage/TownPage/BusinessCategory/FamousPlace.js";
+import TouristSpotDetails from "./pages/DistrictPage/TownPage/BusinessCategory/TouristPlace.js";
+import PartiesPage3 from "./pages/DistrictPage/Parties/PartiesPage3.js";
+import PartiesPage4 from "./pages/DistrictPage/Parties/PartiesPage4.js";
+import TownPartiesCategory from "./pages/DistrictPage/TownPage/BusinessCategory/TownParties/TownPartiesCategory.js";
+import TownPartiesRoles from "./pages/DistrictPage/TownPage/BusinessCategory/TownParties/TownPartiesRole.js";
+import TownPartiesMember from "./pages/DistrictPage/TownPage/BusinessCategory/TownParties/TownPartiesMember.js";
+import TownPartiesMemdetails from "./pages/DistrictPage/TownPage/BusinessCategory/TownParties/TownPartiesMemdetails.js";
 
 
 const AuthStack = createStackNavigator();
@@ -147,6 +157,8 @@ function MainStackScreen() {
     <MainStack.Screen name="GovernmentPage2" component={withFooter(GovernmentPage2)}/>
     <MainStack.Screen name="Partiespage1" component={withFooter(PartiesPage1)}/>
     <MainStack.Screen name="Partiespage2" component={withFooter(PartiesPage2)}/> 
+    <MainStack.Screen name="Partiespage3" component={withFooter(PartiesPage3)}/> 
+    <MainStack.Screen name="Partiespage4" component={withFooter(PartiesPage4)}/>
     <MainStack.Screen name="TownPage1" component={withFooter(TownPage1)}/> 
     <MainStack.Screen name="TownPage2" component={withFooter(TownPage2)}/> 
     <MainStack.Screen name ="TownBusiness1" component={withFooter(TownBusinessPage)}/>
@@ -158,10 +170,17 @@ function MainStackScreen() {
     <MainStack.Screen name="DistrictBusinessPage2" component={withFooter(DistrictBusinessPage2)} />
     <MainStack.Screen name="DistrictBusinessPage3" component={withFooter(DistrictBusinessPage3)} />
     <MainStack.Screen name="DistrictBusinessPage4" component={withFooter(DistrictBusinessPage4)} />
-    </MainStack.Navigator> 
+    <MainStack.Screen name="TownGovernmentPage1" component={withFooter(TownGovernmentPage1)} />
+    <MainStack.Screen name="TownGovernmentPage2" component={withFooter(TownGovernmentPage2)} />
+    <MainStack.Screen name="TownParties" component={withFooter(TownPartiesRoles)} />
+    <MainStack.Screen name="TownPartiesCategory" component={withFooter(TownPartiesCategory)} />
+    <MainStack.Screen name="TownPartiesMember" component={withFooter(TownPartiesMember)} />
+    <MainStack.Screen name="TownPartiesMemberDetails" component={withFooter(TownPartiesMemdetails)} />
+    <MainStack.Screen name="FamousPlace" component={withFooter(FamousPlaceDetails)} />
+    <MainStack.Screen name="TouristPlace" component={withFooter(TouristSpotDetails)}/>
+    </MainStack.Navigator>
   );
 }
-
 // App decides stack based on context
 function RootNavigator() {
   const { isLoggedIn } = useContext(AuthContext);

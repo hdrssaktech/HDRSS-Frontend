@@ -1,3 +1,126 @@
+// // src/components/Gallery/GalleryFull.js
+// import React, { useEffect, useState } from "react";
+// import {
+//   View,
+//   Text,
+//   Image,
+//   StyleSheet,
+//   ScrollView,
+//   TouchableOpacity,
+//   ActivityIndicator,
+// } from "react-native";
+// import { useNavigation } from "@react-navigation/native";
+// import Icon from "react-native-vector-icons/Ionicons";
+// import { fetchGalleryList } from "../../Controller/GalleryController/GalleryController";
+
+// export default function GalleryFull() {
+//   const navigation = useNavigation();
+//   const [galleryList, setGalleryList] = useState([]);
+//   const [loading, setLoading] = useState(true);
+
+//   useEffect(() => {
+//     const loadData = async () => {
+//       const data = await fetchGalleryList();
+//       setGalleryList(data);
+//       setLoading(false);
+//     };
+//     loadData();
+//   }, []);
+
+//   if (loading) {
+//     return (
+//       <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+//         <ActivityIndicator size="large" color="#93210A" />
+//       </View>
+//     );
+//   }
+
+//   return (
+//     <View style={styles.container}>
+//       {/* Header with Chevron Navigation */}
+//       <View style={styles.header}>
+//         <TouchableOpacity
+//           onPress={() => navigation.goBack()} // ✅ goes back to previous screen
+//           style={styles.backBtn}
+//         >
+//           <Icon name="chevron-back" size={26} color="#fff" />
+//         </TouchableOpacity>
+
+//         <Text style={styles.headerTitle}>Gallery</Text>
+//         <View style={{ width: 30 }} /> {/* Spacer */}
+//       </View>
+
+//       {/* Gallery List */}
+//       <ScrollView
+//         showsVerticalScrollIndicator={false}
+//         contentContainerStyle={styles.scrollContainer}
+//       >
+//         {galleryList.map((item) => (
+//           <TouchableOpacity
+//             key={item.id}
+//             style={styles.card}
+//             onPress={() =>
+//               navigation.navigate("GalleryPage2", {
+//                 title: item.title,
+//                 mainImage: { uri: item.thumbnail },
+//                 description: item.description,
+//                 images: item.images,
+//                 videoLink: item.videoLink,
+//               })
+//             }
+//           >
+//             <Image source={{ uri: item.thumbnail }} style={styles.galleryimage} />
+//             <View style={styles.textBox}>
+//               <Text style={styles.imageLabel}>{item.title}</Text>
+//             </View>
+//           </TouchableOpacity>
+//         ))}
+//       </ScrollView>
+//     </View>
+//   );
+// }
+
+// const styles = StyleSheet.create({
+//   container: { flex: 1, backgroundColor: "#FAFAFA" },
+//   header: {
+//     backgroundColor: "#93210A",
+//     paddingTop: 50,
+//   padding: 25,
+//   alignItems: "center",
+//   justifyContent: "center",
+//   position: "relative",
+//   flexDirection: "row",
+//   },
+//  backBtn: {
+//   position: "absolute",
+//   left: 15,    // keep back button on left
+// },
+//   headerTitle: {
+//     flex: 1,
+//     textAlign: "center",
+//     fontSize: 22,
+//     fontWeight: "bold",
+//     color: "#fff",
+//     letterSpacing: 1,
+//     // marginRight: 178, // ✅ keeps title centered even with chevron
+//   },
+//   scrollContainer: { padding: 15 },
+//   card: {
+//     backgroundColor: "#fff",
+//     borderRadius: 12,
+//     marginBottom: 18,
+//     overflow: "hidden",
+//     elevation: 3,
+//   },
+//   galleryimage: { width: "100%", height: 200, resizeMode: "cover" },
+//   textBox: { padding: 12 },
+//   imageLabel: { fontSize: 20, fontWeight: "700", color: "#93210A" },
+// });
+
+
+
+
+
 // src/components/Gallery/GalleryFull.js
 import React, { useEffect, useState } from "react";
 import {
@@ -5,13 +128,20 @@ import {
   Text,
   Image,
   StyleSheet,
-  ScrollView,
+  FlatList,
   TouchableOpacity,
   ActivityIndicator,
+  Dimensions,
+  StatusBar,
+  Platform,
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import Icon from "react-native-vector-icons/Ionicons";
 import { fetchGalleryList } from "../../Controller/GalleryController/GalleryController";
+
+const { width, height } = Dimensions.get("window");
+const isTablet = width >= 600;
+const isLargeTablet = width >= 1024;
 
 export default function GalleryFull() {
   const navigation = useNavigation();
@@ -21,7 +151,7 @@ export default function GalleryFull() {
   useEffect(() => {
     const loadData = async () => {
       const data = await fetchGalleryList();
-      setGalleryList(data);
+      setGalleryList(data || []);
       setLoading(false);
     };
     loadData();
@@ -29,36 +159,56 @@ export default function GalleryFull() {
 
   if (loading) {
     return (
-      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+      <View style={styles.loader}>
         <ActivityIndicator size="large" color="#93210A" />
+        <Text style={[styles.loadingText, isTablet && styles.loadingTextTablet]}>
+          Loading Gallery...
+        </Text>
       </View>
     );
   }
 
   return (
     <View style={styles.container}>
-      {/* Header with Chevron Navigation */}
-      <View style={styles.header}>
+      <StatusBar barStyle="light-content" backgroundColor="#93210A" />
+      
+      {/* Header */}
+      <View style={[styles.header, isTablet && styles.headerTablet]}>
         <TouchableOpacity
-          onPress={() => navigation.goBack()} // ✅ goes back to previous screen
-          style={styles.backBtn}
+          onPress={() => navigation.goBack()}
+          style={[styles.backBtn, isTablet && styles.backBtnTablet]}
         >
-          <Icon name="chevron-back" size={26} color="#fff" />
+          <Icon 
+            name="chevron-back" 
+            size={isTablet ? 32 : 28} 
+            color="#fff" 
+          />
         </TouchableOpacity>
 
-        <Text style={styles.headerTitle}>Gallery</Text>
-        <View style={{ width: 30 }} /> {/* Spacer */}
+        <Text style={[styles.headerTitle, isTablet && styles.headerTitleTablet]}>
+          Gallery
+        </Text>
+        <View style={{ width: isTablet ? 40 : 28 }} />
       </View>
 
       {/* Gallery List */}
-      <ScrollView
+      <FlatList
+        data={galleryList}
+        key={isTablet ? "tablet-2col" : "mobile-1col"}
+        numColumns={isTablet ? 2 : 1} // 1 column on mobile, 2 columns on tablet
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={styles.scrollContainer}
-      >
-        {galleryList.map((item) => (
+        contentContainerStyle={[
+          styles.listContainer,
+          isTablet && styles.listContainerTablet
+        ]}
+        columnWrapperStyle={isTablet && styles.columnWrapper}
+        keyExtractor={(item, index) =>
+          item.id?.toString() || index.toString()
+        }
+        renderItem={({ item }) => (
           <TouchableOpacity
-            key={item.id}
-            style={styles.card}
+            style={[styles.card, isTablet && styles.cardTablet]}
+            activeOpacity={0.85}
             onPress={() =>
               navigation.navigate("GalleryPage2", {
                 title: item.title,
@@ -69,32 +219,97 @@ export default function GalleryFull() {
               })
             }
           >
-            <Image source={{ uri: item.thumbnail }} style={styles.galleryimage} />
-            <View style={styles.textBox}>
-              <Text style={styles.imageLabel}>{item.title}</Text>
+            <Image
+              source={{ uri: item.thumbnail }}
+              style={[styles.image, isTablet && styles.imageTablet]}
+              resizeMode="cover"
+            />
+
+            <View style={styles.overlay} />
+
+            <View style={[styles.textBox, isTablet && styles.textBoxTablet]}>
+              <Text
+                style={[styles.title, isTablet && styles.titleTablet]}
+                numberOfLines={1}
+              >
+                {item.title}
+              </Text>
+              {item.description && (
+                <Text 
+                  style={[styles.description, isTablet && styles.descriptionTablet]}
+                  numberOfLines={2}
+                >
+                  {item.description}
+                </Text>
+              )}
             </View>
           </TouchableOpacity>
-        ))}
-      </ScrollView>
+        )}
+      />
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#FAFAFA" },
+  // Container
+  container: {
+    flex: 1,
+    backgroundColor: "#FAFAFA",
+  },
+  
+  // Loading
+  loader: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#FAFAFA",
+  },
+  loadingText: {
+    marginTop: 12,
+    fontSize: 14,
+    color: "#93210A",
+    fontWeight: "600",
+  },
+  loadingTextTablet: {
+    fontSize: 16,
+    marginTop: 15,
+  },
+
+  // Header - Mobile (1 column)
   header: {
     backgroundColor: "#93210A",
-    paddingTop: 50,
-  padding: 25,
-  alignItems: "center",
-  justifyContent: "center",
-  position: "relative",
-  flexDirection: "row",
+    paddingTop: Platform.OS === 'ios' ? 50 : 40,
+    paddingBottom: 20,
+    paddingHorizontal: 16,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    elevation: 4,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
   },
- backBtn: {
-  position: "absolute",
-  left: 15,    // keep back button on left
-},
+  // Header - Tablet (2 columns)
+  headerTablet: {
+    paddingTop: Platform.OS === 'ios' ? 60 : 50,
+    paddingBottom: 25,
+    paddingHorizontal: 30,
+  },
+
+  // Back Button - Mobile
+  backBtn: {
+    padding: 8,
+    borderRadius: 20,
+    backgroundColor: "rgba(255,255,255,0.2)",
+  },
+  // Back Button - Tablet
+  backBtnTablet: {
+    padding: 10,
+    borderRadius: 25,
+  },
+
+  // Header Title - Mobile
   headerTitle: {
     flex: 1,
     textAlign: "center",
@@ -102,17 +317,105 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     color: "#fff",
     letterSpacing: 1,
-    // marginRight: 178, // ✅ keeps title centered even with chevron
   },
-  scrollContainer: { padding: 15 },
+  // Header Title - Tablet
+  headerTitleTablet: {
+    fontSize: 26,
+    letterSpacing: 1.2,
+  },
+
+  // List Container - Mobile (1 column)
+  listContainer: {
+    padding: 16,
+    paddingBottom: 30,
+  },
+  // List Container - Tablet (2 columns)
+  listContainerTablet: {
+    padding: 24,
+    paddingBottom: 40,
+  },
+
+  // Column Wrapper - Tablet only (2 columns)
+  columnWrapper: {
+    justifyContent: "space-between",
+    marginBottom: 24,
+  },
+
+  // Card - Mobile (1 column - full width)
   card: {
     backgroundColor: "#fff",
-    borderRadius: 12,
-    marginBottom: 18,
+    borderRadius: 16,
+    marginBottom: 20,
     overflow: "hidden",
-    elevation: 3,
+    elevation: 4,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.15,
+    shadowRadius: 6,
   },
-  galleryimage: { width: "100%", height: 200, resizeMode: "cover" },
-  textBox: { padding: 12 },
-  imageLabel: { fontSize: 20, fontWeight: "700", color: "#93210A" },
+  // Card - Tablet (2 columns - 48% width each)
+  cardTablet: {
+    width: "48%", // Each card takes 48% width for 2-column layout
+    marginBottom: 24,
+    borderRadius: 20,
+  },
+
+  // Image - Mobile (1 column)
+  image: {
+    width: "100%",
+    height: 220,
+  },
+  // Image - Tablet (2 columns)
+  imageTablet: {
+    height: 260,
+  },
+
+  // Overlay
+  overlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: "rgba(0,0,0,0.15)",
+  },
+
+  // Text Box - Mobile
+  textBox: {
+    position: "absolute",
+    bottom: 16,
+    left: 16,
+    right: 16,
+  },
+  // Text Box - Tablet
+  textBoxTablet: {
+    bottom: 20,
+    left: 20,
+    right: 20,
+  },
+
+  // Title - Mobile
+  title: {
+    fontSize: 18,
+    fontWeight: "700",
+    color: "#fff",
+    marginBottom: 4,
+    textShadowColor: "rgba(0,0,0,0.5)",
+    textShadowOffset: { width: 1, height: 1 },
+    textShadowRadius: 3,
+  },
+  // Title - Tablet
+  titleTablet: {
+    fontSize: 20,
+    marginBottom: 6,
+  },
+
+  // Description - Mobile
+  description: {
+    fontSize: 14,
+    color: "#f0f0f0",
+    textShadowColor: "rgba(0,0,0,0.5)",
+    textShadowOffset: { width: 1, height: 1 },
+    textShadowRadius: 2,
+  },
+  // Description - Tablet
+  descriptionTablet: {
+    fontSize: 15,
+  },
 });

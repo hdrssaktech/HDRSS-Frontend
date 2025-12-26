@@ -1,8 +1,12 @@
 // my code 
 import * as Print from "expo-print";
-import * as Sharing from "expo-sharing";
+// import * as Sharing from "expo-sharing";
 import * as FileSystem from "expo-file-system/legacy";
+// import { Asset } from "expo-asset";
+
+// import * as FileSystem from "expo-file-system";
 import { Asset } from "expo-asset";
+
 
 export async function generateIdCard(member) {
   // Convert all assets (images + font)
@@ -29,6 +33,13 @@ const currentYear = date.getFullYear();
 const nextYear = currentYear + 1;                         
 
 const validity = `${currentMonth} ${currentYear} - ${currentMonth} ${nextYear}`;
+
+
+
+
+const profileBase64 = member.image
+  ? await imageUrlToBase64(member.image)
+  : null;
 
 
 
@@ -228,11 +239,7 @@ const validity = `${currentMonth} ${currentYear} - ${currentMonth} ${nextYear}`;
 
         <div class="main">
           <div class="profile-img">
-            ${
-              member.image
-                ? `<img src="${member.image}" width="100%" height="100%" />`
-                : ""
-            }
+            ${profileBase64 ? `<img src="${profileBase64}" />` : ""}
           </div>
 
           <div class="id-text">ID NO : ${member.uniqueId || ""}</div>
@@ -298,13 +305,44 @@ const validity = `${currentMonth} ${currentYear} - ${currentMonth} ${nextYear}`;
     console.error("Error generating ID:", error);
   }
 }
+function getMimeType(name) {
+  if (name.endsWith(".ttf")) return "font/ttf";
+  if (name.endsWith(".png")) return "image/png";
+  return "image/jpeg";
+}
+
+async function imageUrlToBase64(url) {
+  try {
+    const fileUri = FileSystem.cacheDirectory + "profile.jpg";
+
+    await FileSystem.downloadAsync(url, fileUri);
+
+    const base64 = await FileSystem.readAsStringAsync(fileUri, {
+      encoding: FileSystem.EncodingType.Base64,
+    });
+
+    return `data:image/jpeg;base64,${base64}`;
+  } catch (err) {
+    console.error("Profile image base64 error:", err);
+    return null;
+  }
+}
 
 async function convertAssetToBase64(assetModule) {
   const asset = Asset.fromModule(assetModule);
   await asset.downloadAsync();
-  const base64 = await FileSystem.readAsStringAsync(asset.localUri, {
+
+  const cacheUri = FileSystem.cacheDirectory + asset.name;
+
+  await FileSystem.copyAsync({
+    from: asset.localUri,
+    to: cacheUri,
+  });
+
+  const base64 = await FileSystem.readAsStringAsync(cacheUri, {
     encoding: FileSystem.EncodingType.Base64,
   });
-  return `data:image/jpeg;base64,${base64}`;
+
+  return `data:${getMimeType(asset.name)};base64,${base64}`;
 }
 

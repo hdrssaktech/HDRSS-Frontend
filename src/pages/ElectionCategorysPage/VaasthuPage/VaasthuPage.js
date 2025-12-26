@@ -1,3 +1,253 @@
+// import React from "react";
+// import {
+//   View,
+//   Text,
+//   StyleSheet,
+//   ScrollView,
+//   Image,
+//   TouchableOpacity,
+//   PanResponder,
+// } from "react-native";
+// import { Ionicons } from "@expo/vector-icons";
+
+// export default function VaasthuPage({ navigation }) {
+//   // Swipe Gesture (for left swipe navigation)
+//   const panResponder = React.useRef(
+//     PanResponder.create({
+//       onMoveShouldSetPanResponder: (_, gestureState) => {
+//         return Math.abs(gestureState.dx) > 20; // detect horizontal swipe
+//       },
+//       onPanResponderRelease: (_, gestureState) => {
+//         if (gestureState.dx > 50) {
+//           // Swipe Right → Go Back
+//           navigation.goBack();
+//         }
+//       },
+//     })
+//   ).current;
+
+//   return (
+//     <View style={styles.container} {...panResponder.panHandlers}>
+//       {/* Header */}
+//       <View style={styles.header}>
+//         <TouchableOpacity
+//           style={styles.backButton}
+//           onPress={() => navigation.goBack()}
+//         >
+//           <Ionicons name="chevron-back" size={24} color="white" />
+//         </TouchableOpacity>
+//         <Text style={styles.headerTitle}>Vastu</Text>
+//       </View>
+
+//       <ScrollView contentContainerStyle={styles.scrollContent}>
+//         {/* Image */}
+//         <Image
+//           source={require("../../../../assets/Vaasthu/vastu.jpg")}
+//           style={styles.image}
+//           resizeMode="contain"
+//         />
+
+//         {/* Content */}
+//         <Text style={styles.mainTitle}>Important Vastu Tips for House</Text>
+
+//         <Text style={styles.subHeading}>1. Check the Shape of the Property</Text>
+//         <Text style={styles.paragraph}>
+//           An important Vastu tip for a new home is to check the shape of the
+//           room. According to Vastu, the shape of the room should always be
+//           rectangular or square. These shapes are considered auspicious and
+//           ensure the smooth flow and balance of energy. If some of the rooms are
+//           irregular in shape, consider adding plants to correct the energy flow.
+//         </Text>
+
+//         <Text style={styles.subHeading}>
+//           2. Check the Orientation & Entrance of Property
+//         </Text>
+//         <Text style={styles.paragraph}>
+//           Property orientation is crucial in Vastu Shastra. It dictates the
+//           directional energies that interact with your home. Ideally, a property
+//           should have its main entrance facing north, east, or northeast. These
+//           directions are considered highly auspicious and bring prosperity,
+//           health, and positivity.
+//         </Text>
+
+//         <Text style={styles.subHeading}>3. Vastu tips for Living Room</Text>
+//         <Text style={styles.paragraph}>
+//           The living room should ideally be located in the north, east or
+//           northeast direction. Keep the living room clutter-free. You can use
+//           light colour paints like whites, creams and pastels to maintain a
+//           light and airy feel. The decor and paint must evoke happy emotions.
+//           Additionally, you can also add green plants to bring in an aura of
+//           positivity. Keep the furniture in the west or southwest direction. If
+//           you want to keep the mirror in the living room, place it on the north
+//           wall.
+//         </Text>
+
+//         <Text style={styles.subHeading}>4. Vastu Tips for Kitchen</Text>
+//         <Text style={styles.paragraph}>
+//           Ideally, the kitchen should be placed in the southeast direction of
+//           the house. Use yellow, orange, or red colors for the walls, as they
+//           are auspicious and enhance the fire element. There should be optimum
+//           ventilation in the kitchen to keep it clear and free from negative
+//           energy. The stove should be placed in the southeast direction. Keep in
+//           mind that water and fire are two distinct elements. Hence, never keep
+//           the gas stove and water sink on the same platform.
+//         </Text>
+
+//         <Text style={styles.subHeading}>5. Vastu Tip for Bathroom</Text>
+//         <Text style={styles.paragraph}>
+//           According to Vastu, a bathroom in the north or northwest part is the
+//           most favourable. Avoid having bathrooms directly facing the kitchen or
+//           the main entrance as it can disrupt the flow of positive energy. The
+//           toilet should face north-south and should not be located in the
+//           northeast or southwest corners. Ensure that the bathroom doors are
+//           always kept closed to prevent negative energies from spreading to
+//           other areas. Use light and soothing colours like pastels for walls to
+//           create a calming effect. Keep a check on taps, flush and showers, and
+//           ensure that they are leak-free. Use a wooden door for your bathroom
+//           instead of a metallic door.
+//         </Text>
+
+//         {/* Table Section */}
+//         <View style={styles.table}>
+//           {/* Table Header */}
+//           <View style={[styles.row, styles.headerRow]}>
+//             <Text style={[styles.cell, styles.headerCell, styles.leftCell]}>
+//               அடி கணக்கு
+//             </Text>
+//             <Text style={[styles.cell, styles.headerCell, styles.rightCell]}>
+//               பலன்கள்
+//             </Text>
+//           </View>
+
+//           {/* Table Rows */}
+//           <View style={styles.row}>
+//             <Text style={[styles.cell, styles.leftCell]}>6 அடி</Text>
+//             <Text style={[styles.cell, styles.rightCell]}>நல்லது தரும்.</Text>
+//           </View>
+//           <View style={styles.row}>
+//             <Text style={[styles.cell, styles.leftCell]}>7 அடி</Text>
+//             <Text style={[styles.cell, styles.rightCell]}>தனிதிரம் பெறும்.</Text>
+//           </View>
+//           <View style={styles.row}>
+//             <Text style={[styles.cell, styles.leftCell]}>8 அடி</Text>
+//             <Text style={[styles.cell, styles.rightCell]}>
+//               மிகவும் பாக்கியம் உண்டாகும்.
+//             </Text>
+//           </View>
+//           <View style={styles.row}>
+//             <Text style={[styles.cell, styles.leftCell]}>9 அடி</Text>
+//             <Text style={[styles.cell, styles.rightCell]}>
+//               ஆயுள் குறையும், சுகவீனம் உண்டாகும்.
+//             </Text>
+//           </View>
+//           <View style={styles.row}>
+//             <Text style={[styles.cell, styles.leftCell]}>10 அடி</Text>
+//             <Text style={[styles.cell, styles.rightCell]}>
+//               ஆடுமாடுகள் முதலானவைச் செழிக்கும்.
+//             </Text>
+//           </View>
+//           <View style={styles.row}>
+//             <Text style={[styles.cell, styles.leftCell]}>11 அடி</Text>
+//             <Text style={[styles.cell, styles.rightCell]}>
+//               பிள்ளைப்பேறு உண்டாகும்.
+//             </Text>
+//           </View>
+//           <View style={styles.row}>
+//             <Text style={[styles.cell, styles.leftCell]}>12 அடி</Text>
+//             <Text style={[styles.cell, styles.rightCell]}>தனிதிரம் பெறும்.</Text>
+//           </View>
+//           <View style={styles.row}>
+//             <Text style={[styles.cell, styles.leftCell]}>13 அடி</Text>
+//             <Text style={[styles.cell, styles.rightCell]}>நல்லது தரும்.</Text>
+//           </View>
+//         </View>
+//       </ScrollView>
+//     </View>
+//   );
+// }
+
+// const styles = StyleSheet.create({
+//   container: { flex: 1, backgroundColor: "#fff" },
+
+//   header: {
+//     flexDirection: "row",
+//     alignItems: "center",
+//     padding: 15,
+//     marginTop: 32,
+//     backgroundColor: "#93210A",
+//   },
+//   backButton: {
+//     marginRight: 10,
+//   },
+//   headerTitle: {
+//     color: "white",
+//     fontSize: 20,
+//     fontWeight: "bold",
+//   },
+
+//   scrollContent: {
+//     padding: 15,
+//     // ✅ removed bottom padding to avoid extra space
+//   },
+//   image: {
+//     width: "100%",
+//     height: 180,
+//     marginBottom: 15,
+//   },
+//   mainTitle: {
+//     fontSize: 18,
+//     fontWeight: "bold",
+//     marginBottom: 12,
+//   },
+//   subHeading: {
+//     fontSize: 16,
+//     fontWeight: "bold",
+//     color: "#A93226",
+//     marginBottom: 6,
+//   },
+//   paragraph: {
+//     fontSize: 14,
+//     color: "#333",
+//     marginBottom: 15,
+//     lineHeight: 20,
+//   },
+
+//   /* Table Styles */
+//   table: {
+//     marginTop: 20,
+//     borderWidth: 1,
+//     borderColor: "#A93226",
+//   },
+//   row: {
+//     flexDirection: "row",
+//     borderBottomWidth: 1,
+//     borderColor: "#A93226",
+//   },
+//   headerRow: {
+//     backgroundColor: "#ffffffff",
+//   },
+//   cell: {
+//     flex: 1,
+//     padding: 10,
+//     fontSize: 14,
+//     color: "#333",
+//     textAlign: "center",
+//   },
+//   headerCell: {
+//     color: "black", // updated to black
+//     fontWeight: "bold",
+//   },
+//   leftCell: {
+//     borderRightWidth: 1,
+//     borderRightColor: "#A93226",
+//   },
+//   rightCell: {
+//     flex: 2, // gives more space for long text
+//   },
+// });
+
+
+
 import React from "react";
 import {
   View,
@@ -7,109 +257,104 @@ import {
   Image,
   TouchableOpacity,
   PanResponder,
+  useWindowDimensions,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 
 export default function VaasthuPage({ navigation }) {
-  // Swipe Gesture (for left swipe navigation)
+  const { width } = useWindowDimensions();
+  const isTablet = width >= 600;
+
+  // Swipe Gesture
   const panResponder = React.useRef(
     PanResponder.create({
-      onMoveShouldSetPanResponder: (_, gestureState) => {
-        return Math.abs(gestureState.dx) > 20; // detect horizontal swipe
-      },
+      onMoveShouldSetPanResponder: (_, gestureState) =>
+        Math.abs(gestureState.dx) > 20,
       onPanResponderRelease: (_, gestureState) => {
-        if (gestureState.dx > 50) {
-          // Swipe Right → Go Back
-          navigation.goBack();
-        }
+        if (gestureState.dx > 50) navigation.goBack();
       },
     })
   ).current;
 
   return (
-    <View style={styles.container} {...panResponder.panHandlers}>
+    <View
+      style={[styles.container, isTablet && styles.containerTablet]}
+      {...panResponder.panHandlers}
+    >
       {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity
-          style={styles.backButton}
-          onPress={() => navigation.goBack()}
-        >
-          <Ionicons name="chevron-back" size={24} color="white" />
+      <View style={[styles.header, isTablet && styles.headerTablet]}>
+        <TouchableOpacity onPress={() => navigation.goBack()}>
+          <Ionicons
+            name="chevron-back"
+            size={isTablet ? 32 : 24}
+            color="white"
+          />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Vastu</Text>
+        <Text style={[styles.headerTitle, isTablet && styles.headerTitleTablet]}>
+          Vastu
+        </Text>
       </View>
 
-      <ScrollView contentContainerStyle={styles.scrollContent}>
+      <ScrollView
+        contentContainerStyle={[
+          styles.scrollContent,
+          isTablet && styles.scrollContentTablet,
+        ]}
+      >
         {/* Image */}
         <Image
           source={require("../../../../assets/Vaasthu/vastu.jpg")}
-          style={styles.image}
+          style={[styles.image, isTablet && styles.imageTablet]}
           resizeMode="contain"
         />
 
         {/* Content */}
-        <Text style={styles.mainTitle}>Important Vastu Tips for House</Text>
-
-        <Text style={styles.subHeading}>1. Check the Shape of the Property</Text>
-        <Text style={styles.paragraph}>
-          An important Vastu tip for a new home is to check the shape of the
-          room. According to Vastu, the shape of the room should always be
-          rectangular or square. These shapes are considered auspicious and
-          ensure the smooth flow and balance of energy. If some of the rooms are
-          irregular in shape, consider adding plants to correct the energy flow.
+        <Text style={[styles.mainTitle, isTablet && styles.mainTitleTablet]}>
+          Important Vastu Tips for House
         </Text>
 
-        <Text style={styles.subHeading}>
+        <Text style={[styles.subHeading, isTablet && styles.subHeadingTablet]}>
+          1. Check the Shape of the Property
+        </Text>
+        <Text style={[styles.paragraph, isTablet && styles.paragraphTablet]}>
+          An important Vastu tip for a new home is to check the shape of the room.
+          According to Vastu, the shape of the room should always be rectangular
+          or square...
+        </Text>
+
+        <Text style={[styles.subHeading, isTablet && styles.subHeadingTablet]}>
           2. Check the Orientation & Entrance of Property
         </Text>
-        <Text style={styles.paragraph}>
-          Property orientation is crucial in Vastu Shastra. It dictates the
-          directional energies that interact with your home. Ideally, a property
-          should have its main entrance facing north, east, or northeast. These
-          directions are considered highly auspicious and bring prosperity,
-          health, and positivity.
+        <Text style={[styles.paragraph, isTablet && styles.paragraphTablet]}>
+          Property orientation is crucial in Vastu Shastra. Ideally, a property
+          should have its main entrance facing north, east, or northeast...
         </Text>
 
-        <Text style={styles.subHeading}>3. Vastu tips for Living Room</Text>
-        <Text style={styles.paragraph}>
+        <Text style={[styles.subHeading, isTablet && styles.subHeadingTablet]}>
+          3. Vastu tips for Living Room
+        </Text>
+        <Text style={[styles.paragraph, isTablet && styles.paragraphTablet]}>
           The living room should ideally be located in the north, east or
-          northeast direction. Keep the living room clutter-free. You can use
-          light colour paints like whites, creams and pastels to maintain a
-          light and airy feel. The decor and paint must evoke happy emotions.
-          Additionally, you can also add green plants to bring in an aura of
-          positivity. Keep the furniture in the west or southwest direction. If
-          you want to keep the mirror in the living room, place it on the north
-          wall.
+          northeast direction...
         </Text>
 
-        <Text style={styles.subHeading}>4. Vastu Tips for Kitchen</Text>
-        <Text style={styles.paragraph}>
-          Ideally, the kitchen should be placed in the southeast direction of
-          the house. Use yellow, orange, or red colors for the walls, as they
-          are auspicious and enhance the fire element. There should be optimum
-          ventilation in the kitchen to keep it clear and free from negative
-          energy. The stove should be placed in the southeast direction. Keep in
-          mind that water and fire are two distinct elements. Hence, never keep
-          the gas stove and water sink on the same platform.
+        <Text style={[styles.subHeading, isTablet && styles.subHeadingTablet]}>
+          4. Vastu Tips for Kitchen
+        </Text>
+        <Text style={[styles.paragraph, isTablet && styles.paragraphTablet]}>
+          Ideally, the kitchen should be placed in the southeast direction...
         </Text>
 
-        <Text style={styles.subHeading}>5. Vastu Tip for Bathroom</Text>
-        <Text style={styles.paragraph}>
+        <Text style={[styles.subHeading, isTablet && styles.subHeadingTablet]}>
+          5. Vastu Tip for Bathroom
+        </Text>
+        <Text style={[styles.paragraph, isTablet && styles.paragraphTablet]}>
           According to Vastu, a bathroom in the north or northwest part is the
-          most favourable. Avoid having bathrooms directly facing the kitchen or
-          the main entrance as it can disrupt the flow of positive energy. The
-          toilet should face north-south and should not be located in the
-          northeast or southwest corners. Ensure that the bathroom doors are
-          always kept closed to prevent negative energies from spreading to
-          other areas. Use light and soothing colours like pastels for walls to
-          create a calming effect. Keep a check on taps, flush and showers, and
-          ensure that they are leak-free. Use a wooden door for your bathroom
-          instead of a metallic door.
+          most favourable...
         </Text>
 
-        {/* Table Section */}
-        <View style={styles.table}>
-          {/* Table Header */}
+        {/* Table */}
+        <View style={[styles.table, isTablet && styles.tableTablet]}>
           <View style={[styles.row, styles.headerRow]}>
             <Text style={[styles.cell, styles.headerCell, styles.leftCell]}>
               அடி கணக்கு
@@ -119,55 +364,32 @@ export default function VaasthuPage({ navigation }) {
             </Text>
           </View>
 
-          {/* Table Rows */}
-          <View style={styles.row}>
-            <Text style={[styles.cell, styles.leftCell]}>6 அடி</Text>
-            <Text style={[styles.cell, styles.rightCell]}>நல்லது தரும்.</Text>
-          </View>
-          <View style={styles.row}>
-            <Text style={[styles.cell, styles.leftCell]}>7 அடி</Text>
-            <Text style={[styles.cell, styles.rightCell]}>தனிதிரம் பெறும்.</Text>
-          </View>
-          <View style={styles.row}>
-            <Text style={[styles.cell, styles.leftCell]}>8 அடி</Text>
-            <Text style={[styles.cell, styles.rightCell]}>
-              மிகவும் பாக்கியம் உண்டாகும்.
-            </Text>
-          </View>
-          <View style={styles.row}>
-            <Text style={[styles.cell, styles.leftCell]}>9 அடி</Text>
-            <Text style={[styles.cell, styles.rightCell]}>
-              ஆயுள் குறையும், சுகவீனம் உண்டாகும்.
-            </Text>
-          </View>
-          <View style={styles.row}>
-            <Text style={[styles.cell, styles.leftCell]}>10 அடி</Text>
-            <Text style={[styles.cell, styles.rightCell]}>
-              ஆடுமாடுகள் முதலானவைச் செழிக்கும்.
-            </Text>
-          </View>
-          <View style={styles.row}>
-            <Text style={[styles.cell, styles.leftCell]}>11 அடி</Text>
-            <Text style={[styles.cell, styles.rightCell]}>
-              பிள்ளைப்பேறு உண்டாகும்.
-            </Text>
-          </View>
-          <View style={styles.row}>
-            <Text style={[styles.cell, styles.leftCell]}>12 அடி</Text>
-            <Text style={[styles.cell, styles.rightCell]}>தனிதிரம் பெறும்.</Text>
-          </View>
-          <View style={styles.row}>
-            <Text style={[styles.cell, styles.leftCell]}>13 அடி</Text>
-            <Text style={[styles.cell, styles.rightCell]}>நல்லது தரும்.</Text>
-          </View>
+          {[
+            ["6 அடி", "நல்லது தரும்."],
+            ["7 அடி", "தனிதிரம் பெறும்."],
+            ["8 அடி", "மிகவும் பாக்கியம் உண்டாகும்."],
+            ["9 அடி", "ஆயுள் குறையும், சுகவீனம் உண்டாகும்."],
+            ["10 அடி", "ஆடுமாடுகள் முதலானவைச் செழிக்கும்."],
+            ["11 அடி", "பிள்ளைப்பேறு உண்டாகும்."],
+            ["12 அடி", "தனிதிரம் பெறும்."],
+            ["13 அடி", "நல்லது தரும்."],
+          ].map((item, index) => (
+            <View key={index} style={styles.row}>
+              <Text style={[styles.cell, styles.leftCell]}>{item[0]}</Text>
+              <Text style={[styles.cell, styles.rightCell]}>{item[1]}</Text>
+            </View>
+          ))}
         </View>
       </ScrollView>
     </View>
   );
 }
 
+/* ================= STYLES ================= */
+
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#fff" },
+  containerTablet: {},
 
   header: {
     flexDirection: "row",
@@ -176,77 +398,114 @@ const styles = StyleSheet.create({
     marginTop: 32,
     backgroundColor: "#93210A",
   },
-  backButton: {
-    marginRight: 10,
+  headerTablet: {
+    paddingVertical: 30,
+    paddingHorizontal: 24,
+    marginTop: 0,
   },
-  headerTitle: {
-    color: "white",
-    fontSize: 20,
-    fontWeight: "bold",
+
+   headerTitle: {
+    color: "#fff",
+    fontWeight: "700",
+    fontSize: 22, marginLeft: 65,
+    padding:8,
+   
+
+  },
+
+  headerTitleTablet: {
+    fontSize: 28,
+    padding:8,
+    left:125,
   },
 
   scrollContent: {
     padding: 15,
-    // ✅ removed bottom padding to avoid extra space
   },
+  scrollContentTablet: {
+    paddingHorizontal: 40,
+    paddingBottom: 40,
+  },
+
   image: {
     width: "100%",
     height: 180,
     marginBottom: 15,
   },
+  imageTablet: {
+    height: 320,
+  },
+
   mainTitle: {
     fontSize: 18,
     fontWeight: "bold",
     marginBottom: 12,
   },
+  mainTitleTablet: {
+    fontSize: 26,
+  },
+
   subHeading: {
     fontSize: 16,
     fontWeight: "bold",
     color: "#A93226",
     marginBottom: 6,
   },
+  subHeadingTablet: {
+    fontSize: 20,
+  },
+
   paragraph: {
     fontSize: 14,
     color: "#333",
     marginBottom: 15,
     lineHeight: 20,
   },
+  paragraphTablet: {
+    fontSize: 18,
+    lineHeight: 26,
+  },
 
-  /* Table Styles */
   table: {
     marginTop: 20,
     borderWidth: 1,
     borderColor: "#A93226",
   },
+  tableTablet: {
+    marginTop: 30,
+  },
+
   row: {
     flexDirection: "row",
     borderBottomWidth: 1,
     borderColor: "#A93226",
   },
+
   headerRow: {
-    backgroundColor: "#ffffffff",
+    backgroundColor: "#fdf2f2",
   },
+
   cell: {
     flex: 1,
-    padding: 10,
+    padding: 12,
     fontSize: 14,
-    color: "#333",
     textAlign: "center",
+    color: "#333",
   },
+
   headerCell: {
-    color: "black", // updated to black
     fontWeight: "bold",
+    color: "#000",
   },
+
   leftCell: {
     borderRightWidth: 1,
     borderRightColor: "#A93226",
   },
+
   rightCell: {
-    flex: 2, // gives more space for long text
+    flex: 2,
   },
 });
-
-
-
 
 

@@ -21,6 +21,7 @@ export default function SignupPage({ navigation }) {
   const [pincode, setPincode] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const { login } = useContext(AuthContext);
 
   // 🌞 Animation setup for rotating sun
@@ -160,15 +161,24 @@ export default function SignupPage({ navigation }) {
         </View>
 
         {/* Password */}
-        <View style={styles.inputRow}>
+       <View style={styles.inputRow}>
           <Ionicons name="lock-closed-outline" size={20} color="#888" style={styles.icon} />
+
           <TextInput
             style={styles.input}
             placeholder="Password"
-            secureTextEntry
+            secureTextEntry={!showPassword}
             value={password}
             onChangeText={setPassword}
           />
+
+          <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
+            <Ionicons
+              name={showPassword ? "eye-off-outline" : "eye-outline"}
+              size={20}
+              color="#888"
+            />
+          </TouchableOpacity>
         </View>
 
         {/* Signup Button */}
