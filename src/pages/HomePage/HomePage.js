@@ -188,7 +188,7 @@ export default function HomePage() {
                       if (item.label === "Stories") navigation.navigate("StoryPage1");
                       if (item.label === "Pooja") navigation.navigate("PoojaPage1");
                       if (item.label === "Tourism") navigation.navigate("TourismPage1");
-                      if (item.label === "Vastu") navigation.navigate("VaasthuPage");
+                      if (item.label === "Vasthu") navigation.navigate("VaasthuPage");
                     }}
                   >
                     <View style={styles.circleCardWrapper}>
@@ -223,7 +223,7 @@ const getStyles = (isTablet) =>
     sidebarOverlay: {
       position: "absolute",
       top: 0,
-      left: -150,
+      left: -120,
       width: "100%",
       height: "100%",
       zIndex: 999,
@@ -338,3 +338,5 @@ const getStyles = (isTablet) =>
       fontWeight: "600",
     },
   });
+
+

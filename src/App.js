@@ -77,6 +77,11 @@ import TownPartiesCategory from "./pages/DistrictPage/TownPage/BusinessCategory/
 import TownPartiesRoles from "./pages/DistrictPage/TownPage/BusinessCategory/TownParties/TownPartiesRole.js";
 import TownPartiesMember from "./pages/DistrictPage/TownPage/BusinessCategory/TownParties/TownPartiesMember.js";
 import TownPartiesMemdetails from "./pages/DistrictPage/TownPage/BusinessCategory/TownParties/TownPartiesMemdetails.js";
+import DistrictBusinessItems from "./pages/DistrictPage/DistrictBusiness/DistrictBusinessItems.js";
+import VaasthuPage0 from "./pages/ElectionCategorysPage/VaasthuPage/VaasthuPage";
+import VaasthuPage1 from "./pages/ElectionCategorysPage/VaasthuPage/VaasthuPage1.js";
+import VaasthuPage2 from "./pages/ElectionCategorysPage/VaasthuPage/VaasthuPage2.js";
+import VaasthuPage3 from "./pages/ElectionCategorysPage/VaasthuPage/VaasthuPage3.js";
 
 
 const AuthStack = createStackNavigator();
@@ -146,7 +151,6 @@ function MainStackScreen() {
     <MainStack.Screen name="TourismPage1" component={withFooter(TourismPage1)}/>
     <MainStack.Screen name="TourismPage2" component={withFooter(TourismPage2)}/>
     <MainStack.Screen name="TourismPage3" component={withFooter(TourismPage3)}/>
-    <MainStack.Screen name="VaasthuPage" component={withFooter(VaasthuPage)}/>
     <MainStack.Screen name="ElectionVotePage1" component={withFooter(ElectionVotePage1)}/>
     <MainStack.Screen name="ElectionVotePage2" component={withFooter(ElectionVotePage2)}/>
     <MainStack.Screen name="AstrologyPage1" component={withFooter(AstrologyPage1)}/>
@@ -170,6 +174,7 @@ function MainStackScreen() {
     <MainStack.Screen name="DistrictBusinessPage2" component={withFooter(DistrictBusinessPage2)} />
     <MainStack.Screen name="DistrictBusinessPage3" component={withFooter(DistrictBusinessPage3)} />
     <MainStack.Screen name="DistrictBusinessPage4" component={withFooter(DistrictBusinessPage4)} />
+    <MainStack.Screen name="DistrictBusinessItems" component={withFooter(DistrictBusinessItems)} />
     <MainStack.Screen name="TownGovernmentPage1" component={withFooter(TownGovernmentPage1)} />
     <MainStack.Screen name="TownGovernmentPage2" component={withFooter(TownGovernmentPage2)} />
     <MainStack.Screen name="TownParties" component={withFooter(TownPartiesRoles)} />
@@ -178,6 +183,10 @@ function MainStackScreen() {
     <MainStack.Screen name="TownPartiesMemberDetails" component={withFooter(TownPartiesMemdetails)} />
     <MainStack.Screen name="FamousPlace" component={withFooter(FamousPlaceDetails)} />
     <MainStack.Screen name="TouristPlace" component={withFooter(TouristSpotDetails)}/>
+     <MainStack.Screen name="VaasthuPage" component={withFooter(VaasthuPage0)}/>
+      <MainStack.Screen name="VaasthuPage1" component={withFooter(VaasthuPage1)}/>
+        <MainStack.Screen name="VaasthuPage2" component={withFooter(VaasthuPage2)}/>
+        <MainStack.Screen name="VaasthuPage3" component={withFooter(VaasthuPage3)}/>
     </MainStack.Navigator>
   );
 }
@@ -201,3 +210,5 @@ export default function App() {
     </AuthProvider>
   );
 }
+
+

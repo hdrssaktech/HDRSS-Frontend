@@ -27,7 +27,6 @@ export default function TownPartiesMember({ route }) {
       const res = await axios.get(
         `https://hdrss-backend.onrender.com/api/town-parties/${townId}`
       );
-
       const filtered = res.data.data.filter(
         item => item.parties === partyName && item.role === role
       );
@@ -329,3 +328,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
 });
+
+
+
+

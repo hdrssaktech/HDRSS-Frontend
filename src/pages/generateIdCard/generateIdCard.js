@@ -1,11 +1,10 @@
 // my code 
 import * as Print from "expo-print";
-// import * as Sharing from "expo-sharing";
-import * as FileSystem from "expo-file-system/legacy";
-// import { Asset } from "expo-asset";
 
-// import * as FileSystem from "expo-file-system";
+import * as FileSystem from "expo-file-system/legacy";
+
 import { Asset } from "expo-asset";
+import { Alert } from "react-native";
 
 
 export async function generateIdCard(member) {
@@ -18,7 +17,7 @@ export async function generateIdCard(member) {
   ] = await Promise.all([
     convertAssetToBase64(require("../../../assets/idcard/nandi2.jpg")),
     convertAssetToBase64(require("../../../assets/idcard/sign.png")),
-    convertAssetToBase64(require("../../../assets/idcard/sun.png")),
+    convertAssetToBase64(require("../../../assets/idcard/logo_hdrss.png")),
     convertAssetToBase64(require("../../../assets/fonts/impact.ttf")),
   ]);
   const date = new Date();
@@ -58,7 +57,7 @@ const profileBase64 = member.image
           width: 300px;
           height: auto;
           margin: 0;
-          padding: 40 160px;
+          padding: 40 100px;
           background-color: #fff;
         }
 
@@ -71,7 +70,7 @@ const profileBase64 = member.image
         }
 
         .header {
-          background-color: #e73200ff;
+          background-color: #A01E1E;
           color: white;
           text-align: center;
           padding-top: 10px;
@@ -84,34 +83,34 @@ const profileBase64 = member.image
           justify-content: center;
           align-items: center;
           background-color: white;
-          padding: 1px 17px;
-          margin-top: -20px;
+          padding: 1px 10px;
+          margin-top: -15px;
         }
 
         .header-row img {
           width: 300px;
-          height: auto;
+          height:50px;
           object-fit: contain;
-          margin-top: 15px;
+          margin-top: 10px;
         }
 
-        .header-tamil { font-family: 'Impact'; font-size: 18px; font-weight: bold; margin-top: 5px; }
-        .header-hindi { font-family: 'Impact'; font-size: 27px; word-spacing: 10px;}
-        .header-eng { font-family: 'Impact'; font-size: 20px; }
+        .header-tamil { font-family: 'Impact'; font-size: 18px; font-weight: bold; margin-top:0px; }
+        .header-hindi { font-family: 'Impact'; font-size: 27px; word-spacing:20px;}
+        .header-eng { font-family: 'Impact'; font-size: 20px;margin-bottom:0px; }
 
         .main {
           text-align: center;
-          padding: 10px;
-          color: #681414;
+          padding:7px;
+          color: #A01E1E;
         }
 
         .profile-img {
           width: 100px;        /* Passport width */
-          height: 130px;       /* Passport height */
-          border: 2px solid #e73200;
-          margin: 5px auto;
+          height: 110px;       /* Passport height */
+          border: 2px solid #A01E1E;
+          margin: 3px auto;
           overflow: hidden;
-          background-color: #0a630aff;
+          background-color: #929292ff;
           object-fit: cover;   /* Makes image fit perfectly */
           background-color: transparent;
         }
@@ -125,7 +124,7 @@ const profileBase64 = member.image
 
         .info-box { 
           width: 90%; 
-          margin-left:55px;
+          margin-left:14px;
           font-family:'Impact'; 
           text-align:left; 
           color: #000000ff; 
@@ -133,7 +132,6 @@ const profileBase64 = member.image
 
         .row { 
           display: flex; 
-          margin: 3px 0; 
           align-items: flex-start;
         }
 
@@ -151,7 +149,7 @@ const profileBase64 = member.image
           display: inline-block;
         }
 
-        .reg { font-size: 12px;font-family: 'Impact'; color: #000000ff; text-align: left; margin-right: 10px; margin-top: 30px; }
+        .reg { font-size: 12px;font-family: 'Impact'; color: #000000ff; text-align: left; margin-right: 10px; margin-top:20px; }
 
        .signature {
       text-align: right;
@@ -165,12 +163,12 @@ const profileBase64 = member.image
       height: 35px;
       position: absolute;   /* overlap */
       top: -20px;            /* move image above text */
-      right: 0;
+      right: 20;
     }
 
     .sign-text {
       font-size: 10px;
-      color: #e72828;
+      color: #A01E1E;
       font-weight: bold;
       position: relative;
       z-index: 1;            /* text stays below image */
@@ -179,14 +177,14 @@ const profileBase64 = member.image
        .underline-bar {
           width: 100%;
           height:8px;
-          background-color: #e72828;
+          background-color: #A01E1E;
         }
 
         .footer {
-          background-color: #e73200ff;
+          background-color: #A01E1E;
           color: white;
           text-align: center;
-          padding: 25px 5px;
+          padding: 25px 0px;
           margin-top: 10px;
           width: 260px;
           height: 350px;
@@ -204,9 +202,9 @@ const profileBase64 = member.image
         }
 
         .symbol {
-          width: 180px;
+          width: 150px;
           height: 150px;
-          margin-left: 40;
+          margin-left:42;
           margin-right: auto;
         }
           .footer-address-value {
@@ -264,7 +262,7 @@ const profileBase64 = member.image
           <div class="extra-info">
 
             <div class="row"><div class="label">Validity</div><div class="value">:${validity}</div></div>
-            <div class="row"><div class="label">Date of Birth</div><div class="value">: ${member.dob}</div></div>
+            <div class="row"><div class="label">Date of Birth</div><div class="value">:23-04-1950</div></div>
             <div class="row"><div class="label">Blood Group</div><div class="value">: ${member.bloodGroup}</div></div>
             <div class="row"><div class="label">Contact No</div><div class="value">: ${member.contactDetails}</div></div>
 
@@ -313,6 +311,7 @@ function getMimeType(name) {
 
 async function imageUrlToBase64(url) {
   try {
+  
     const fileUri = FileSystem.cacheDirectory + "profile.jpg";
 
     await FileSystem.downloadAsync(url, fileUri);

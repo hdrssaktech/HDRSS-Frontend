@@ -214,7 +214,7 @@ const getStyles = (isTablet) =>
       alignItems: "center",
       paddingVertical: isTablet ? 23 : 18,
       paddingHorizontal: 16,
-      paddingTop: 40,
+      paddingTop: 49,
       backgroundColor: "#93210A",
       elevation: 4,
     },

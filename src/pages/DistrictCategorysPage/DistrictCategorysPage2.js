@@ -1,7 +1,3 @@
-
-
-
-
 import React, { useEffect, useState } from "react";
 import {
   View,
@@ -18,6 +14,7 @@ import {
 import { useRoute, useNavigation } from "@react-navigation/native";
 import { getPlaceDetails } from "../../api/api.js";
 import { Ionicons, MaterialIcons } from "@expo/vector-icons";
+import YoutubePlayer from "react-native-youtube-iframe";
 
 export default function DistrictCategorysPage2() {
   const route = useRoute();
@@ -25,6 +22,7 @@ export default function DistrictCategorysPage2() {
   const { districtId, categoryName, placeId } = route.params;
   const [place, setPlace] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [playing, setPlaying] = useState(false);
 
   const { width } = Dimensions.get("window");
 
@@ -80,6 +78,27 @@ export default function DistrictCategorysPage2() {
     }
   };
 
+  // Extract YouTube video ID from URL
+  const getYouTubeId = (url) => {
+    if (!url) return null;
+    
+    // Handle different YouTube URL formats
+    const patterns = [
+      /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([a-zA-Z0-9_-]{11})/,
+      /youtube\.com\/watch\?v=([a-zA-Z0-9_-]{11})/,
+      /youtu\.be\/([a-zA-Z0-9_-]{11})/,
+      /youtube\.com\/embed\/([a-zA-Z0-9_-]{11})/
+    ];
+    
+    for (let pattern of patterns) {
+      const match = url.match(pattern);
+      if (match && match[1]) {
+        return match[1];
+      }
+    }
+    return null;
+  };
+
   if (loading) {
     return (
       <View style={styles.center}>
@@ -96,25 +115,38 @@ export default function DistrictCategorysPage2() {
     );
   }
 
+  const youtubeId = place.video ? getYouTubeId(place.video) : null;
+
   return (
-    <ScrollView style={styles.container}>
-      {/* 🖼️ Banner Image + Back Button */}
-      <View style={{ position: "relative" }}>
-        <Image
-          source={{
-            uri:
-              place.image ||
-              "https://via.placeholder.com/600x400.png?text=No+Image+Available",
-          }}
-          style={[styles.image, { width }]}
-        />
+    <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
+      {/* 📢 FIXED ADVERTISEMENT BANNER at TOP of screen */}
+      {place.advertisment && Array.isArray(place.advertisment) && place.advertisment.length > 0 && (
+        <View style={styles.adBanner}>
+          <ScrollView 
+            horizontal 
+            showsHorizontalScrollIndicator={false}
+            pagingEnabled
+            style={styles.adScroll}
+          >
+            {place.advertisment.map((img, index) => (
+              <View key={index} style={styles.adSlide}>
+                <Image
+                  source={{ uri: img }}
+                  style={styles.adBannerImage}
+                  onError={(e) => console.warn("Ad image load error:", e.nativeEvent.error)}
+                />
+              </View>
+            ))}
+          </ScrollView>
+        </View>
+      )}
 
-        <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
-          <Ionicons name="chevron-back" size={28} color="#fff" />
-        </TouchableOpacity>
-      </View>
+      {/* 🖼️ BACK BUTTON - Fixed position over advertisement */}
+      <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
+        <Ionicons name="chevron-back" size={28} color="#fff" />
+      </TouchableOpacity>
 
-      {/* 🏷️ Title + Category */}
+      {/* 🏷️ Title + Category - Comes AFTER advertisement */}
       <View style={styles.header}>
         <Text style={styles.title}>{place.name || "Unnamed Place"}</Text>
         <View style={styles.categoryBadge}>
@@ -124,7 +156,7 @@ export default function DistrictCategorysPage2() {
         </View>
       </View>
 
-      {/* ☎️ Contact Buttons */}
+      {/* ☎️ Contact Buttons - Comes BEFORE main image */}
       <View style={styles.buttonRow}>
         {place.phone && (
           <TouchableOpacity style={styles.button} onPress={openPhone}>
@@ -148,9 +180,27 @@ export default function DistrictCategorysPage2() {
             style={[styles.button, styles.locationButton]}
             onPress={openLocation}
           >
-            <Ionicons name="location-sharp" size={20} color="#fff" />
-            <Text style={styles.buttonText}>Location</Text>
+            <Ionicons name="navigate" size={20} color="#fff" />
+            <Text style={styles.buttonText}>Navigate</Text>
           </TouchableOpacity>
+        )}
+      </View>
+
+      {/* 🖼️ MAIN IMAGE - Shows AFTER contact buttons */}
+      <View style={{ position: "relative", marginTop: 10 }}>
+        <Image
+          source={{
+            uri: place.image || "https://via.placeholder.com/600x400.png?text=No+Image+Available",
+          }}
+          style={[styles.image, { width }]}
+        />
+        
+        {/* Location Info on Image */}
+        {place.location && (
+          <View style={styles.imageLocation}>
+            <Ionicons name="location" size={18} color="#fff" />
+            <Text style={styles.imageLocationText}>{place.location}</Text>
+          </View>
         )}
       </View>
 
@@ -166,7 +216,11 @@ export default function DistrictCategorysPage2() {
       {place.gallery && Array.isArray(place.gallery) && place.gallery.length > 0 && (
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Gallery</Text>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+          <ScrollView 
+            horizontal 
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.galleryScrollContent}
+          >
             {place.gallery.map((img, index) => (
               <Image
                 key={index}
@@ -178,6 +232,30 @@ export default function DistrictCategorysPage2() {
           </ScrollView>
         </View>
       )}
+
+      {/* 📺 Video Section - At the bottom */}
+      {place.video && youtubeId && (
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Video</Text>
+          <View style={styles.videoContainer}>
+            <YoutubePlayer
+              height={220}
+              width={width - 50} // Account for padding
+              play={playing}
+              videoId={youtubeId}
+              onChangeState={(event) => {
+                if (event === "ended") {
+                  setPlaying(false);
+                }
+              }}
+              webViewStyle={{ opacity: 0.99 }}
+            />
+          </View>
+        </View>
+      )}
+
+      {/* Footer Space */}
+      <View style={styles.footer} />
     </ScrollView>
   );
 }
@@ -192,18 +270,53 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
   },
-  image: {
-    height: 250,
-    resizeMode: "cover",
+  
+  // Fixed Advertisement Banner at TOP
+  adBanner: {
+    height: 180,
+    backgroundColor: "#fff",
+    width: '100%',
   },
+  adScroll: {
+    flex: 1,
+  },
+  adSlide: {
+    width: Dimensions.get('window').width,
+    height: 200,
+    position: 'relative',
+  },
+  adBannerImage: {
+    width: '100%',
+    height: '100%',
+    resizeMode: 'cover',
+  },
+  adBadge: {
+    position: "absolute",
+    top: 10,
+    right: 10,
+    backgroundColor: "rgba(147, 33, 10, 0.9)",
+    paddingHorizontal: 12,
+    paddingVertical: 5,
+    borderRadius: 4,
+  },
+  adBadgeText: {
+    color: "#fff",
+    fontSize: 10,
+    fontWeight: "bold",
+  },
+  
+  // Fixed Back Button
   backButton: {
     position: "absolute",
     top: 40,
     left: 15,
-    backgroundColor: "rgba(0,0,0,0.4)",
+    backgroundColor: "rgba(0,0,0,0.5)",
     borderRadius: 20,
-    padding: 5,
+    padding: 6,
+    zIndex: 100,
   },
+  
+  // Header Styles
   header: {
     padding: 15,
     backgroundColor: "#fff",
@@ -216,18 +329,73 @@ const styles = StyleSheet.create({
     color: "#93210A",
   },
   categoryBadge: {
-    marginTop: 5,
+    marginTop: 8,
     alignSelf: "flex-start",
     backgroundColor: "#ffd700",
-    borderRadius: 20,
+    borderRadius: 15,
     paddingVertical: 5,
-    paddingHorizontal: 10,
+    paddingHorizontal: 12,
   },
   categoryText: {
     fontSize: 12,
     fontWeight: "bold",
     color: "#333",
   },
+  
+  // Contact Buttons - BEFORE image
+  buttonRow: {
+    flexDirection: "row",
+    justifyContent: "space-around",
+    paddingVertical: 15,
+    backgroundColor: "#fff",
+    borderBottomWidth: 1,
+    borderColor: "#ddd",
+  },
+  button: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#93210A",
+    paddingVertical: 12,
+    paddingHorizontal: 12,
+    borderRadius: 8,
+  },
+  whatsappButton: {
+    backgroundColor: "#25D366",
+  },
+  locationButton: {
+    backgroundColor: "#007BFF",
+  },
+  buttonText: {
+    color: "#fff",
+    fontSize: 16,
+    marginLeft: 8,
+    fontWeight: "bold",
+  },
+  
+  // Main Image - AFTER contact buttons
+  image: {
+    height: 250,
+    resizeMode: "cover",
+  },
+  imageLocation: {
+    position: "absolute",
+    bottom: 15,
+    left: 15,
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "rgba(0,0,0,0.6)",
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 20,
+  },
+  imageLocationText: {
+    color: "#fff",
+    fontSize: 14,
+    marginLeft: 5,
+    fontWeight: "600",
+  },
+  
+  // Section Styles
   section: {
     backgroundColor: "#fff",
     marginTop: 10,
@@ -243,41 +411,37 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: "bold",
     color: "#93210A",
-    marginBottom: 8,
+    marginBottom: 10,
   },
   description: {
-    fontSize: 13,
+    fontSize: 14,
     color: "#555",
     lineHeight: 22,
   },
-  buttonRow: {
-    flexDirection: "row",
-    justifyContent: "space-around",
-    paddingVertical: 15,
-  },
-  button: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#93210A",
-    padding: 12,
-    borderRadius: 8,
-  },
-  whatsappButton: {
-    backgroundColor: "#25D366",
-  },
-  locationButton: {
-    backgroundColor: "#007BFF",
-  },
-  buttonText: {
-    color: "#fff",
-    fontSize: 16,
-    marginLeft: 5,
-    fontWeight: "bold",
+  
+  // Gallery Styles
+  galleryScrollContent: {
+    paddingRight: 10,
   },
   galleryImage: {
     width: 200,
     height: 150,
     borderRadius: 10,
     marginRight: 10,
+  },
+  
+  // Video Styles
+  videoContainer: {
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#000",
+    borderRadius: 10,
+    overflow: "hidden",
+    marginTop: 10,
+  },
+  
+  // Footer
+  footer: {
+    height: 30,
   },
 });

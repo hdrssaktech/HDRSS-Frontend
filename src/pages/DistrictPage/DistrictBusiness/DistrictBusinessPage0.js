@@ -1,155 +1,4 @@
-// import React, { useEffect, useState } from "react";
-// import {
-//   View,
-//   Text,
-//   Image,
-//   FlatList,
-//   ActivityIndicator,
-//   TouchableOpacity,
-//   StyleSheet,
-// } from "react-native";
-// import { Ionicons } from "@expo/vector-icons";
-// import { useNavigation, useRoute } from "@react-navigation/native";
-// import axios from "axios";
-
-// export default function DistrictBusinessPage0() {
-//   const route = useRoute();
-//   const navigation = useNavigation();
-
-//   const { districtId, districtName } = route.params || {};
-
-//   const [businessList, setBusinessList] = useState([]);
-//   const [loading, setLoading] = useState(true);
-
-//   useEffect(() => {
-//     const fetchBusiness = async () => {
-//       try {
-//         const url = `https://hdrss-backend.onrender.com/api/business/type/district/${districtId}`;
-//         console.log("🔍 FETCH =", url);
-
-//         const res = await axios.get(url);
-
-//         if (res.data?.resultData && Array.isArray(res.data.resultData)) {
-//           setBusinessList(res.data.resultData);
-//         } else {
-//           setBusinessList([]);
-//         }
-//       } catch (err) {
-//         console.log("❌ Error =", err);
-//       } finally {
-//         setLoading(false);
-//       }
-//     };
-
-//     fetchBusiness();
-//   }, [districtId]);
-
-//   if (loading) {
-//     return (
-//       <View style={styles.center}>
-//         <ActivityIndicator size="large" color="#E37714" />
-//       </View>
-//     );
-//   }
-
-//   return (
-//     <View style={{ flex: 1, backgroundColor: "#fff" }}>
-      
-//       {/* 🔥 NEW HEADER (same as DistrictBusinessPage3) */}
-//       <View style={styles.appBar}>
-//         <TouchableOpacity onPress={() => navigation.goBack()}>
-//           <Ionicons name="arrow-back" size={24} color="#fff" />
-//         </TouchableOpacity>
-
-//         <Text style={styles.appBarTitle}>{districtName} Business</Text>
-
-//         <View style={{ width: 30 }} />
-//       </View>
-
-//       {/* BUSINESS LIST */}
-//       <FlatList
-//         data={businessList}
-//         keyExtractor={(item) => item.id.toString()}
-//         numColumns={2}
-//         contentContainerStyle={{ padding: 10 }}
-//         renderItem={({ item }) => (
-//           <TouchableOpacity
-//             style={styles.card}
-//             onPress={() =>
-//               navigation.navigate("DistrictBusinessPage1", {
-//                 businessId: item.id,
-//                 businessName: item.name,
-//               })
-//             }
-//           >
-//             <Image
-//               source={{
-//                 uri:
-//                   item.imageUrl?.trim() !== ""
-//                     ? item.imageUrl
-//                     : "https://via.placeholder.com/200x200?text=No+Image",
-//               }}
-//               style={styles.image}
-//             />
-//             <Text style={styles.name}>{item.name}</Text>
-//           </TouchableOpacity>
-//         )}
-//       />
-//     </View>
-//   );
-// }
-
-// const styles = StyleSheet.create({
-//   center: {
-//     flex: 1,
-//     justifyContent: "center",
-//     alignItems: "center",
-//   },
-
-//   /* 🔥 SAME HEADER STYLE AS DistrictBusinessPage3 */
-//   appBar: {
-//     height: 90,
-//     paddingTop: 40,
-//     paddingHorizontal: 16,
-//     flexDirection: "row",
-//     alignItems: "center",
-//     backgroundColor: "#93210A",
-//     justifyContent: "space-between",
-//   },
-//   appBarTitle: {
-//     fontSize: 20,
-//     fontWeight: "700",
-//     color: "#fff",
-//   },
-
-//   card: {
-//     width: "48%",
-//     backgroundColor: "#fff",
-//     margin: "1%",
-//     padding: 10,
-//     borderRadius: 10,
-//     alignItems: "center",
-//     elevation: 3,
-//   },
-
-//   image: {
-//     width: "100%",
-//     height: 120,
-//     borderRadius: 10,
-//     backgroundColor: "#eee",
-//   },
-
-//   name: {
-//     marginTop: 8,
-//     fontSize: 16,
-//     textAlign: "center",
-//     fontWeight: "600",
-//     color: "#222",
-//   },
-// });
-
-
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import {
   View,
   Text,
@@ -161,6 +10,7 @@ import {
   Dimensions,
   StatusBar,
   Platform,
+  ScrollView,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation, useRoute } from "@react-navigation/native";
@@ -170,6 +20,15 @@ const { width: screenWidth, height: screenHeight } = Dimensions.get("window");
 const isTablet = screenWidth >= 600;
 const isLargeTablet = screenWidth >= 1024;
 
+// 2 Default ad images
+const DEFAULT_AD_IMAGES = [
+  "https://images.unsplash.com/photo-1497366754035-f200968a6e72?w=800&h=400&fit=crop", // Business meeting
+  "https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=800&h=400&fit=crop", // Office workspace
+];
+
+// Get default images (always returns both)
+const getDefaultAdImages = () => [...DEFAULT_AD_IMAGES];
+
 export default function DistrictBusinessPage0() {
   const route = useRoute();
   const navigation = useNavigation();
@@ -177,14 +36,21 @@ export default function DistrictBusinessPage0() {
   const { districtId, districtName } = route.params || {};
 
   const [businessList, setBusinessList] = useState([]);
+  const [advertisementImages, setAdvertisementImages] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [adLoading, setAdLoading] = useState(true);
+  const [currentAdIndex, setCurrentAdIndex] = useState(0);
+  const [imageErrors, setImageErrors] = useState({});
+  
+  // Refs for auto-scroll
+  const flatListRef = useRef(null);
+  const scrollInterval = useRef(null);
 
+  // Fetch Business List
   useEffect(() => {
     const fetchBusiness = async () => {
       try {
         const url = `https://hdrss-backend.onrender.com/api/business/type/district/${districtId}`;
-        console.log("🔍 FETCH =", url);
-
         const res = await axios.get(url);
 
         if (res.data?.resultData && Array.isArray(res.data.resultData)) {
@@ -202,6 +68,199 @@ export default function DistrictBusinessPage0() {
     fetchBusiness();
   }, [districtId]);
 
+  // Fetch Advertisement Images using new API
+  useEffect(() => {
+    const fetchAdvertisement = async () => {
+      try {
+        const url = `https://hdrss-backend.onrender.com/api/district-business-ads/filter?districtId=${districtId}&pageLevel=1&entityId=${districtId}`;
+        console.log("🔍 FETCHING DISTRICT ADVERTISEMENT =", url);
+
+        const res = await axios.get(url);
+
+        if (res.data && Array.isArray(res.data) && res.data.length > 0) {
+          const firstAd = res.data[0];
+          if (firstAd.adImages && Array.isArray(firstAd.adImages) && firstAd.adImages.length > 0) {
+            // Filter out any empty/null image URLs
+            const validImages = firstAd.adImages.filter(img => img && img.trim() !== "");
+            
+            if (validImages.length > 0) {
+              setAdvertisementImages(validImages);
+              console.log("✅ District advertisement images loaded:", validImages.length);
+            } else {
+              // If no valid images, show 2 default images
+              setAdvertisementImages(getDefaultAdImages());
+              console.log("⚠️ No valid advertisement images found, showing 2 default images");
+            }
+          } else {
+            // If no adImages array or empty array, show 2 default images
+            setAdvertisementImages(getDefaultAdImages());
+            console.log("⚠️ No advertisement images array found, showing 2 default images");
+          }
+        } else {
+          // If no data or empty array in response, show 2 default images
+          setAdvertisementImages(getDefaultAdImages());
+          console.log("⚠️ No advertisement data found for this district, showing 2 default images");
+        }
+      } catch (err) {
+        console.log("❌ Error fetching district advertisement:", err);
+        // On error, show 2 default images
+        setAdvertisementImages(getDefaultAdImages());
+      } finally {
+        setAdLoading(false);
+      }
+    };
+
+    if (districtId) {
+      fetchAdvertisement();
+    } else {
+      // If no districtId, still show 2 default ads
+      setAdvertisementImages(getDefaultAdImages());
+      setAdLoading(false);
+    }
+  }, [districtId]);
+
+  // Handle image load error
+  const handleImageError = (index) => {
+    console.log(`❌ Image ${index} failed to load, switching to default`);
+    setImageErrors(prev => ({ ...prev, [index]: true }));
+    
+    // Replace the failed image with a default image
+    if (advertisementImages[index]) {
+      const newImages = [...advertisementImages];
+      // Use one of the default images based on index
+      const defaultIndex = index % DEFAULT_AD_IMAGES.length;
+      newImages[index] = DEFAULT_AD_IMAGES[defaultIndex];
+      setAdvertisementImages(newImages);
+    }
+  };
+
+  // Auto-scroll functionality for ads (always auto-scroll since we have at least 2 images)
+  useEffect(() => {
+    if (advertisementImages.length > 0 && flatListRef.current) {
+      // Clear any existing interval
+      if (scrollInterval.current) {
+        clearInterval(scrollInterval.current);
+      }
+
+      // Set up new interval for auto-scroll
+      scrollInterval.current = setInterval(() => {
+        setCurrentAdIndex((prevIndex) => {
+          let nextIndex = prevIndex + 1;
+          
+          // If reached the end, go back to start
+          if (nextIndex >= advertisementImages.length) {
+            nextIndex = 0;
+          }
+          
+          // Scroll to the next ad
+          if (flatListRef.current) {
+            try {
+              flatListRef.current.scrollToOffset({
+                offset: nextIndex * screenWidth,
+                animated: true,
+              });
+            } catch (error) {
+              console.log("Scroll error:", error);
+            }
+          }
+          
+          return nextIndex;
+        });
+      }, 3000); // Change ad every 3 seconds
+
+      // Clean up interval on unmount
+      return () => {
+        if (scrollInterval.current) {
+          clearInterval(scrollInterval.current);
+        }
+      };
+    }
+  }, [advertisementImages.length]);
+
+  // Handle manual scroll
+  const handleScroll = (event) => {
+    const contentOffsetX = event.nativeEvent.contentOffset.x;
+    const newIndex = Math.round(contentOffsetX / screenWidth);
+    if (newIndex !== currentAdIndex) {
+      setCurrentAdIndex(newIndex);
+    }
+  };
+
+  // Handle scroll end
+  const handleMomentumScrollEnd = (event) => {
+    const contentOffsetX = event.nativeEvent.contentOffset.x;
+    const newIndex = Math.round(contentOffsetX / screenWidth);
+    setCurrentAdIndex(newIndex);
+  };
+
+  // Render Advertisement Banner
+  const renderAdvertisement = () => {
+    if (adLoading) {
+      return (
+        <View style={[styles.adContainer, isTablet && styles.adContainerTablet]}>
+          <ActivityIndicator size="small" color="#E37714" />
+          <Text style={[styles.adLoadingText, isTablet && styles.adLoadingTextTablet]}>
+            Loading Ads...
+          </Text>
+        </View>
+      );
+    }
+
+    // Always show advertisement banner (with at least 2 default images)
+    return (
+      <View style={[styles.adContainer, isTablet && styles.adContainerTablet]}>
+        <FlatList
+          ref={flatListRef}
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          pagingEnabled
+          onScroll={handleScroll}
+          onMomentumScrollEnd={handleMomentumScrollEnd}
+          scrollEventThrottle={16}
+          data={advertisementImages}
+          keyExtractor={(item, index) => `${index}-${item.substring(0, 20)}`}
+          renderItem={({ item, index }) => (
+            <TouchableOpacity
+              style={[styles.adItem, isTablet && styles.adItemTablet]}
+              activeOpacity={0.9}
+            >
+              <Image
+                source={{ uri: item }}
+                style={[styles.adImage, isTablet && styles.adImageTablet]}
+                resizeMode="cover"
+                onError={() => handleImageError(index)}
+              />
+            </TouchableOpacity>
+          )}
+          getItemLayout={(data, index) => ({
+            length: screenWidth,
+            offset: screenWidth * index,
+            index,
+          })}
+          initialScrollIndex={0}
+          snapToInterval={screenWidth}
+          snapToAlignment="center"
+          decelerationRate="fast"
+        />
+
+        {/* Pagination Dots - Always show since we have at least 2 images
+        {advertisementImages.length > 0 && (
+          <View style={styles.paginationContainer}>
+            {advertisementImages.map((_, index) => (
+              <View
+                key={index}
+                style={[
+                  styles.paginationDot,
+                  index === currentAdIndex ? styles.paginationDotActive : styles.paginationDotInactive
+                ]}
+              />
+            ))}
+          </View> */}
+        {/* )} */}
+      </View>
+    );
+  };
+
   if (loading) {
     return (
       <View style={styles.center}>
@@ -217,7 +276,7 @@ export default function DistrictBusinessPage0() {
     <View style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor="#93210A" />
       
-      {/* Header */}
+      {/* Header - Fixed at top */}
       <View style={[styles.appBar, isTablet && styles.appBarTablet]}>
         <TouchableOpacity 
           onPress={() => navigation.goBack()} 
@@ -233,40 +292,64 @@ export default function DistrictBusinessPage0() {
         <View style={{ width: isTablet ? 40 : 30 }} />
       </View>
 
-      {/* Business List */}
-      <FlatList
-        data={businessList}
-        keyExtractor={(item) => item.id.toString()}
-        numColumns={isTablet ? 3 : 2}
-        contentContainerStyle={[styles.listContainer, isTablet && styles.listContainerTablet]}
-        columnWrapperStyle={isTablet && styles.columnWrapper}
-        renderItem={({ item }) => (
-          <TouchableOpacity
-            style={[styles.card, isTablet && styles.cardTablet]}
-            onPress={() =>
-              navigation.navigate("DistrictBusinessPage1", {
-                businessId: item.id,
-                businessName: item.name,
-              })
-            }
-            activeOpacity={0.8}
-          >
-            <Image
-              source={{
-                uri:
-                  item.imageUrl?.trim() !== ""
-                    ? item.imageUrl
-                    : "https://via.placeholder.com/200x200?text=No+Image",
-              }}
-              style={[styles.image, isTablet && styles.imageTablet]}
-              resizeMode="cover"
-            />
-            <Text style={[styles.name, isTablet && styles.nameTablet]}>
-              {item.name}
-            </Text>
-          </TouchableOpacity>
-        )}
-      />
+      {/* ScrollView for content below header */}
+      <ScrollView 
+        style={styles.scrollView}
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={styles.scrollViewContent}
+      >
+        {/* Advertisement Banner - Always show (with at least 2 default images) */}
+        {renderAdvertisement()}
+
+        {/* Business List */}
+        <FlatList
+          data={businessList}
+          keyExtractor={(item) => item.id.toString()}
+          numColumns={isTablet ? 3 : 2}
+          contentContainerStyle={[
+            styles.listContainer, 
+            isTablet && styles.listContainerTablet,
+            { paddingTop: advertisementImages.length > 0 ? 10 : 16 }
+          ]}
+          columnWrapperStyle={isTablet && styles.columnWrapper}
+          renderItem={({ item }) => (
+            <TouchableOpacity
+              style={[styles.card, isTablet && styles.cardTablet]}
+              onPress={() =>
+                navigation.navigate("DistrictBusinessPage1", {
+                  businessId: item.id,
+                  businessName: item.name,
+                  districtId: districtId,
+                })
+              }
+              activeOpacity={0.8}
+            >
+              <Image
+                source={{
+                  uri:
+                    item.imageUrl?.trim() !== ""
+                      ? item.imageUrl
+                      : "https://via.placeholder.com/200x200?text=No+Image",
+                }}
+                style={[styles.image, isTablet && styles.imageTablet]}
+                resizeMode="cover"
+              />
+              <Text style={[styles.name, isTablet && styles.nameTablet]}>
+                {item.name}
+              </Text>
+            </TouchableOpacity>
+          )}
+          ListEmptyComponent={
+            <View style={styles.emptyContainer}>
+              <Ionicons name="business-outline" size={60} color="#ccc" />
+              <Text style={[styles.emptyText, isTablet && styles.emptyTextTablet]}>
+                No businesses found
+              </Text>
+            </View>
+          }
+          scrollEnabled={false} // Disable scrolling for nested FlatList
+        />
+      </ScrollView>
     </View>
   );
 }
@@ -293,7 +376,15 @@ const styles = StyleSheet.create({
     marginTop: 15,
   },
 
-  // Header - Mobile
+  // ScrollView
+  scrollView: {
+    flex: 1,
+  },
+  scrollViewContent: {
+    flexGrow: 1,
+  },
+
+  // Header - Mobile (Fixed at top)
   appBar: {
     height: 90,
     paddingTop: Platform.OS === 'ios' ? 40 : 30,
@@ -307,6 +398,7 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 3 },
     shadowOpacity: 0.3,
     shadowRadius: 6,
+    zIndex: 1000, // Ensure header stays on top
   },
   // Header - Tablet
   appBarTablet: {
@@ -338,6 +430,74 @@ const styles = StyleSheet.create({
     fontSize: 24,
   },
 
+  // Advertisement Container - Full Edge
+  adContainer: {
+    backgroundColor: "#f5f5f5",
+    height: 200,
+    width: screenWidth,
+    overflow: "hidden",
+  },
+  // Advertisement Container - Tablet
+  adContainerTablet: {
+    height: 250,
+  },
+
+  adLoadingText: {
+    textAlign: "center",
+    fontSize: 12,
+    color: "#999",
+    marginTop: 5,
+  },
+  adLoadingTextTablet: {
+    fontSize: 14,
+  },
+
+  // Ad Item - Full width
+  adItem: {
+    width: screenWidth,
+    height: 200,
+  },
+  // Ad Item - Tablet
+  adItemTablet: {
+    height: 250,
+  },
+
+  // Ad Image - Full width
+  adImage: {
+    width: screenWidth,
+    height: "100%",
+  },
+  // Ad Image - Tablet
+  adImageTablet: {
+    width: screenWidth,
+    height: "100%",
+  },
+
+  // Pagination Dots
+  paginationContainer: {
+    flexDirection: "row",
+    position: "absolute",
+    bottom: 15,
+    alignSelf: "center",
+    backgroundColor: "rgba(0,0,0,0.4)",
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 15,
+  },
+  paginationDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    marginHorizontal: 3,
+  },
+  paginationDotActive: {
+    backgroundColor: "#E37714",
+    width: 16,
+  },
+  paginationDotInactive: {
+    backgroundColor: "rgba(255,255,255,0.5)",
+  },
+
   // List Container - Mobile
   listContainer: {
     padding: 10,
@@ -355,7 +515,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
 
-  // Card - Mobile (2 columns - 48% width)
+  // Card - Mobile (Simple Design)
   card: {
     width: "48%",
     backgroundColor: "#fff",
@@ -363,13 +523,10 @@ const styles = StyleSheet.create({
     padding: 12,
     borderRadius: 12,
     alignItems: "center",
-    elevation: 4,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
+    borderWidth: 1,
+    borderColor: "#f0f0f0",
   },
-  // Card - Tablet (3 columns - 32% width)
+  // Card - Tablet (Simple Design)
   cardTablet: {
     width: "32%",
     padding: 16,
@@ -381,13 +538,13 @@ const styles = StyleSheet.create({
   image: {
     width: "100%",
     height: 120,
-    borderRadius: 10,
-    backgroundColor: "#eee",
+    borderRadius: 8,
+    backgroundColor: "#f8f8f8",
   },
   // Image - Tablet
   imageTablet: {
     height: 140,
-    borderRadius: 12,
+    borderRadius: 10,
   },
 
   // Name - Mobile
@@ -404,4 +561,22 @@ const styles = StyleSheet.create({
     fontSize: 18,
     marginTop: 12,
   },
+
+  // Empty State
+  emptyContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    paddingVertical: 50,
+  },
+  emptyText: {
+    marginTop: 16,
+    fontSize: 16,
+    color: "#666",
+    textAlign: "center",
+  },
+  emptyTextTablet: {
+    fontSize: 18,
+    marginTop: 20,
+  }, 
 });

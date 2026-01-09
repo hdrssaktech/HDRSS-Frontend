@@ -55,6 +55,7 @@ export default function Membership1() {
 
   // 📸 Pick Image
   const pickImage = async () => {
+    Alert.alert("Info", "Kindly please upload an image with a white or light gray background.");
     const permissionResult =
       await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (!permissionResult.granted) {
@@ -72,7 +73,7 @@ export default function Membership1() {
       setPhoto(result.assets[0].uri);
     }
   };
-
+  
   // 📅 Date Picker
   const onChangeDate = (event, selected) => {
     setShowDatePicker(false);

@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState, useContext } from "react";
 import {
   View,
@@ -275,7 +274,3 @@ const styles = StyleSheet.create({
     fontSize: 18,
   },
 });
-
-
-
-

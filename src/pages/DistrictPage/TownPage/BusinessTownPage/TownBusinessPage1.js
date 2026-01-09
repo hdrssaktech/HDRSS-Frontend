@@ -1,751 +1,4 @@
-// import React, { useState, useEffect } from "react";
-// import {
-//   View,
-//   Text,
-//   Image,
-//   StyleSheet,
-//   TouchableOpacity,
-//   ScrollView,
-//   ActivityIndicator,
-//   Dimensions,
-//   StatusBar,
-//   Platform,
-// } from "react-native";
-// import { useRoute, useNavigation } from "@react-navigation/native";
-// import { LinearGradient } from 'expo-linear-gradient';
-// import { Ionicons } from "@expo/vector-icons";
-
-// export default function TownBusinessPage1() {
-//   const route = useRoute();
-//   const navigation = useNavigation();
-//   const { subcategoryId } = route.params;
-
-//   const [data, setData] = useState([]);
-//   const [loading, setLoading] = useState(true);
-//   const [error, setError] = useState(null);
-//   const [screenInfo, setScreenInfo] = useState({
-//     width: 375,
-//     height: 667,
-//     isSmallDevice: false,
-//     isTablet: false,
-//     isLargeTablet: false
-//   });
-
-//   // Initialize dimensions safely
-//   useEffect(() => {
-//     const updateDimensions = () => {
-//       try {
-//         const window = Dimensions.get("window");
-//         const isSmallDevice = window.width < 375;
-//         const isTablet = window.width >= 768;
-//         const isLargeTablet = window.width >= 1024;
-        
-//         setScreenInfo({
-//           width: window.width,
-//           height: window.height,
-//           isSmallDevice,
-//           isTablet,
-//           isLargeTablet
-//         });
-//       } catch (error) {
-//         console.log("Error getting dimensions, using defaults");
-//         setScreenInfo({
-//           width: 375,
-//           height: 667,
-//           isSmallDevice: false,
-//           isTablet: false,
-//           isLargeTablet: false
-//         });
-//       }
-//     };
-
-//     updateDimensions();
-
-//     const subscription = Dimensions.addEventListener('change', updateDimensions);
-
-//     return () => {
-//       subscription?.remove?.(); // Safe removal
-//     };
-//   }, []);
-
-//   // Fetch the subcategory API
-//   useEffect(() => {
-//     const fetchData = async () => {
-//       try {
-//         setLoading(true);
-//         setError(null);
-//         const response = await fetch(
-//           `https://hdrss-backend.onrender.com/api/tb/business/subcategory/${subcategoryId}`
-//         );
-        
-//         if (!response.ok) {
-//           throw new Error(`Failed to fetch: ${response.status}`);
-//         }
-        
-//         const result = await response.json();
-//         setData(result);
-//       } catch (error) {
-//         console.log("Error fetching subcategory:", error);
-//         setError(error.message);
-//       } finally {
-//         setLoading(false);
-//       }
-//     };
-
-//     fetchData();
-//   }, [subcategoryId]);
-
-//   // Grid layout calculation for responsive design
-//   const getGridColumns = () => {
-//     if (screenInfo.isLargeTablet) return 3;
-//     if (screenInfo.isTablet) return 2;
-//     return 2; // 2 columns on most phones
-//   };
-
-//   const gridColumns = getGridColumns();
-
-//   if (loading) {
-//     return (
-//       <View style={styles.loadingContainer}>
-//         <ActivityIndicator size="large" color="#93210A" />
-//         <Text style={styles.loadingText}>Loading subcategories...</Text>
-//       </View>
-//     );
-//   }
-
-//   if (error) {
-//     return (
-//       <View style={styles.errorContainer}>
-//         <Ionicons name="alert-circle-outline" size={60} color="#ff6b6b" />
-//         <Text style={styles.errorTitle}>Oops! Something went wrong</Text>
-//         <Text style={styles.errorText}>{error}</Text>
-//         <TouchableOpacity 
-//           style={styles.retryButton}
-//           onPress={() => navigation.goBack()}
-//         >
-//           <Text style={styles.retryButtonText}>Go Back</Text>
-//         </TouchableOpacity>
-//         <TouchableOpacity 
-//           style={[styles.retryButton, styles.retrySecondary]}
-//           onPress={() => window.location.reload()}
-//         >
-//           <Text style={styles.retryButtonText}>Try Again</Text>
-//         </TouchableOpacity>
-//       </View>
-//     );
-//   }
-
-//   return (
-//     <View style={styles.container}>
-//       <StatusBar barStyle="light-content" backgroundColor="#93210A" />
-      
-//       {/* Enhanced Header with #93210A color */}
-//       <View style={[
-//         styles.header,
-//         screenInfo.isTablet && styles.tabletHeader,
-//         screenInfo.isLargeTablet && styles.largeTabletHeader
-//       ]}>
-//         <LinearGradient
-//           colors={['#93210A', '#B32A0C']}
-//           style={styles.headerGradient}
-//         >
-//           {/* Back Button */}
-//           <TouchableOpacity
-//             style={[
-//               styles.backButton,
-//               screenInfo.isTablet && styles.tabletBackButton
-//             ]}
-//             onPress={() => navigation.goBack()}
-//           >
-//             <Ionicons 
-//               name="chevron-back" 
-//               size={screenInfo.isTablet ? 32 : 28} 
-//               color="#fff" 
-//             />
-//           </TouchableOpacity>
-
-//           {/* Header Title */}
-//           <View style={styles.headerTitleContainer}>
-//             <Text style={[
-//               styles.headerTitle,
-//               screenInfo.isLargeTablet && styles.largeTabletHeaderTitle,
-//               screenInfo.isTablet && styles.tabletHeaderTitle,
-//               screenInfo.isSmallDevice && styles.smallHeaderTitle
-//             ]}>
-//               Business Subcategories
-//             </Text>
-//             {/* <Text style={[
-//               styles.headerSubtitle,
-//               screenInfo.isTablet && styles.tabletHeaderSubtitle,
-//               screenInfo.isSmallDevice && styles.smallHeaderSubtitle
-//             ]}>
-//               Explore business opportunities
-//             </Text> */}
-//           </View>
-
-//           {/* Stats in Header */}
-//           {/* {data.length > 0 && (
-//             <View style={[
-//               styles.headerStats,
-//               screenInfo.isTablet && styles.tabletHeaderStats
-//             ]}>
-//               <View style={styles.headerStatItem}>
-//                 <Text style={styles.headerStatNumber}>{data.length}</Text>
-//                 <Text style={styles.headerStatLabel}>Categories</Text>
-//               </View>
-//               <View style={styles.headerStatDivider} />
-//               <View style={styles.headerStatItem}>
-//                 <Text style={styles.headerStatNumber}>
-//                   {data.reduce((acc, item) => acc + (item.businessCount || 0), 0)}
-//                 </Text>
-//                 <Text style={styles.headerStatLabel}>Businesses</Text>
-//               </View>
-//             </View>
-//           )} */}
-
-//           {/* Placeholder for alignment */}
-//           <View style={styles.headerPlaceholder} />
-//         </LinearGradient>
-//       </View>
-
-//       <ScrollView 
-//         style={styles.scrollView}
-//         showsVerticalScrollIndicator={false}
-//         contentContainerStyle={styles.scrollContent}
-//       >
-//         {/* Enhanced Grid Layout for All Devices */}
-//         {data.length > 0 ? (
-//           <View style={styles.categoriesContainer}>
-//             {/* Section Header */}
-//             <View style={styles.sectionHeader}>
-//               <View>
-//                 <Text style={[
-//                   styles.categoriesTitle,
-//                   screenInfo.isTablet && styles.tabletCategoriesTitle,
-//                   screenInfo.isSmallDevice && styles.smallCategoriesTitle
-//                 ]}>
-//                   Available Subcategories
-//                 </Text>
-//                 <Text style={[
-//                   styles.categoriesSubtitle,
-//                   screenInfo.isTablet && styles.tabletCategoriesSubtitle
-//                 ]}>
-//                   Choose a category to explore businesses
-//                 </Text>
-//               </View>
-//               {/* <View style={styles.counterBadge}>
-//                 <Text style={styles.counterText}>{data.length}</Text>
-//               </View> */}
-//             </View>
-
-//             {/* Responsive Grid Layout */}
-//             <View style={[
-//               styles.categoriesGrid,
-//               { 
-//                 gap: screenInfo.isLargeTablet ? 16 : 
-//                      screenInfo.isTablet ? 14 : 12 
-//               }
-//             ]}>
-//               {data.map((item, index) => (
-//                 <TouchableOpacity
-//                   key={item.id || index}
-//                   style={[
-//                     styles.categoryCard,
-//                     { 
-//                       width: `${100/gridColumns - 2}%`,
-//                       height: screenInfo.isLargeTablet ? 200 :
-//                              screenInfo.isTablet ? 180 :
-//                              screenInfo.isSmallDevice ? 150 : 170
-//                     },
-//                     screenInfo.isLargeTablet && styles.largeTabletCategoryCard,
-//                     screenInfo.isTablet && styles.tabletCategoryCard
-//                   ]}
-//                   onPress={() =>
-//                     navigation.navigate("TownBusiness3", { 
-//                       subcategoryItemId: item.id
-//                     })
-//                   }
-//                   activeOpacity={0.9}
-//                 >
-//                   {/* Image Container */}
-//                   <View style={[
-//                     styles.categoryImageContainer,
-//                     {
-//                       height: screenInfo.isLargeTablet ? 120 :
-//                              screenInfo.isTablet ? 100 :
-//                              screenInfo.isSmallDevice ? 80 : 90
-//                     }
-//                   ]}>
-//                     <Image
-//                       source={{ uri: item.image }} 
-//                       style={styles.categoryImage}
-//                       resizeMode="cover"
-//                       onError={() => console.log("Image failed to load:", item.image)}
-//                     />
-//                     <LinearGradient
-//                       colors={['transparent', 'rgba(0,0,0,0.5)']}
-//                       style={styles.cardGradient}
-//                     />
-                    
-//                     {/* Category Badge */}
-//                     <View style={styles.categoryBadge}>
-//                       <Ionicons name="business" size={
-//                         screenInfo.isLargeTablet ? 14 :
-//                         screenInfo.isTablet ? 12 : 10
-//                       } color="#fff" />
-//                     </View>
-//                   </View>
-                  
-//                   {/* Content */}
-//                   <View style={[
-//                     styles.categoryContent,
-//                     {
-//                       padding: screenInfo.isLargeTablet ? 12 :
-//                               screenInfo.isTablet ? 10 : 8
-//                     }
-//                   ]}>
-//                     <Text 
-//                       style={[
-//                         styles.categoryTitle,
-//                         screenInfo.isLargeTablet && styles.largeTabletCategoryTitle,
-//                         screenInfo.isTablet && styles.tabletCategoryTitle,
-//                         screenInfo.isSmallDevice && styles.smallCategoryTitle
-//                       ]}
-//                       numberOfLines={2}
-//                     >
-//                       {item.title || 'Untitled Category'}
-//                     </Text>
-//                     <Text 
-//                       style={[
-//                         styles.categoryDescription,
-//                         screenInfo.isLargeTablet && styles.largeTabletCategoryDescription,
-//                         screenInfo.isTablet && styles.tabletCategoryDescription,
-//                         screenInfo.isSmallDevice && styles.smallCategoryDescription
-//                       ]}
-//                       numberOfLines={2}
-//                     >
-//                       {item.businessCount ? `${item.businessCount} businesses` : 'Explore businesses'}
-//                     </Text>
-                    
-//                     {/* Footer */}
-//                     <View style={styles.cardFooter}>
-//                       <View style={[
-//                         styles.exploreButton,
-//                         screenInfo.isSmallDevice && styles.smallExploreButton
-//                       ]}>
-//                         <Text style={[
-//                           styles.exploreText,
-//                           screenInfo.isSmallDevice && styles.smallExploreText
-//                         ]}>
-//                           Explore
-//                         </Text>
-//                         <Ionicons 
-//                           name="arrow-forward" 
-//                           size={
-//                             screenInfo.isLargeTablet ? 14 :
-//                             screenInfo.isTablet ? 13 : 12
-//                           } 
-//                           color="#93210A" 
-//                         />
-//                       </View>
-//                     </View>
-//                   </View>
-//                 </TouchableOpacity>
-//               ))}
-//             </View>
-//           </View>
-//         ) : (
-//           // Empty State
-//           <View style={styles.emptyContainer}>
-//             <View style={styles.emptyIllustration}>
-//               <Ionicons name="folder-open-outline" size={120} color="#e0e0e0" />
-//               <View style={styles.emptyBadge}>
-//                 <Ionicons name="alert-circle" size={24} color="#93210A" />
-//               </View>
-//             </View>
-//             <Text style={styles.emptyTitle}>No Subcategories Found</Text>
-//             <Text style={styles.emptyText}>
-//               There are no business subcategories available at the moment.
-//             </Text>
-//             <TouchableOpacity 
-//               style={styles.retryButton}
-//               onPress={() => navigation.goBack()}
-//             >
-//               <Text style={styles.retryButtonText}>Go Back</Text>
-//             </TouchableOpacity>
-//           </View>
-//         )}
-//       </ScrollView>
-//     </View>
-//   );
-// }
-
-// const styles = StyleSheet.create({
-//   container: {
-//     flex: 1,
-//     backgroundColor: "#f8f9fa",
-//   },
-  
-//   // Enhanced Header with #93210A
-//   header: {
-//     height: 140,
-//     overflow: "hidden",
-//   },
-//   tabletHeader: {
-//     height: 160,
-//   },
-//   largeTabletHeader: {
-//     height: 180,
-//   },
-//   headerGradient: {
-//     flex: 1,
-//     flexDirection: "row",
-//     alignItems: "flex-end",
-//     justifyContent: "space-between",
-//     paddingHorizontal: 20,
-//     paddingBottom: 20,
-//     paddingTop: Platform.OS === 'ios' ? 50 : 40,
-//   },
-//   backButton: {
-//     padding: 10,
-//     backgroundColor: "rgba(255,255,255,0.2)",
-//     borderRadius: 12,
-//     marginRight: 15,
-//   },
-//   tabletBackButton: {
-//     padding: 12,
-//     borderRadius: 16,
-//   },
-//   headerTitleContainer: {
-//     flex: 1,
-//   },
-//   headerTitle: {
-//     color: "#fff",
-//     fontSize: 24,
-//     fontWeight: "800",
-//     textShadowColor: "rgba(0,0,0,0.3)",
-//     textShadowOffset: { width: 1, height: 1 },
-//     textShadowRadius: 5,
-//     marginBottom: 4,
-//   },
-//   largeTabletHeaderTitle: {
-//     fontSize: 28,
-//   },
-//   tabletHeaderTitle: {
-//     fontSize: 26,
-//   },
-//   smallHeaderTitle: {
-//     fontSize: 22,
-//   },
-//   headerSubtitle: {
-//     color: "rgba(255,255,255,0.9)",
-//     fontSize: 14,
-//     fontWeight: "500",
-//     textShadowColor: "rgba(0,0,0,0.3)",
-//     textShadowOffset: { width: 1, height: 1 },
-//     textShadowRadius: 3,
-//   },
-//   tabletHeaderSubtitle: {
-//     fontSize: 16,
-//   },
-//   smallHeaderSubtitle: {
-//     fontSize: 13,
-//   },
-//   headerStats: {
-//     flexDirection: "row",
-//     alignItems: "center",
-//     backgroundColor: "rgba(255,255,255,0.15)",
-//     borderRadius: 16,
-//     padding: 12,
-//     marginLeft: 15,
-//   },
-//   tabletHeaderStats: {
-//     padding: 14,
-//   },
-//   headerStatItem: {
-//     alignItems: "center",
-//     paddingHorizontal: 8,
-//   },
-//   headerStatNumber: {
-//     color: "#fff",
-//     fontSize: 16,
-//     fontWeight: "bold",
-//     marginBottom: 2,
-//   },
-//   headerStatLabel: {
-//     color: "rgba(255,255,255,0.8)",
-//     fontSize: 10,
-//     fontWeight: "500",
-//   },
-//   headerStatDivider: {
-//     width: 1,
-//     height: 25,
-//     backgroundColor: "rgba(255,255,255,0.3)",
-//   },
-//   headerPlaceholder: {
-//     width: 40,
-//   },
-
-//   // Scroll View
-//   scrollView: {
-//     flex: 1,
-//   },
-//   scrollContent: {
-//     paddingBottom: 30,
-//   },
-
-//   // Loading State
-//   loadingContainer: {
-//     flex: 1,
-//     justifyContent: "center",
-//     alignItems: "center",
-//     backgroundColor: "#f8f9fa",
-//   },
-//   loadingText: {
-//     marginTop: 16,
-//     fontSize: 16,
-//     color: "#666",
-//     fontWeight: "500",
-//   },
-
-//   // Error State
-//   errorContainer: {
-//     flex: 1,
-//     justifyContent: "center",
-//     alignItems: "center",
-//     backgroundColor: "#f8f9fa",
-//     paddingHorizontal: 40,
-//   },
-//   errorTitle: {
-//     fontSize: 20,
-//     fontWeight: "bold",
-//     color: "#333",
-//     marginTop: 20,
-//     marginBottom: 10,
-//     textAlign: "center",
-//   },
-//   errorText: {
-//     fontSize: 15,
-//     color: "#666",
-//     textAlign: "center",
-//     lineHeight: 22,
-//     marginBottom: 30,
-//   },
-//   retryButton: {
-//     backgroundColor: "#93210A",
-//     paddingHorizontal: 30,
-//     paddingVertical: 12,
-//     borderRadius: 25,
-//     marginVertical: 5,
-//   },
-//   retrySecondary: {
-//     backgroundColor: "#666",
-//   },
-//   retryButtonText: {
-//     color: "#fff",
-//     fontWeight: "bold",
-//     fontSize: 16,
-//   },
-
-//   // Enhanced Categories Section
-//   categoriesContainer: {
-//     padding: 16,
-//   },
-//   sectionHeader: {
-//     flexDirection: "row",
-//     justifyContent: "space-between",
-//     alignItems: "flex-start",
-//     marginBottom: 24,
-//     paddingHorizontal: 8,
-//   },
-//   categoriesTitle: {
-//     fontSize: 24,
-//     fontWeight: "800",
-//     color: "#1a1a1a",
-//     marginBottom: 8,
-//     letterSpacing: -0.5,
-//   },
-//   tabletCategoriesTitle: {
-//     fontSize: 28,
-//   },
-//   smallCategoriesTitle: {
-//     fontSize: 22,
-//   },
-//   categoriesSubtitle: {
-//     fontSize: 14,
-//     color: "#666",
-//     lineHeight: 20,
-//   },
-//   tabletCategoriesSubtitle: {
-//     fontSize: 16,
-//   },
-//   counterBadge: {
-//     backgroundColor: "#93210A",
-//     borderRadius: 20,
-//     paddingHorizontal: 12,
-//     paddingVertical: 6,
-//   },
-//   counterText: {
-//     color: "#fff",
-//     fontSize: 14,
-//     fontWeight: "bold",
-//   },
-
-//   // Enhanced Grid Layout
-//   categoriesGrid: {
-//     flexDirection: "row",
-//     flexWrap: "wrap",
-//     justifyContent: "space-between",
-//   },
-
-//   // Enhanced Category Cards
-//   categoryCard: {
-//     backgroundColor: "#fff",
-//     borderRadius: 16,
-//     overflow: "hidden",
-//     elevation: 6,
-//     shadowColor: "#000",
-//     shadowOffset: { width: 0, height: 3 },
-//     shadowOpacity: 0.1,
-//     shadowRadius: 8,
-//     marginBottom: 12,
-//   },
-//   tabletCategoryCard: {
-//     borderRadius: 18,
-//   },
-//   largeTabletCategoryCard: {
-//     borderRadius: 20,
-//   },
-//   categoryImageContainer: {
-//     position: "relative",
-//     overflow: "hidden",
-//   },
-//   categoryImage: {
-//     width: "100%",
-//     height: "100%",
-//   },
-//   cardGradient: {
-//     ...StyleSheet.absoluteFillObject,
-//   },
-//   categoryBadge: {
-//     position: "absolute",
-//     top: 8,
-//     right: 8,
-//     backgroundColor: "rgba(147, 33, 10, 0.9)",
-//     borderRadius: 8,
-//     padding: 4,
-//   },
-//   categoryContent: {
-//     flex: 1,
-//     justifyContent: "space-between",
-//   },
-//   categoryTitle: {
-//     fontSize: 14,
-//     fontWeight: "700",
-//     color: "#1a1a1a",
-//     marginBottom: 4,
-//     lineHeight: 18,
-//   },
-//   largeTabletCategoryTitle: {
-//     fontSize: 16,
-//     lineHeight: 20,
-//   },
-//   tabletCategoryTitle: {
-//     fontSize: 15,
-//     lineHeight: 19,
-//   },
-//   smallCategoryTitle: {
-//     fontSize: 13,
-//     lineHeight: 16,
-//   },
-//   categoryDescription: {
-//     fontSize: 12,
-//     color: "#666",
-//     lineHeight: 16,
-//     marginBottom: 8,
-//   },
-//   largeTabletCategoryDescription: {
-//     fontSize: 13,
-//     lineHeight: 17,
-//   },
-//   tabletCategoryDescription: {
-//     fontSize: 12,
-//     lineHeight: 16,
-//   },
-//   smallCategoryDescription: {
-//     fontSize: 11,
-//     lineHeight: 14,
-//   },
-//   cardFooter: {
-//     flexDirection: "row",
-//     justifyContent: "space-between",
-//     alignItems: "center",
-//   },
-//   exploreButton: {
-//     flexDirection: "row",
-//     alignItems: "center",
-//     backgroundColor: "rgba(147, 33, 10, 0.1)",
-//     borderRadius: 10,
-//     paddingHorizontal: 8,
-//     paddingVertical: 4,
-//   },
-//   smallExploreButton: {
-//     paddingHorizontal: 6,
-//     paddingVertical: 3,
-//   },
-//   exploreText: {
-//     color: "#93210A",
-//     fontSize: 12,
-//     fontWeight: "600",
-//     marginRight: 4,
-//   },
-//   smallExploreText: {
-//     fontSize: 11,
-//     marginRight: 3,
-//   },
-
-//   // Enhanced Empty State
-//   emptyContainer: {
-//     alignItems: "center",
-//     justifyContent: "center",
-//     paddingVertical: 100,
-//     paddingHorizontal: 32,
-//   },
-//   emptyIllustration: {
-//     position: "relative",
-//     marginBottom: 32,
-//   },
-//   emptyBadge: {
-//     position: "absolute",
-//     bottom: -5,
-//     right: -5,
-//     backgroundColor: "#fff",
-//     borderRadius: 15,
-//     padding: 8,
-//     elevation: 4,
-//     shadowColor: "#000",
-//     shadowOffset: { width: 0, height: 2 },
-//     shadowOpacity: 0.1,
-//     shadowRadius: 4,
-//   },
-//   emptyTitle: {
-//     fontSize: 24,
-//     fontWeight: "700",
-//     color: "#666",
-//     marginBottom: 12,
-//     textAlign: "center",
-//   },
-//   emptyText: {
-//     fontSize: 16,
-//     color: "#888",
-//     textAlign: "center",
-//     lineHeight: 24,
-//     marginBottom: 32,
-//   },
-// });
-
-
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import {
   View,
   Text,
@@ -757,34 +10,217 @@ import {
   Dimensions,
   StatusBar,
   Platform,
+  SafeAreaView,
+  FlatList,
+  Animated,
 } from "react-native";
 import { useRoute, useNavigation } from "@react-navigation/native";
 import { LinearGradient } from "expo-linear-gradient";
 import { Ionicons } from "@expo/vector-icons";
+import YoutubePlayer from 'react-native-youtube-iframe';
 
-const { width } = Dimensions.get("window");
-const isTablet = width >= 600;
+const { width: screenWidth, height: screenHeight } = Dimensions.get("window");
+const isTablet = screenWidth >= 600;
+const isLargeTablet = screenWidth >= 1024;
+
+// Default image URL
+const DEFAULT_IMAGE = 'https://via.placeholder.com/400x300/93210A/ffffff?text=Business+Category';
 
 export default function TownBusinessPage1() {
   const route = useRoute();
   const navigation = useNavigation();
-  const { subcategoryId } = route.params;
+  
+  // Safely get parameters with fallback
+  const subcategoryId = route.params?.subcategoryId || 13;
+  const townId = route.params?.townId ||1;
+  console.log(townId)
+  const townName = route.params?.townName || "Town";
+  const entityId = route.params?.entityId || subcategoryId;
+  console.log(entityId)
 
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [adsData, setAdsData] = useState([]);
+  const [adsLoading, setAdsLoading] = useState(true);
+  const [playing, setPlaying] = useState(false);
+  
+  // Advertisement carousel refs
+  const flatListRef = useRef(null);
+  const adIndex = useRef(0);
+  const scrollX = useRef(new Animated.Value(0)).current;
 
-  /* ================= FETCH ================= */
+  // Check if image URL is valid
+  const isValidImageUrl = (url) => {
+    if (!url || url === 'null' || url === 'undefined' || url === '') {
+      return false;
+    }
+    if (!url.startsWith('http://') && !url.startsWith('https://')) {
+      return false;
+    }
+    return true;
+  };
+
+  // Get safe image URL
+  const getSafeImageUrl = (url) => {
+    return isValidImageUrl(url) ? url : DEFAULT_IMAGE;
+  };
+
+  // Extract YouTube video ID
+  const getYouTubeId = (url) => {
+    if (!url) return null;
+    const match = url.match(
+      /(?:youtube\.com\/.*v=|youtu\.be\/|youtube\.com\/embed\/)([^"&?/ ]{11})/
+    );
+    return match ? match[1] : null;
+  };
+
+  // ================= FETCH ADS (PageLevel 2) =================
+  useEffect(() => {
+    const fetchAds = async () => {
+      try {
+        const townIdParam = entityId || subcategoryId;
+        const entityIdParam = entityId || subcategoryId;
+        
+        const response = await fetch(
+          `https://hdrss-backend.onrender.com/api/town-business-ads/filter?townId=${townId}&pageLevel=2&entityId=${subcategoryId}`
+        );
+        
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const json = await response.json();
+        
+        if (json.success && json.data && json.data.length > 0) {
+          const ads = json.data[0];
+          const adItems = [];
+          
+          if (ads.adImages && ads.adImages.length > 0) {
+            ads.adImages.forEach((image, index) => {
+              adItems.push({
+                id: `image-${index}`,
+                type: 'image',
+                url: getSafeImageUrl(image),
+              });
+            });
+          }
+          
+          if (ads.adVideos && ads.adVideos.length > 0) {
+            ads.adVideos.forEach((video, index) => {
+              if (video) {
+                adItems.push({
+                  id: `video-${index}`,
+                  type: 'video',
+                  url: video,
+                });
+              }
+            });
+          }
+          
+          setAdsData(adItems);
+        }
+      } catch (error) {
+        console.log("Ads fetch error:", error.message);
+      } finally {
+        setAdsLoading(false);
+      }
+    };
+
+    fetchAds();
+  }, [subcategoryId, entityId]);
+
+  // Auto-scroll functionality for ads
+  useEffect(() => {
+    if (adsData.length <= 1) return;
+
+    const scrollInterval = setInterval(() => {
+      if (adIndex.current >= adsData.length - 1) {
+        adIndex.current = 0;
+      } else {
+        adIndex.current += 1;
+      }
+
+      if (flatListRef.current) {
+        flatListRef.current.scrollToIndex({
+          index: adIndex.current,
+          animated: true,
+        });
+      }
+    }, 3000);
+
+    return () => clearInterval(scrollInterval);
+  }, [adsData]);
+
+  // ================= FETCH SUBCATEGORIES =================
   useEffect(() => {
     fetch(
       `https://hdrss-backend.onrender.com/api/tb/business/subcategory/${subcategoryId}`
     )
-      .then((res) => res.json())
-      .then(setData)
-      .catch(console.log)
+      .then((res) => {
+        if (!res.ok) {
+          throw new Error(`HTTP error! status: ${res.status}`);
+        }
+        return res.json();
+      })
+      .then(jsonData => {
+        const dataArray = Array.isArray(jsonData) ? jsonData : [];
+        setData(dataArray);
+      })
+      .catch(error => {
+        console.log("Fetch error:", error.message);
+        setData([]);
+      })
       .finally(() => setLoading(false));
-  }, []);
+  }, [subcategoryId]);
 
-  /* ================= LOADER ================= */
+  // Render advertisement item
+  const renderAdItem = ({ item, index }) => {
+    if (item.type === 'image') {
+      return (
+        <View style={[
+          styles.adItemContainer,
+          { width: screenWidth }
+        ]}>
+          <Image
+            source={{ uri: item.url }}
+            style={styles.adImage}
+            resizeMode="cover"
+            onError={() => {
+              console.log(`Ad image failed to load: ${item.url}`);
+            }}
+          />
+          <LinearGradient
+            colors={['rgba(0,0,0,0.1)', 'rgba(0,0,0,0.4)', 'rgba(0,0,0,0.7)']}
+            style={styles.adGradient}
+          />
+        </View>
+      );
+    } else {
+      const videoId = getYouTubeId(item.url);
+      return (
+        <View style={[
+          styles.adItemContainer,
+          { width: screenWidth }
+        ]}>
+          {videoId && (
+            <YoutubePlayer
+              height={isLargeTablet ? 200 : isTablet ? 180 : 160}
+              width={screenWidth}
+              play={playing}
+              videoId={videoId}
+              onChangeState={(state) => setPlaying(state === "playing")}
+            />
+          )}
+          <LinearGradient
+            colors={['rgba(0,0,0,0.1)', 'rgba(0,0,0,0.4)', 'rgba(0,0,0,0.7)']}
+            style={styles.adGradient}
+          />
+        </View>
+      );
+    }
+  };
+
+  // ================= LOADER =================
   if (loading) {
     return (
       <View style={styles.loader}>
@@ -795,92 +231,201 @@ export default function TownBusinessPage1() {
   }
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.safeArea}>
       <StatusBar barStyle="light-content" backgroundColor="#93210A" />
 
-      {/* ================= HEADER ================= */}
-      <LinearGradient
-        colors={["#93210A", "#B32A0C"]}
-        style={isTablet ? styles.headerTablet : styles.headerMobile}
-      >
-        <TouchableOpacity
-          style={isTablet ? styles.backTablet : styles.backMobile}
-          onPress={() => navigation.goBack()}
-        >
-          <Ionicons name="chevron-back" size={26} color="#fff" />
-        </TouchableOpacity>
-
-        <Text
-          style={isTablet ? styles.headerTitleTablet : styles.headerTitleMobile}
-        >
-          Business Categories
-        </Text>
-
-        <Text
-          style={
-            isTablet
-              ? styles.headerSubtitleTablet
-              : styles.headerSubtitleMobile
-          }
-        >
-          Choose a category to explore
-        </Text>
-      </LinearGradient>
-
-      {/* ================= GRID ================= */}
-      <ScrollView contentContainerStyle={styles.content}>
-        <View style={isTablet ? styles.gridTablet : styles.gridMobile}>
-          {data.map((item, index) => (
+      <View style={styles.container}>
+        {/* ================= HEADER FIRST ================= */}
+        <View style={[
+          styles.headerContainer,
+          isTablet && styles.headerContainerTablet
+        ]}>
+          <LinearGradient
+            colors={["#93210A", "#B32A0C"]}
+            style={styles.headerGradient}
+          >
+            {/* Back Button */}
             <TouchableOpacity
-              key={item.id || index}
-              activeOpacity={0.85}
-              style={isTablet ? styles.cardTablet : styles.cardMobile}
-              onPress={() =>
-                navigation.navigate("TownBusiness3", {
-                  subcategoryItemId: item.id,
-                })
-              }
+              style={isTablet ? styles.backTablet : styles.backMobile}
+              onPress={() => navigation.goBack()}
             >
-              {/* IMAGE */}
-              <Image source={{ uri: item.image }} style={styles.cardImage} />
+              <Ionicons name="chevron-back" size={isTablet ? 28 : 24} color="#fff" />
+            </TouchableOpacity>
 
-              {/* BODY */}
-              <View
-                style={isTablet ? styles.cardBodyTablet : styles.cardBodyMobile}
-              >
-                <Text
-                  numberOfLines={2}
-                  style={
-                    isTablet
-                      ? styles.cardTitleTablet
-                      : styles.cardTitleMobile
+            <Text style={[
+              styles.headerTitle,
+              isTablet && styles.headerTitleTablet
+            ]}>
+              Business Categories
+            </Text>
+          </LinearGradient>
+        </View>
+
+        {/* ================= ADS BELOW HEADER ================= */}
+        <View style={[
+          styles.adsContainer,
+          { 
+            height: isLargeTablet ? 200 : 
+                   isTablet ? 180 : 
+                   160 
+          }
+        ]}>
+          {adsLoading ? (
+            <View style={styles.adsLoadingContainer}>
+              <ActivityIndicator size="large" color="#93210A" />
+            </View>
+          ) : adsData.length > 0 ? (
+            <>
+              <Animated.FlatList
+                ref={flatListRef}
+                data={adsData}
+                renderItem={renderAdItem}
+                keyExtractor={(item) => item.id}
+                horizontal
+                pagingEnabled
+                showsHorizontalScrollIndicator={false}
+                onScroll={Animated.event(
+                  [{ nativeEvent: { contentOffset: { x: scrollX } } }],
+                  { useNativeDriver: false }
+                )}
+                onMomentumScrollEnd={(event) => {
+                  const newIndex = Math.floor(
+                    event.nativeEvent.contentOffset.x / screenWidth
+                  );
+                  adIndex.current = newIndex;
+                }}
+                scrollEventThrottle={16}
+              />
+              
+              {/* Pagination Dots */}
+              {adsData.length > 1 && (
+                <View style={styles.paginationContainer}>
+                  {adsData.map((_, i) => (
+                    <View 
+                      key={i} 
+                      style={[
+                        styles.paginationDot,
+                        { 
+                          opacity: i === adIndex.current ? 1 : 0.5,
+                          width: i === adIndex.current ? 10 : 6,
+                        }
+                      ]} 
+                    />
+                  ))}
+                </View>
+              )}
+            </>
+          ) : (
+            <View style={styles.noAdsContainer}>
+              <Ionicons name="images-outline" size={40} color="#ccc" />
+              <Text style={styles.noAdsText}>No advertisements available</Text>
+            </View>
+          )}
+        </View>
+
+        {/* ================= GRID CONTENT ================= */}
+        <ScrollView 
+          style={styles.contentScroll}
+          contentContainerStyle={styles.contentContainer}
+          showsVerticalScrollIndicator={false}
+        >
+          <View style={styles.sectionHeader}>
+            <Text style={[
+              styles.sectionTitle,
+              isTablet && styles.sectionTitleTablet
+            ]}>
+              Available Categories
+            </Text>
+            <Text style={[
+              styles.sectionSubtitle,
+              isTablet && styles.sectionSubtitleTablet
+            ]}>
+              Explore local businesses in {townName}
+            </Text>
+          </View>
+
+          <View style={isTablet ? styles.gridTablet : styles.gridMobile}>
+            {data.length > 0 ? (
+              data.map((item, index) => (
+                <TouchableOpacity
+                  key={item.id || index}
+                  activeOpacity={0.85}
+                  style={isTablet ? styles.cardTablet : styles.cardMobile}
+                  onPress={() =>
+                    navigation.navigate("TownBusiness3", {
+                      subcategoryItemId: item.id,
+                      categoryName: item.title,
+                      entityId: subcategoryId,
+                      townId:townId
+                    })
                   }
                 >
-                  {item.title}
-                </Text>
-
-                <Text
-                  style={isTablet ? styles.cardSubTablet : styles.cardSubMobile}
-                >
-                  {item.businessCount
-                    ? `${item.businessCount} businesses`
-                    : "Explore businesses"}
-                </Text>
-
-                <View style={styles.exploreRow}>
-                  <Text style={styles.exploreText}>Explore</Text>
-                  <Ionicons
-                    name="arrow-forward"
-                    size={14}
-                    color="#93210A"
+                  {/* IMAGE with default fallback */}
+                  <Image 
+                    source={{ 
+                      uri: getSafeImageUrl(item.image)
+                    }} 
+                    style={styles.cardImage}
+                    onError={(e) => {
+                      console.log(`Category image failed to load: ${item.image}`, e.nativeEvent.error);
+                    }}
                   />
-                </View>
+
+                  {/* BODY */}
+                  <View
+                    style={isTablet ? styles.cardBodyTablet : styles.cardBodyMobile}
+                  >
+                    <Text
+                      numberOfLines={2}
+                      style={
+                        isTablet
+                          ? styles.cardTitleTablet
+                          : styles.cardTitleMobile
+                      }
+                    >
+                      {item.title || "Business Category"}
+                    </Text>
+
+                    <Text
+                      style={isTablet ? styles.cardSubTablet : styles.cardSubMobile}
+                      numberOfLines={2}
+                    >
+                      {item.description || "Explore local businesses"}
+                    </Text>
+
+                    <View style={styles.exploreRow}>
+                      <Text style={styles.exploreText}>View Businesses</Text>
+                      <Ionicons
+                        name="arrow-forward"
+                        size={isTablet ? 16 : 14}
+                        color="#93210A"
+                      />
+                    </View>
+                  </View>
+                </TouchableOpacity>
+              ))
+            ) : (
+              // No data available
+              <View style={styles.noDataContainer}>
+                <Ionicons name="business-outline" size={60} color="#ccc" />
+                <Text style={styles.noDataText}>
+                  No business categories available
+                </Text>
+                <Text style={styles.noDataSubtext}>
+                  Check back later for new business listings
+                </Text>
+                <TouchableOpacity
+                  style={styles.retryButton}
+                  onPress={() => navigation.goBack()}
+                >
+                  <Text style={styles.retryButtonText}>Go Back</Text>
+                </TouchableOpacity>
               </View>
-            </TouchableOpacity>
-          ))}
-        </View>
-      </ScrollView>
-    </View>
+            )}
+          </View>
+        </ScrollView>
+      </View>
+    </SafeAreaView>
   );
 }
 
@@ -889,21 +434,168 @@ export default function TownBusinessPage1() {
 /* ================================================= */
 
 const styles = StyleSheet.create({
-  /* ================= COMMON ================= */
+  /* ================= BASE STYLES ================= */
+  safeArea: {
+    flex: 1,
+   
+  },
+  
   container: {
     flex: 1,
     backgroundColor: "#F6F7F9",
   },
 
-  content: {
+  /* ================= HEADER STYLES (FIRST) ================= */
+  headerContainer: {
+    height: 80,
+  },
+  
+  headerContainerTablet: {
+    height: 90,
+  },
+  
+  headerGradient: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+  },
+  
+  headerTitle: {
+    flex: 1,
+    color: "#fff",
+    fontSize: 20,
+    fontWeight: "800",
+    textAlign: "center",
+    textShadowColor: "rgba(0,0,0,0.5)",
+    textShadowOffset: { width: 1, height: 1 },
+    textShadowRadius: 5,
+  },
+  
+  headerTitleTablet: {
+    fontSize: 24,
+  },
+
+  /* ================= BACK BUTTON STYLES ================= */
+  backMobile: {
+    backgroundColor: "rgba(255,255,255,0.25)",
+    padding: 8,
+    borderRadius: 12,
+    position: 'absolute',
+    left: 16,
+    zIndex: 2,
+  },
+
+  backTablet: {
+    backgroundColor: "rgba(255,255,255,0.25)",
+    padding: 10,
+    borderRadius: 14,
+    position: 'absolute',
+    left: 20,
+    zIndex: 2,
+  },
+
+  /* ================= ADS STYLES (BELOW HEADER) ================= */
+  adsContainer: {
+    position: "relative",
+    overflow: "hidden",
+    backgroundColor: '#fff',
+    borderBottomWidth: 1,
+    borderBottomColor: '#e0e0e0',
+  },
+
+  adItemContainer: {
+    height: '100%',
+    position: 'relative',
+  },
+  
+  adImage: {
+    width: '100%',
+    height: '100%',
+  },
+  
+  adGradient: {
+    ...StyleSheet.absoluteFillObject,
+  },
+  
+  adsLoadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#f5f5f5',
+  },
+
+  paginationContainer: {
+    position: 'absolute',
+    bottom: 10,
+    flexDirection: 'row',
+    alignSelf: 'center',
+    zIndex: 2,
+  },
+  
+  paginationDot: {
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: 'rgba(147, 33, 10, 0.9)',
+    marginHorizontal: 4,
+  },
+
+  noAdsContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#f5f5f5',
+  },
+  
+  noAdsText: {
+    fontSize: 14,
+    color: '#666',
+    marginTop: 8,
+  },
+
+  /* ================= CONTENT STYLES ================= */
+  contentScroll: {
+    flex: 1,
+  },
+  
+  contentContainer: {
     padding: 16,
     paddingBottom: 40,
   },
 
+  /* ================= SECTION HEADER ================= */
+  sectionHeader: {
+    marginBottom: 20,
+    paddingHorizontal: 8,
+  },
+  
+  sectionTitle: {
+    fontSize: 22,
+    fontWeight: "800",
+    color: "#1a1a1a",
+    marginBottom: 4,
+  },
+  
+  sectionTitleTablet: {
+    fontSize: 26,
+  },
+  
+  sectionSubtitle: {
+    fontSize: 14,
+    color: "#666",
+    lineHeight: 20,
+  },
+  
+  sectionSubtitleTablet: {
+    fontSize: 16,
+  },
+
+  /* ================= LOADER STYLES ================= */
   loader: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
+    backgroundColor: '#fff',
   },
 
   loaderText: {
@@ -912,59 +604,20 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
 
-  cardImage: {
-    width: "100%",
-    height: 110,
-    resizeMode: "cover",
-  },
-
-  exploreRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginTop: 6,
-  },
-
-  exploreText: {
-    color: "#93210A",
-    fontWeight: "700",
-    marginRight: 6,
-    fontSize: 13,
-  },
-
-  /* ================= MOBILE ================= */
-  headerMobile: {
-    paddingTop: Platform.OS === "ios" ? 55 : 45,
-    paddingBottom: 28,
-    paddingHorizontal: 20,
-  },
-
-  backMobile: {
-    position: "absolute",
-    left: 16,
-    top: Platform.OS === "ios" ? 55 : 45,
-    backgroundColor: "rgba(255,255,255,0.25)",
-    padding: 8,
-    borderRadius: 12,
-  },
-
-  headerTitleMobile: {
-    color: "#fff",
-    fontSize: 19,
-    fontWeight: "800",
-    textAlign: "center",
-  },
-
-  headerSubtitleMobile: {
-    color: "#f1f1f1",
-    textAlign: "center",
-    fontSize: 13,
-    marginTop: 6,
-  },
-
+  /* ================= GRID & CARD STYLES ================= */
   gridMobile: {
     flexDirection: "row",
     flexWrap: "wrap",
     justifyContent: "space-between",
+    minHeight: 200,
+  },
+
+  gridTablet: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    justifyContent: isLargeTablet ? "flex-start" : "space-between",
+    gap: isLargeTablet ? 16 : 0,
+    minHeight: 300,
   },
 
   cardMobile: {
@@ -974,83 +627,127 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     overflow: "hidden",
     elevation: 4,
-  },
-
-  cardBodyMobile: {
-    padding: 10,
-  },
-
-  cardTitleMobile: {
-    fontSize: 13,
-    fontWeight: "700",
-    color: "#111",
-  },
-
-  cardSubMobile: {
-    fontSize: 11,
-    color: "#666",
-    marginTop: 4,
-  },
-
-  /* ================= TABLET ================= */
-  headerTablet: {
-    paddingTop: 65,
-    paddingBottom: 40,
-    paddingHorizontal: 60,
-  },
-
-  backTablet: {
-    position: "absolute",
-    left: 40,
-    top: 65,
-    backgroundColor: "rgba(255,255,255,0.25)",
-    padding: 10,
-    borderRadius: 14,
-  },
-
-  headerTitleTablet: {
-    color: "#fff",
-    fontSize: 30,
-    fontWeight: "800",
-    textAlign: "center",
-  },
-
-  headerSubtitleTablet: {
-    color: "#f1f1f1",
-    textAlign: "center",
-    fontSize: 15,
-    marginTop: 8,
-  },
-
-  gridTablet: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    justifyContent: "space-between",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
   },
 
   cardTablet: {
-    width: "30%",
+    width: isLargeTablet ? "23%" : "30%",
     backgroundColor: "#fff",
     borderRadius: 20,
     marginBottom: 20,
     overflow: "hidden",
     elevation: 6,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.15,
+    shadowRadius: 6,
+  },
+
+  cardImage: {
+    width: "100%",
+    height: 110,
+    resizeMode: "cover",
+    backgroundColor: '#f0f0f0',
+  },
+
+  cardBodyMobile: {
+    padding: 12,
   },
 
   cardBodyTablet: {
-    padding: 14,
+    padding: 16,
+  },
+
+  cardTitleMobile: {
+    fontSize: 14,
+    fontWeight: "700",
+    color: "#111",
+    lineHeight: 18,
+    minHeight: 36,
   },
 
   cardTitleTablet: {
     fontSize: 16,
     fontWeight: "800",
     color: "#111",
+    lineHeight: 22,
+    minHeight: 44,
+  },
+
+  cardSubMobile: {
+    fontSize: 12,
+    color: "#666",
+    marginTop: 4,
+    lineHeight: 16,
+    minHeight: 32,
   },
 
   cardSubTablet: {
-    fontSize: 13,
+    fontSize: 14,
     color: "#555",
     marginTop: 6,
+    lineHeight: 18,
+    minHeight: 36,
+  },
+
+  exploreRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: 'space-between',
+    marginTop: 8,
+    paddingTop: 8,
+    borderTopWidth: 1,
+    borderTopColor: '#f0f0f0',
+  },
+
+  exploreText: {
+    color: "#93210A",
+    fontWeight: "700",
+    fontSize: 12,
+  },
+
+  /* ================= NO DATA STYLES ================= */
+  noDataContainer: {
+    width: "100%",
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 60,
+    paddingHorizontal: 20,
+    backgroundColor: '#fff',
+    borderRadius: 16,
+    marginTop: 20,
+  },
+
+  noDataText: {
+    fontSize: 18,
+    fontWeight: "600",
+    color: "#666",
+    textAlign: "center",
+    marginTop: 16,
+  },
+
+  noDataSubtext: {
+    fontSize: 14,
+    color: "#888",
+    textAlign: "center",
+    marginTop: 8,
+    marginBottom: 24,
+    lineHeight: 20,
+  },
+
+  retryButton: {
+    backgroundColor: "#93210A",
+    paddingHorizontal: 32,
+    paddingVertical: 12,
+    borderRadius: 8,
+  },
+
+  retryButtonText: {
+    color: "#fff",
+    fontSize: 14,
+    fontWeight: "600",
   },
 });
-

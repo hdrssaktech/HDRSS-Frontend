@@ -1,489 +1,4 @@
-// import React, { useState, useEffect } from "react";
-// import {
-//   View,
-//   Text,
-//   Image,
-//   StyleSheet,
-//   TouchableOpacity,
-//   ScrollView,
-//   ActivityIndicator,
-//   Dimensions,
-//   StatusBar,
-//   Platform,
-// } from "react-native";
-// import { useRoute, useNavigation } from "@react-navigation/native";
-// import { LinearGradient } from 'expo-linear-gradient';
-// import { Ionicons } from "@expo/vector-icons";
-
-// export default function TownBusinessPage3() {
-//   const route = useRoute();
-//   const navigation = useNavigation();
-//   const { subcategoryItemId } = route.params;
-
-//   const [businesses, setBusinesses] = useState([]);
-//   const [loading, setLoading] = useState(true);
-//   const [error, setError] = useState(null);
-//   const [screenInfo, setScreenInfo] = useState({
-//     width: 375,
-//     height: 667,
-//     isSmallDevice: false,
-//     isTablet: false
-//   });
-
-//   // Initialize dimensions safely
-//   useEffect(() => {
-//     const updateDimensions = () => {
-//       try {
-//         const window = Dimensions.get("window");
-//         const isSmallDevice = window.width < 375;
-//         const isTablet = window.width > 768;
-        
-//         setScreenInfo({
-//           width: window.width,
-//           height: window.height,
-//           isSmallDevice,
-//           isTablet
-//         });
-//       } catch (error) {
-//         console.log("Error getting dimensions, using defaults");
-//         setScreenInfo({
-//           width: 375,
-//           height: 667,
-//           isSmallDevice: false,
-//           isTablet: false
-//         });
-//       }
-//     };
-
-//     updateDimensions();
-
-//     const subscription = Dimensions.addEventListener('change', updateDimensions);
-
-//     return () => {
-//        subscription?.remove?.(); // Safe removal
-//     };
-//   }, []);
-
-//   // Fetch businesses using the API
-//   useEffect(() => {
-//     const fetchBusinesses = async () => {
-//       try {
-//         setLoading(true);
-//         setError(null);
-        
-//         const response = await fetch(
-//           `https://hdrss-backend.onrender.com/api/tb/business/by-subcategory/${subcategoryItemId}`
-//         );
-        
-//         if (!response.ok) {
-//           throw new Error(`HTTP error! status: ${response.status}`);
-//         }
-        
-//         const result = await response.json();
-//         setBusinesses(result);
-//       } catch (error) {
-//         console.log("Error fetching businesses:", error);
-//         setError(error.message);
-//       } finally {
-//         setLoading(false);
-//       }
-//     };
-
-//     if (subcategoryItemId) {
-//       fetchBusinesses();
-//     }
-//   }, [subcategoryItemId]);
-
-//   const handleRetry = () => {
-//     setLoading(true);
-//     setError(null);
-//     const fetchBusinesses = async () => {
-//       try {
-//         const response = await fetch(
-//           `https://hdrss-backend.onrender.com/api/business/by-subcategory/${subcategoryItemId}`
-//         );
-        
-//         if (!response.ok) {
-//           throw new Error(`HTTP error! status: ${response.status}`);
-//         }
-        
-//         const result = await response.json();
-//         setBusinesses(result);
-//       } catch (error) {
-//         setError(error.message);
-//       } finally {
-//         setLoading(false);
-//       }
-//     };
-//     fetchBusinesses();
-//   };
-
-//   if (loading) {
-//     return (
-//       <View style={styles.loadingContainer}>
-//         <ActivityIndicator size="large" color="#93210A" />
-//         <Text style={styles.loadingText}>Loading businesses...</Text>
-//       </View>
-//     );
-//   }
-
-//   if (error) {
-//     return (
-//       <View style={styles.errorContainer}>
-//         <Ionicons name="alert-circle-outline" size={60} color="#ff6b6b" />
-//         <Text style={styles.errorTitle}>Unable to Load Businesses</Text>
-//         <Text style={styles.errorText}>{error}</Text>
-//         <View style={styles.errorButtons}>
-//           <TouchableOpacity 
-//             style={styles.retryButton}
-//             onPress={() => navigation.goBack()}
-//           >
-//             <Text style={styles.retryButtonText}>Go Back</Text>
-//           </TouchableOpacity>
-//           <TouchableOpacity 
-//             style={[styles.retryButton, styles.secondaryButton]}
-//             onPress={handleRetry}
-//           >
-//             <Text style={[styles.retryButtonText, styles.secondaryButtonText]}>Retry</Text>
-//           </TouchableOpacity>
-//         </View>
-//       </View>
-//     );
-//   }
-
-//   return (
-//     <View style={styles.container}>
-//       <StatusBar barStyle="light-content" backgroundColor="#93210A" />
-      
-//       {/* Header with #93210A color */}
-//       <View style={styles.header}>
-//         <TouchableOpacity
-//           style={styles.backButton}
-//           onPress={() => navigation.goBack()}
-//         >
-//           <Ionicons name="chevron-back" size={28} color="#fff" />
-//         </TouchableOpacity>
-//         <Text style={[
-//           styles.headerTitle,
-//           screenInfo.isSmallDevice && styles.smallHeaderTitle
-//         ]}>
-//           Businesses
-//         </Text>
-//         <View style={styles.headerPlaceholder} />
-//       </View>
-
-//       <ScrollView 
-//         style={styles.scrollView}
-//         showsVerticalScrollIndicator={false}
-//         contentContainerStyle={styles.scrollContent}
-//       >
-//         {/* Business List - New Design */}
-//         <View style={styles.listContainer}>
-//           {businesses.map((business, index) => (
-//             <TouchableOpacity
-//               key={business.id || index}
-//               style={styles.businessCard}
-//               onPress={() => navigation.navigate("TownBusiness4", { 
-//                 businessData: business
-//               })}
-//               activeOpacity={0.8}
-//             >
-//               {/* Image on Left */}
-//               <View style={styles.imageContainer}>
-//                 <Image 
-//                   source={{ uri: business.image }} 
-//                   style={styles.businessImage}
-//                   resizeMode="cover"
-//                   onError={() => console.log("Image failed to load")}
-//                 />
-//                 <LinearGradient
-//                   colors={['transparent', 'rgba(0,0,0,0.1)']}
-//                   style={styles.imageGradient}
-//                 />
-//               </View>
-              
-//               {/* Content on Right */}
-//               <View style={styles.contentContainer}>
-//                 {/* Title */}
-//                 <View style={styles.titleContainer}>
-//                   <Text style={styles.businessTitle} numberOfLines={2}>
-//                     {business.title || 'Untitled Business'}
-//                   </Text>
-//                 </View>
-                
-//                 {/* Icons Row */}
-//                 <View style={styles.iconsContainer}>
-//                   {/* Phone Icon */}
-//                   {business.phone && (
-//                     <View style={[styles.iconWrapper, styles.phoneIcon]}>
-//                       <Ionicons name="call" size={18} color="#fff" />
-//                     </View>
-//                   )}
-                  
-//                   {/* Location Icon */}
-//                   {business.location && (
-//                     <View style={[styles.iconWrapper, styles.locationIcon]}>
-//                       <Ionicons name="location" size={18} color="#fff" />
-//                     </View>
-//                   )}
-                  
-//                   {/* WhatsApp Icon */}
-//                   {business.whatsapp && (
-//                     <View style={[styles.iconWrapper, styles.whatsappIcon]}>
-//                       <Ionicons name="logo-whatsapp" size={18} color="#fff" />
-//                     </View>
-//                   )}
-//                 </View>
-//               </View>
-              
-//               {/* Arrow Indicator */}
-//               <View style={styles.arrowContainer}>
-//                 <Ionicons name="chevron-forward" size={20} color="#93210A" />
-//               </View>
-//             </TouchableOpacity>
-//           ))}
-//         </View>
-
-//         {/* Empty State */}
-//         {businesses.length === 0 && !loading && (
-//           <View style={styles.emptyContainer}>
-//             <Ionicons name="business-outline" size={80} color="#ccc" />
-//             <Text style={styles.emptyTitle}>No Businesses Found</Text>
-//             <Text style={styles.emptyText}>
-//               There are no businesses available in this category at the moment.
-//             </Text>
-//             <TouchableOpacity 
-//               style={styles.emptyButton}
-//               onPress={() => navigation.goBack()}
-//             >
-//               <Text style={styles.emptyButtonText}>Browse Other Categories</Text>
-//             </TouchableOpacity>
-//           </View>
-//         )}
-//       </ScrollView>
-//     </View>
-//   );
-// }
-
-// const styles = StyleSheet.create({
-//   container: {
-//     flex: 1,
-//     backgroundColor: "#f8f9fa",
-//   },
-  
-//   // Header with #93210A color
-//   header: {
-//     flexDirection: "row",
-//     alignItems: "center",
-//     justifyContent: "space-between",
-//     paddingHorizontal: 20,
-//     paddingTop: Platform.OS === 'ios' ? 50 : 40,
-//     paddingBottom: 15,
-//     backgroundColor: "#93210A",
-//     borderBottomWidth: 0,
-//   },
-//   backButton: {
-//     padding: 5,
-//   },
-//   headerTitle: {
-//     fontSize: 20,
-//     fontWeight: "bold",
-//     color: "#fff",
-//   },
-//   smallHeaderTitle: {
-//     fontSize: 18,
-//   },
-//   headerPlaceholder: {
-//     width: 28,
-//   },
-
-//   // Scroll View
-//   scrollView: {
-//     flex: 1,
-//   },
-//   scrollContent: {
-//     paddingBottom: 30,
-//     paddingTop: 16,
-//   },
-
-//   // Loading State
-//   loadingContainer: {
-//     flex: 1,
-//     justifyContent: "center",
-//     alignItems: "center",
-//     backgroundColor: "#f8f9fa",
-//   },
-//   loadingText: {
-//     marginTop: 16,
-//     fontSize: 16,
-//     color: "#666",
-//     fontWeight: "500",
-//   },
-
-//   // Error State
-//   errorContainer: {
-//     flex: 1,
-//     justifyContent: "center",
-//     alignItems: "center",
-//     backgroundColor: "#f8f9fa",
-//     paddingHorizontal: 40,
-//   },
-//   errorTitle: {
-//     fontSize: 20,
-//     fontWeight: "bold",
-//     color: "#333",
-//     marginTop: 20,
-//     marginBottom: 10,
-//     textAlign: "center",
-//   },
-//   errorText: {
-//     fontSize: 15,
-//     color: "#666",
-//     textAlign: "center",
-//     lineHeight: 22,
-//     marginBottom: 30,
-//   },
-//   errorButtons: {
-//     flexDirection: "row",
-//     gap: 12,
-//   },
-//   retryButton: {
-//     backgroundColor: "#93210A",
-//     paddingHorizontal: 24,
-//     paddingVertical: 12,
-//     borderRadius: 25,
-//     minWidth: 100,
-//   },
-//   secondaryButton: {
-//     backgroundColor: "transparent",
-//     borderWidth: 2,
-//     borderColor: "#93210A",
-//   },
-//   retryButtonText: {
-//     color: "#fff",
-//     fontWeight: "bold",
-//     fontSize: 16,
-//     textAlign: "center",
-//   },
-//   secondaryButtonText: {
-//     color: "#93210A",
-//   },
-
-//   // Business Card Design
-//   listContainer: {
-//     paddingHorizontal: 16,
-//   },
-//   businessCard: {
-//     flexDirection: "row",
-//     backgroundColor: "#fff",
-//     borderRadius: 16,
-//     marginBottom: 12,
-//     padding: 16,
-//     elevation: 3,
-//     shadowColor: "#000",
-//     shadowOffset: { width: 0, height: 2 },
-//     shadowOpacity: 0.1,
-//     shadowRadius: 6,
-//     alignItems: "center",
-//     minHeight: 120,
-//     borderLeftWidth: 4,
-//     borderLeftColor: "#93210A",
-//   },
-//   imageContainer: {
-//     position: "relative",
-//     borderRadius: 12,
-//     overflow: "hidden",
-//     marginRight: 16,
-//   },
-//   businessImage: {
-//     width: 100,
-//     height: 100,
-//     borderRadius: 12,
-//   },
-//   imageGradient: {
-//     ...StyleSheet.absoluteFillObject,
-//     borderRadius: 12,
-//   },
-//   contentContainer: {
-//     flex: 1,
-//     justifyContent: "space-between",
-//   },
-//   titleContainer: {
-//     marginBottom: 12,
-//   },
-//   businessTitle: {
-//     fontSize: 16,
-//     fontWeight: "bold",
-//     color: "#1a1a1a",
-//     lineHeight: 20,
-//   },
-//   iconsContainer: {
-//     flexDirection: "row",
-//     alignItems: "center",
-//     gap: 10,
-//   },
-//   iconWrapper: {
-//     padding: 8,
-//     borderRadius: 8,
-//     elevation: 2,
-//     shadowColor: "#000",
-//     shadowOffset: { width: 0, height: 1 },
-//     shadowOpacity: 0.2,
-//     shadowRadius: 2,
-//   },
-//   phoneIcon: {
-//     backgroundColor: "#93210A",
-//   },
-//   locationIcon: {
-//     backgroundColor: "#2E8B57",
-//   },
-//   whatsappIcon: {
-//     backgroundColor: "#25D366",
-//   },
-//   arrowContainer: {
-//     padding: 8,
-//     marginLeft: 8,
-//   },
-
-//   // Empty State
-//   emptyContainer: {
-//     alignItems: "center",
-//     justifyContent: "center",
-//     paddingVertical: 80,
-//     paddingHorizontal: 40,
-//   },
-//   emptyTitle: {
-//     fontSize: 20,
-//     fontWeight: "bold",
-//     color: "#666",
-//     marginTop: 20,
-//     marginBottom: 10,
-//     textAlign: "center",
-//   },
-//   emptyText: {
-//     fontSize: 15,
-//     color: "#888",
-//     textAlign: "center",
-//     lineHeight: 22,
-//     marginBottom: 30,
-//   },
-//   emptyButton: {
-//     backgroundColor: "#93210A",
-//     paddingHorizontal: 24,
-//     paddingVertical: 12,
-//     borderRadius: 25,
-//   },
-//   emptyButtonText: {
-//     color: "#fff",
-//     fontWeight: "bold",
-//     fontSize: 16,
-//   },
-// });
-
-
-
-
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import {
   View,
   Text,
@@ -496,48 +11,499 @@ import {
   StatusBar,
   Platform,
   Linking,
+  FlatList,
+  Animated,
 } from "react-native";
 import { useRoute, useNavigation } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 
-const { width } = Dimensions.get("window");
-const isTablet = width >= 600;
+const { width: screenWidth, height: screenHeight } = Dimensions.get("window");
+const isTablet = screenWidth >= 600;
+const isLargeTablet = screenWidth >= 1024;
+
+// 2 Default ad images
+const DEFAULT_AD_IMAGES = [
+  "https://images.unsplash.com/photo-1497366754035-f200968a6e72?w=800&h=400&fit=crop",
+  "https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=800&h=400&fit=crop",
+];
+
+// Default business image
+const DEFAULT_BUSINESS_IMAGE = 'https://via.placeholder.com/400x300/93210A/ffffff?text=Business';
+
+// Get default ad images
+const getDefaultAdImages = () => [...DEFAULT_AD_IMAGES];
+
+// Extract YouTube video ID
+const getYouTubeId = (url) => {
+  if (!url) return null;
+  
+  const patterns = [
+    /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/,
+    /youtube\.com\/embed\/([^"&?\/\s]{11})/,
+    /youtube\.com\/v\/([^"&?\/\s]{11})/,
+    /youtube\.com\/watch\?v=([^"&?\/\s]{11})/
+  ];
+  
+  for (const pattern of patterns) {
+    const match = url.match(pattern);
+    if (match) {
+      return match[1];
+    }
+  }
+  
+  return null;
+};
 
 export default function TownBusinessPage3() {
   const route = useRoute();
   const navigation = useNavigation();
-  const { subcategoryItemId } = route.params;
+  
+  // Get all parameters from route
+  const { subcategoryItemId, entityId, townId, categoryName } = route.params;
+  const [businesses, setBusinesses] = useState([]);
+
+  console.log('📱 Page 3 Params:', {
+    subcategoryItemId,
+    entityId,
+    townId,
+    categoryName
+  });
+  console.log(subcategoryItemId)
 
   const [data, setData] = useState([]);
+  const [adsData, setAdsData] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [adsLoading, setAdsLoading] = useState(true);
+  const [playing, setPlaying] = useState(false);
+  
+  // Advertisement carousel refs
+  const flatListRef = useRef(null);
+  const adIndex = useRef(0);
+  const scrollX = useRef(new Animated.Value(0)).current;
 
-  /* ================= FETCH ================= */
+  // Check if image URL is valid
+  const isValidImageUrl = (url) => {
+    if (!url || url === 'null' || url === 'undefined' || url === '' || url === 'N/A') {
+      return false;
+    }
+    if (!url.startsWith('http://') && !url.startsWith('https://')) {
+      return false;
+    }
+    return true;
+  };
+
+  // Get safe image URL
+  const getSafeImageUrl = (url) => {
+    return isValidImageUrl(url) ? url : DEFAULT_BUSINESS_IMAGE;
+  };
+
+  /* ================= IMPROVED ADS FETCHING ================= */
   useEffect(() => {
+    const fetchAds = async () => {
+      try {
+        console.log(`🔍 FETCHING ADS for Page 3:`, {
+          townId,
+          pageLevel: 3,
+          entityId
+        });
+        
+        // Test the API endpoint first to see the actual response
+        const testResponse = await fetch(
+          `https://hdrss-backend.onrender.com/api/town-business-ads/filter?townId=${townId}&pageLevel=3&entityId=17}`
+        );
+        
+        console.log('📊 API Response status:', testResponse.status);
+        console.log('📊 API Response headers:', testResponse.headers);
+        
+        const json = await testResponse.json();
+        console.log('📊 FULL API RESPONSE:', JSON.stringify(json, null, 2));
+        
+        // Process the response based on actual structure
+        const processedAds = [];
+        
+        if (json.success && json.data) {
+          // Case 1: json.data is an array
+          if (Array.isArray(json.data)) {
+            json.data.forEach((adItem, index) => {
+              console.log('📊 Processing ad item:', adItem);
+              
+              // Try different field names for images
+              const possibleImageFields = [
+                'adImages', 'images', 'imageUrls', 'bannerImages', 
+                'adBanners', 'banners', 'image'
+              ];
+              
+              possibleImageFields.forEach(field => {
+                if (Array.isArray(adItem[field])) {
+                  adItem[field].forEach((img, imgIndex) => {
+                    if (isValidImageUrl(img)) {
+                      processedAds.push({
+                        id: `img-${index}-${imgIndex}-${Date.now()}`,
+                        type: 'image',
+                        url: img,
+                        source: `array-field-${field}`
+                      });
+                    }
+                  });
+                } else if (isValidImageUrl(adItem[field])) {
+                  // Single image field
+                  processedAds.push({
+                    id: `img-${index}-single-${Date.now()}`,
+                    type: 'image',
+                    url: adItem[field],
+                    source: `single-field-${field}`
+                  });
+                }
+              });
+              
+              // Try video fields
+              const possibleVideoFields = ['adVideos', 'videos', 'videoUrls', 'video'];
+              possibleVideoFields.forEach(field => {
+                if (Array.isArray(adItem[field])) {
+                  adItem[field].forEach((video, vidIndex) => {
+                    if (video) {
+                      const videoId = getYouTubeId(video);
+                      if (videoId) {
+                        processedAds.push({
+                          id: `vid-${index}-${vidIndex}-${Date.now()}`,
+                          type: 'video',
+                          url: video,
+                          videoId,
+                          source: `video-field-${field}`
+                        });
+                      }
+                    }
+                  });
+                } else if (adItem[field]) {
+                  const videoId = getYouTubeId(adItem[field]);
+                  if (videoId) {
+                    processedAds.push({
+                      id: `vid-${index}-single-${Date.now()}`,
+                      type: 'video',
+                      url: adItem[field],
+                      videoId,
+                      source: `single-video-field-${field}`
+                    });
+                  }
+                }
+              });
+            });
+          } 
+          // Case 2: json.data is a single object
+          else if (typeof json.data === 'object') {
+            const adItem = json.data;
+            console.log('📊 Processing single ad object:', adItem);
+            
+            // Check for images in the object
+            const imageFields = Object.keys(adItem).filter(key => 
+              key.toLowerCase().includes('image') || 
+              key.toLowerCase().includes('banner')
+            );
+            
+            imageFields.forEach(field => {
+              const value = adItem[field];
+              if (Array.isArray(value)) {
+                value.forEach((img, imgIndex) => {
+                  if (isValidImageUrl(img)) {
+                    processedAds.push({
+                      id: `obj-img-${field}-${imgIndex}-${Date.now()}`,
+                      type: 'image',
+                      url: img,
+                      source: `object-array-${field}`
+                    });
+                  }
+                });
+              } else if (isValidImageUrl(value)) {
+                processedAds.push({
+                  id: `obj-img-${field}-${Date.now()}`,
+                  type: 'image',
+                  url: value,
+                  source: `object-single-${field}`
+                });
+              }
+            });
+            
+            // Check for videos
+            const videoFields = Object.keys(adItem).filter(key => 
+              key.toLowerCase().includes('video')
+            );
+            
+            videoFields.forEach(field => {
+              const value = adItem[field];
+              if (Array.isArray(value)) {
+                value.forEach((video, vidIndex) => {
+                  if (video) {
+                    const videoId = getYouTubeId(video);
+                    if (videoId) {
+                      processedAds.push({
+                        id: `obj-vid-${field}-${vidIndex}-${Date.now()}`,
+                        type: 'video',
+                        url: video,
+                        videoId,
+                        source: `object-video-array-${field}`
+                      });
+                    }
+                  }
+                });
+              } else if (value) {
+                const videoId = getYouTubeId(value);
+                if (videoId) {
+                  processedAds.push({
+                    id: `obj-vid-${field}-${Date.now()}`,
+                    type: 'video',
+                    url: value,
+                    videoId,
+                    source: `object-single-video-${field}`
+                  });
+                }
+              }
+            });
+          }
+        } 
+        // Case 3: json is directly an array
+        else if (Array.isArray(json)) {
+          console.log('📊 Response is directly an array:', json);
+          json.forEach((adItem, index) => {
+            // Look for any string that might be an image URL
+            Object.keys(adItem).forEach(key => {
+              const value = adItem[key];
+              if (typeof value === 'string' && isValidImageUrl(value)) {
+                processedAds.push({
+                  id: `direct-img-${index}-${key}-${Date.now()}`,
+                  type: 'image',
+                  url: value,
+                  source: `direct-${key}`
+                });
+              }
+            });
+          });
+        }
+        
+        console.log(`📊 Processed ${processedAds.length} ads from API`);
+        
+        if (processedAds.length > 0) {
+          console.log('✅ Successfully loaded ads:', processedAds);
+          setAdsData(processedAds);
+        } else {
+          console.log('⚠️ No ads found in API response, checking for manual test');
+          // Manual test with sample ad images
+          await testWithSampleImages();
+        }
+        
+      } catch (error) {
+        console.log("❌ Ads fetch error:", error.message);
+        await testWithSampleImages();
+      } finally {
+        setAdsLoading(false);
+      }
+    };
+
+    // Function to test with sample images
+    const testWithSampleImages = async () => {
+      console.log('🔄 Testing with sample ad images...');
+      
+      // Try a different approach - directly test if the API returns any data
+      try {
+        // Try a simpler fetch to see what's available
+        const testUrl = `https://hdrss-backend.onrender.com/api/town-business-ads`;
+        console.log('🔄 Testing URL:', testUrl);
+        
+        const testRes = await fetch(testUrl);
+        const testData = await testRes.json();
+        console.log('📊 Test API response:', testData);
+        
+        // If we still get no ads, use defaults
+        if (testData && testData.length > 0) {
+          const testAds = [];
+          testData.forEach((item, index) => {
+            // Try to extract any image URLs
+            Object.keys(item).forEach(key => {
+              const value = item[key];
+              if (typeof value === 'string' && isValidImageUrl(value)) {
+                testAds.push({
+                  id: `test-${index}-${key}-${Date.now()}`,
+                  type: 'image',
+                  url: value,
+                  source: `test-${key}`
+                });
+              }
+            });
+          });
+          
+          if (testAds.length > 0) {
+            console.log(`✅ Found ${testAds.length} test ads`);
+            setAdsData(testAds);
+            return;
+          }
+        }
+      } catch (testError) {
+        console.log('❌ Test fetch error:', testError.message);
+      }
+      
+      // Final fallback to default images
+      console.log('⚠️ Using default ad images');
+      const defaultAds = getDefaultAdImages().map((img, index) => ({
+        id: `default-${index}-${Date.now()}`,
+        type: 'image',
+        url: img,
+        source: 'default'
+      }));
+      setAdsData(defaultAds);
+    };
+
+    // Only fetch ads if we have valid parameters
+    if (townId && entityId) {
+      fetchAds();
+    } else {
+      console.log('⚠️ Missing parameters for ads fetch:', { townId, entityId });
+      setAdsLoading(false);
+      setAdsData(getDefaultAdImages().map((img, index) => ({
+        id: `default-${index}-${Date.now()}`,
+        type: 'image',
+        url: img,
+        source: 'default-missing-params'
+      })));
+    }
+  }, [townId, entityId]);
+
+  /* ================= FETCH BUSINESSES ================= */
+  useEffect(() => {
+    console.log(`🔍 FETCHING BUSINESSES for ID: ${subcategoryItemId}`);
+    
     fetch(
       `https://hdrss-backend.onrender.com/api/tb/business/by-subcategory/${subcategoryItemId}`
     )
-      .then((res) => res.json())
-      .then(setData)
-      .catch(console.log)
+      .then((res) => {
+        if (!res.ok) {
+          throw new Error(`HTTP error! status: ${res.status}`);
+        }
+        return res.json();
+      })
+      .then(jsonData => {
+        console.log('📊 Businesses response:', jsonData);
+        
+        let dataArray = [];
+        if (Array.isArray(jsonData)) {
+          dataArray = jsonData;
+        } else if (jsonData && Array.isArray(jsonData.data)) {
+          dataArray = jsonData.data;
+        }
+        
+        const processedData = dataArray.map((item, index) => ({
+          id: item.id || `item-${index}`,
+          title: item.title || item.name || `Business ${index + 1}`,
+          phone: item.phone || '',
+          whatsapp: item.whatsapp || '',
+          location: item.location || '',
+          image: getSafeImageUrl(item.image || item.imageUrl || ''),
+          description: item.description || '',
+          email: item.email || '',
+        }));
+        
+        setData(processedData);
+        console.log(`✅ Loaded ${processedData.length} businesses`);
+      })
+      .catch(error => {
+        console.log("❌ Businesses fetch error:", error.message);
+        setData([]);
+      })
       .finally(() => setLoading(false));
-  }, []);
+  }, [subcategoryItemId]);
+
+  // Auto-scroll functionality for ads
+  useEffect(() => {
+    if (adsData.length <= 1) return;
+
+    const scrollInterval = setInterval(() => {
+      if (adIndex.current >= adsData.length - 1) {
+        adIndex.current = 0;
+      } else {
+        adIndex.current += 1;
+      }
+
+      if (flatListRef.current) {
+        flatListRef.current.scrollToIndex({
+          index: adIndex.current,
+          animated: true,
+        });
+      }
+    }, 3000);
+
+    return () => clearInterval(scrollInterval);
+  }, [adsData]);
 
   /* ================= ACTIONS ================= */
   const handleCall = (phone) => {
-    Linking.openURL(`tel:${phone}`);
+    if (phone) {
+      Linking.openURL(`tel:${phone}`);
+    }
   };
 
   const handleLocation = (location) => {
-    const url = Platform.select({
-      ios: `maps:0,0?q=${location}`,
-      android: `geo:0,0?q=${location}`,
-    });
-    Linking.openURL(url);
+    if (location) {
+      const url = Platform.select({
+        ios: `maps:0,0?q=${encodeURIComponent(location)}`,
+        android: `geo:0,0?q=${encodeURIComponent(location)}`,
+      });
+      Linking.openURL(url);
+    }
   };
 
   const handleWhatsapp = (phone) => {
-    Linking.openURL(`https://wa.me/${phone}`);
+    if (phone) {
+      Linking.openURL(`https://wa.me/${phone}`);
+    }
+  };
+
+  // Render advertisement item
+  const renderAdItem = ({ item, index }) => {
+    console.log(`🖼️ Rendering ad ${index}:`, item);
+    
+    if (item.type === 'image') {
+      return (
+        <View style={[
+          styles.adItemContainer,
+          { width: screenWidth }
+        ]}>
+          <Image
+            source={{ uri: item.url }}
+            style={styles.adImage}
+            resizeMode="cover"
+            onError={(e) => {
+              console.log(`❌ Ad image failed to load: ${item.url}`, e.nativeEvent.error);
+              // Fallback to default if image fails
+              item.url = DEFAULT_AD_IMAGES[index % DEFAULT_AD_IMAGES.length];
+            }}
+          />
+          <LinearGradient
+            colors={['rgba(0,0,0,0.1)', 'rgba(0,0,0,0.4)', 'rgba(0,0,0,0.7)']}
+            style={styles.adGradient}
+          />
+          {/* Debug info overlay - can remove in production */}
+          <View style={styles.debugInfo}>
+            <Text style={styles.debugText}>Source: {item.source}</Text>
+          </View>
+        </View>
+      );
+    } else {
+      return (
+        <View style={[
+          styles.adItemContainer,
+          { width: screenWidth }
+        ]}>
+          <View style={styles.videoPlaceholder}>
+            <Ionicons name="play-circle" size={50} color="#93210A" />
+            <Text style={styles.videoText}>Video Ad</Text>
+            <Text style={styles.videoSubtext}>{item.source}</Text>
+          </View>
+          <LinearGradient
+            colors={['rgba(0,0,0,0.1)', 'rgba(0,0,0,0.4)', 'rgba(0,0,0,0.7)']}
+            style={styles.adGradient}
+          />
+        </View>
+      );
+    }
   };
 
   /* ================= LOADER ================= */
@@ -571,84 +537,175 @@ export default function TownBusinessPage3() {
         <Text
           style={isTablet ? styles.headerTitleTablet : styles.headerTitleMobile}
         >
-          Businesses
+          {categoryName}
         </Text>
       </LinearGradient>
 
+      {/* ================= ADVERTISEMENT BANNER ================= */}
+      <View style={[
+        styles.adsContainer,
+        { 
+          height: isLargeTablet ? 200 : 
+                 isTablet ? 180 : 
+                 160 
+        }
+      ]}>
+        {adsLoading ? (
+          <View style={styles.adsLoadingContainer}>
+            <ActivityIndicator size="large" color="#93210A" />
+            <Text style={styles.adsLoadingText}>Loading ads...</Text>
+          </View>
+        ) : adsData.length > 0 ? (
+          <>
+            <Animated.FlatList
+              ref={flatListRef}
+              data={adsData}
+              renderItem={renderAdItem}
+              keyExtractor={(item) => item.id}
+              horizontal
+              pagingEnabled
+              showsHorizontalScrollIndicator={false}
+              onScroll={Animated.event(
+                [{ nativeEvent: { contentOffset: { x: scrollX } } }],
+                { useNativeDriver: false }
+              )}
+              onMomentumScrollEnd={(event) => {
+                const newIndex = Math.floor(
+                  event.nativeEvent.contentOffset.x / screenWidth
+                );
+                adIndex.current = newIndex;
+              }}
+              scrollEventThrottle={16}
+            />
+            
+            {/* Pagination Dots */}
+            {adsData.length > 1 && (
+              <View style={styles.paginationContainer}>
+                {adsData.map((_, i) => (
+                  <View 
+                    key={i} 
+                    style={[
+                      styles.paginationDot,
+                      { 
+                        opacity: i === adIndex.current ? 1 : 0.5,
+                        width: i === adIndex.current ? 10 : 6,
+                      }
+                    ]} 
+                  />
+                ))}
+              </View>
+            )}
+          </>
+        ) : (
+          <View style={styles.noAdsContainer}>
+            <Image
+              source={{ uri: DEFAULT_AD_IMAGES[0] }}
+              style={styles.defaultAdImage}
+              resizeMode="cover"
+            />
+            <LinearGradient
+              colors={['rgba(0,0,0,0.1)', 'rgba(0,0,0,0.4)', 'rgba(0,0,0,0.7)']}
+              style={styles.adGradient}
+            />
+          </View>
+        )}
+      </View>
+
       {/* ================= CONTENT ================= */}
       <ScrollView
-        contentContainerStyle={
-          isTablet ? styles.contentTablet : styles.contentMobile
-        }
+        contentContainerStyle={[
+          isTablet ? styles.contentTablet : styles.contentMobile,
+          { paddingTop: 10 }
+        ]}
+        showsVerticalScrollIndicator={false}
       >
         <View style={isTablet ? styles.gridTablet : styles.listMobile}>
-          {data.map((item, index) => (
-            <TouchableOpacity
-              key={item.id || index}
-              activeOpacity={0.85}
-              style={isTablet ? styles.cardTablet : styles.cardMobile}
-              onPress={() =>
-                navigation.navigate("TownBusiness4", {
-                  businessData: item,
-                })
-              }
-            >
-              <Image
-                source={{ uri: item.image }}
-                style={isTablet ? styles.imageTablet : styles.imageMobile}
-              />
-
-              <Text
-                numberOfLines={2}
-                style={isTablet ? styles.titleTablet : styles.titleMobile}
+          {data.length > 0 ? (
+            data.map((item, index) => (
+              <TouchableOpacity
+                key={item.id || index}
+                activeOpacity={0.85}
+                style={isTablet ? styles.cardTablet : styles.cardMobile}
+                onPress={() =>
+                  navigation.navigate("TownBusiness4", {
+                    businessId: item.id,
+                    businessData: item,
+                    entityId: entityId,
+                    townId: townId,
+                    categoryName: categoryName,
+                  })
+                }
               >
-                {item.title}
+                <Image
+                  source={{ uri: getSafeImageUrl(item.image) }}
+                  style={isTablet ? styles.imageTablet : styles.imageMobile}
+                  onError={(e) => {
+                    console.log(`❌ Business image failed to load: ${item.image}`, e.nativeEvent.error);
+                  }}
+                />
+
+                <Text
+                  numberOfLines={2}
+                  style={isTablet ? styles.titleTablet : styles.titleMobile}
+                >
+                  {item.title}
+                </Text>
+
+                <View
+                  style={isTablet ? styles.iconRowTablet : styles.iconRowMobile}
+                >
+                  {item.phone && (
+                    <TouchableOpacity
+                      onPress={() => handleCall(item.phone)}
+                      style={
+                        isTablet
+                          ? styles.phoneIconTablet
+                          : styles.phoneIconMobile
+                      }
+                    >
+                      <Ionicons name="call" size={16} color="#fff" />
+                    </TouchableOpacity>
+                  )}
+
+                  {item.location && (
+                    <TouchableOpacity
+                      onPress={() => handleLocation(item.location)}
+                      style={
+                        isTablet
+                          ? styles.locationIconTablet
+                          : styles.locationIconMobile
+                      }
+                    >
+                      <Ionicons name="location" size={16} color="#fff" />
+                    </TouchableOpacity>
+                  )}
+
+                  {item.whatsapp && (
+                    <TouchableOpacity
+                      onPress={() => handleWhatsapp(item.whatsapp)}
+                      style={
+                        isTablet
+                          ? styles.whatsappIconTablet
+                          : styles.whatsappIconMobile
+                      }
+                    >
+                      <Ionicons name="logo-whatsapp" size={16} color="#fff" />
+                    </TouchableOpacity>
+                  )}
+                </View>
+              </TouchableOpacity>
+            ))
+          ) : (
+            <View style={styles.noDataContainer}>
+              <Ionicons name="business-outline" size={60} color="#ccc" />
+              <Text style={styles.noDataText}>
+                No businesses available
               </Text>
-
-              <View
-                style={isTablet ? styles.iconRowTablet : styles.iconRowMobile}
-              >
-                {item.phone && (
-                  <TouchableOpacity
-                    onPress={() => handleCall(item.phone)}
-                    style={
-                      isTablet
-                        ? styles.phoneIconTablet
-                        : styles.phoneIconMobile
-                    }
-                  >
-                    <Ionicons name="call" size={16} color="#fff" />
-                  </TouchableOpacity>
-                )}
-
-                {item.location && (
-                  <TouchableOpacity
-                    onPress={() => handleLocation(item.location)}
-                    style={
-                      isTablet
-                        ? styles.locationIconTablet
-                        : styles.locationIconMobile
-                    }
-                  >
-                    <Ionicons name="location" size={16} color="#fff" />
-                  </TouchableOpacity>
-                )}
-
-                {item.whatsapp && (
-                  <TouchableOpacity
-                    onPress={() => handleWhatsapp(item.whatsapp)}
-                    style={
-                      isTablet
-                        ? styles.whatsappIconTablet
-                        : styles.whatsappIconMobile
-                    }
-                  >
-                    <Ionicons name="logo-whatsapp" size={16} color="#fff" />
-                  </TouchableOpacity>
-                )}
-              </View>
-            </TouchableOpacity>
-          ))}
+              <Text style={styles.noDataSubtext}>
+                Check back later for new listings
+              </Text>
+            </View>
+          )}
         </View>
       </ScrollView>
     </View>
@@ -689,6 +746,7 @@ const styles = StyleSheet.create({
 
   contentMobile: {
     padding: 16,
+    paddingBottom: 30,
   },
 
   listMobile: {
@@ -702,6 +760,10 @@ const styles = StyleSheet.create({
     marginBottom: 14,
     alignItems: "center",
     elevation: 3,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
   },
 
   imageMobile: {
@@ -709,6 +771,7 @@ const styles = StyleSheet.create({
     height: 150,
     borderRadius: 12,
     marginBottom: 10,
+    backgroundColor: '#f0f0f0',
   },
 
   titleMobile: {
@@ -716,6 +779,7 @@ const styles = StyleSheet.create({
     fontWeight: "700",
     textAlign: "center",
     marginBottom: 10,
+    color: '#333',
   },
 
   iconRowMobile: {
@@ -745,6 +809,13 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
+    backgroundColor: '#fff',
+  },
+
+  loaderTextMobile: {
+    marginTop: 10,
+    color: "#666",
+    fontSize: 14,
   },
 
   /* ================= TABLET ================= */
@@ -776,6 +847,7 @@ const styles = StyleSheet.create({
 
   contentTablet: {
     padding: 30,
+    paddingBottom: 40,
   },
 
   gridTablet: {
@@ -792,6 +864,10 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     alignItems: "center",
     elevation: 5,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.15,
+    shadowRadius: 6,
   },
 
   imageTablet: {
@@ -799,12 +875,14 @@ const styles = StyleSheet.create({
     height: 180,
     borderRadius: 14,
     marginBottom: 12,
+    backgroundColor: '#f0f0f0',
   },
 
   titleTablet: {
     fontSize: 17,
     fontWeight: "800",
     marginBottom: 12,
+    color: '#333',
   },
 
   iconRowTablet: {
@@ -834,5 +912,139 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
+    backgroundColor: '#fff',
+  },
+
+  loaderTextTablet: {
+    fontSize: 16,
+    marginTop: 12,
+    color: "#666",
+  },
+
+  /* ================= ADVERTISEMENT STYLES ================= */
+  adsContainer: {
+    position: "relative",
+    overflow: "hidden",
+    backgroundColor: '#fff',
+    borderBottomWidth: 1,
+    borderBottomColor: '#e0e0e0',
+  },
+
+  adItemContainer: {
+    height: '100%',
+    position: 'relative',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  
+  adImage: {
+    width: '100%',
+    height: '100%',
+  },
+  
+  defaultAdImage: {
+    width: '100%',
+    height: '100%',
+  },
+  
+  adGradient: {
+    ...StyleSheet.absoluteFillObject,
+  },
+  
+  videoPlaceholder: {
+    width: '100%',
+    height: '100%',
+    backgroundColor: '#f0f0f0',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  
+  videoText: {
+    marginTop: 10,
+    color: '#93210A',
+    fontWeight: '600',
+  },
+  
+  videoSubtext: {
+    fontSize: 12,
+    color: '#666',
+    marginTop: 5,
+  },
+  
+  adsLoadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#f5f5f5',
+  },
+  
+  adsLoadingText: {
+    marginTop: 10,
+    color: "#666",
+    fontSize: 14,
+  },
+
+  paginationContainer: {
+    position: 'absolute',
+    bottom: 10,
+    flexDirection: 'row',
+    alignSelf: 'center',
+    zIndex: 2,
+  },
+  
+  paginationDot: {
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: 'rgba(147, 33, 10, 0.9)',
+    marginHorizontal: 4,
+  },
+
+  noAdsContainer: {
+    flex: 1,
+    position: 'relative',
+  },
+
+  /* ================= DEBUG STYLES ================= */
+  debugInfo: {
+    position: 'absolute',
+    top: 10,
+    left: 10,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    padding: 5,
+    borderRadius: 5,
+  },
+  
+  debugText: {
+    color: 'white',
+    fontSize: 10,
+  },
+
+  /* ================= NO DATA STYLES ================= */
+  noDataContainer: {
+    width: "100%",
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 60,
+    paddingHorizontal: 20,
+    backgroundColor: '#fff',
+    borderRadius: 16,
+    marginTop: 20,
+  },
+
+  noDataText: {
+    fontSize: 18,
+    fontWeight: "600",
+    color: "#666",
+    textAlign: "center",
+    marginTop: 16,
+  },
+
+  noDataSubtext: {
+    fontSize: 14,
+    color: "#888",
+    textAlign: "center",
+    marginTop: 8,
+    marginBottom: 24,
+    lineHeight: 20,
   },
 });

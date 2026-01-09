@@ -1,511 +1,393 @@
-// import React from "react";
-// import {
-//   View,
-//   Text,
-//   StyleSheet,
-//   ScrollView,
-//   Image,
-//   TouchableOpacity,
-//   PanResponder,
-// } from "react-native";
-// import { Ionicons } from "@expo/vector-icons";
-
-// export default function VaasthuPage({ navigation }) {
-//   // Swipe Gesture (for left swipe navigation)
-//   const panResponder = React.useRef(
-//     PanResponder.create({
-//       onMoveShouldSetPanResponder: (_, gestureState) => {
-//         return Math.abs(gestureState.dx) > 20; // detect horizontal swipe
-//       },
-//       onPanResponderRelease: (_, gestureState) => {
-//         if (gestureState.dx > 50) {
-//           // Swipe Right → Go Back
-//           navigation.goBack();
-//         }
-//       },
-//     })
-//   ).current;
-
-//   return (
-//     <View style={styles.container} {...panResponder.panHandlers}>
-//       {/* Header */}
-//       <View style={styles.header}>
-//         <TouchableOpacity
-//           style={styles.backButton}
-//           onPress={() => navigation.goBack()}
-//         >
-//           <Ionicons name="chevron-back" size={24} color="white" />
-//         </TouchableOpacity>
-//         <Text style={styles.headerTitle}>Vastu</Text>
-//       </View>
-
-//       <ScrollView contentContainerStyle={styles.scrollContent}>
-//         {/* Image */}
-//         <Image
-//           source={require("../../../../assets/Vaasthu/vastu.jpg")}
-//           style={styles.image}
-//           resizeMode="contain"
-//         />
-
-//         {/* Content */}
-//         <Text style={styles.mainTitle}>Important Vastu Tips for House</Text>
-
-//         <Text style={styles.subHeading}>1. Check the Shape of the Property</Text>
-//         <Text style={styles.paragraph}>
-//           An important Vastu tip for a new home is to check the shape of the
-//           room. According to Vastu, the shape of the room should always be
-//           rectangular or square. These shapes are considered auspicious and
-//           ensure the smooth flow and balance of energy. If some of the rooms are
-//           irregular in shape, consider adding plants to correct the energy flow.
-//         </Text>
-
-//         <Text style={styles.subHeading}>
-//           2. Check the Orientation & Entrance of Property
-//         </Text>
-//         <Text style={styles.paragraph}>
-//           Property orientation is crucial in Vastu Shastra. It dictates the
-//           directional energies that interact with your home. Ideally, a property
-//           should have its main entrance facing north, east, or northeast. These
-//           directions are considered highly auspicious and bring prosperity,
-//           health, and positivity.
-//         </Text>
-
-//         <Text style={styles.subHeading}>3. Vastu tips for Living Room</Text>
-//         <Text style={styles.paragraph}>
-//           The living room should ideally be located in the north, east or
-//           northeast direction. Keep the living room clutter-free. You can use
-//           light colour paints like whites, creams and pastels to maintain a
-//           light and airy feel. The decor and paint must evoke happy emotions.
-//           Additionally, you can also add green plants to bring in an aura of
-//           positivity. Keep the furniture in the west or southwest direction. If
-//           you want to keep the mirror in the living room, place it on the north
-//           wall.
-//         </Text>
-
-//         <Text style={styles.subHeading}>4. Vastu Tips for Kitchen</Text>
-//         <Text style={styles.paragraph}>
-//           Ideally, the kitchen should be placed in the southeast direction of
-//           the house. Use yellow, orange, or red colors for the walls, as they
-//           are auspicious and enhance the fire element. There should be optimum
-//           ventilation in the kitchen to keep it clear and free from negative
-//           energy. The stove should be placed in the southeast direction. Keep in
-//           mind that water and fire are two distinct elements. Hence, never keep
-//           the gas stove and water sink on the same platform.
-//         </Text>
-
-//         <Text style={styles.subHeading}>5. Vastu Tip for Bathroom</Text>
-//         <Text style={styles.paragraph}>
-//           According to Vastu, a bathroom in the north or northwest part is the
-//           most favourable. Avoid having bathrooms directly facing the kitchen or
-//           the main entrance as it can disrupt the flow of positive energy. The
-//           toilet should face north-south and should not be located in the
-//           northeast or southwest corners. Ensure that the bathroom doors are
-//           always kept closed to prevent negative energies from spreading to
-//           other areas. Use light and soothing colours like pastels for walls to
-//           create a calming effect. Keep a check on taps, flush and showers, and
-//           ensure that they are leak-free. Use a wooden door for your bathroom
-//           instead of a metallic door.
-//         </Text>
-
-//         {/* Table Section */}
-//         <View style={styles.table}>
-//           {/* Table Header */}
-//           <View style={[styles.row, styles.headerRow]}>
-//             <Text style={[styles.cell, styles.headerCell, styles.leftCell]}>
-//               அடி கணக்கு
-//             </Text>
-//             <Text style={[styles.cell, styles.headerCell, styles.rightCell]}>
-//               பலன்கள்
-//             </Text>
-//           </View>
-
-//           {/* Table Rows */}
-//           <View style={styles.row}>
-//             <Text style={[styles.cell, styles.leftCell]}>6 அடி</Text>
-//             <Text style={[styles.cell, styles.rightCell]}>நல்லது தரும்.</Text>
-//           </View>
-//           <View style={styles.row}>
-//             <Text style={[styles.cell, styles.leftCell]}>7 அடி</Text>
-//             <Text style={[styles.cell, styles.rightCell]}>தனிதிரம் பெறும்.</Text>
-//           </View>
-//           <View style={styles.row}>
-//             <Text style={[styles.cell, styles.leftCell]}>8 அடி</Text>
-//             <Text style={[styles.cell, styles.rightCell]}>
-//               மிகவும் பாக்கியம் உண்டாகும்.
-//             </Text>
-//           </View>
-//           <View style={styles.row}>
-//             <Text style={[styles.cell, styles.leftCell]}>9 அடி</Text>
-//             <Text style={[styles.cell, styles.rightCell]}>
-//               ஆயுள் குறையும், சுகவீனம் உண்டாகும்.
-//             </Text>
-//           </View>
-//           <View style={styles.row}>
-//             <Text style={[styles.cell, styles.leftCell]}>10 அடி</Text>
-//             <Text style={[styles.cell, styles.rightCell]}>
-//               ஆடுமாடுகள் முதலானவைச் செழிக்கும்.
-//             </Text>
-//           </View>
-//           <View style={styles.row}>
-//             <Text style={[styles.cell, styles.leftCell]}>11 அடி</Text>
-//             <Text style={[styles.cell, styles.rightCell]}>
-//               பிள்ளைப்பேறு உண்டாகும்.
-//             </Text>
-//           </View>
-//           <View style={styles.row}>
-//             <Text style={[styles.cell, styles.leftCell]}>12 அடி</Text>
-//             <Text style={[styles.cell, styles.rightCell]}>தனிதிரம் பெறும்.</Text>
-//           </View>
-//           <View style={styles.row}>
-//             <Text style={[styles.cell, styles.leftCell]}>13 அடி</Text>
-//             <Text style={[styles.cell, styles.rightCell]}>நல்லது தரும்.</Text>
-//           </View>
-//         </View>
-//       </ScrollView>
-//     </View>
-//   );
-// }
-
-// const styles = StyleSheet.create({
-//   container: { flex: 1, backgroundColor: "#fff" },
-
-//   header: {
-//     flexDirection: "row",
-//     alignItems: "center",
-//     padding: 15,
-//     marginTop: 32,
-//     backgroundColor: "#93210A",
-//   },
-//   backButton: {
-//     marginRight: 10,
-//   },
-//   headerTitle: {
-//     color: "white",
-//     fontSize: 20,
-//     fontWeight: "bold",
-//   },
-
-//   scrollContent: {
-//     padding: 15,
-//     // ✅ removed bottom padding to avoid extra space
-//   },
-//   image: {
-//     width: "100%",
-//     height: 180,
-//     marginBottom: 15,
-//   },
-//   mainTitle: {
-//     fontSize: 18,
-//     fontWeight: "bold",
-//     marginBottom: 12,
-//   },
-//   subHeading: {
-//     fontSize: 16,
-//     fontWeight: "bold",
-//     color: "#A93226",
-//     marginBottom: 6,
-//   },
-//   paragraph: {
-//     fontSize: 14,
-//     color: "#333",
-//     marginBottom: 15,
-//     lineHeight: 20,
-//   },
-
-//   /* Table Styles */
-//   table: {
-//     marginTop: 20,
-//     borderWidth: 1,
-//     borderColor: "#A93226",
-//   },
-//   row: {
-//     flexDirection: "row",
-//     borderBottomWidth: 1,
-//     borderColor: "#A93226",
-//   },
-//   headerRow: {
-//     backgroundColor: "#ffffffff",
-//   },
-//   cell: {
-//     flex: 1,
-//     padding: 10,
-//     fontSize: 14,
-//     color: "#333",
-//     textAlign: "center",
-//   },
-//   headerCell: {
-//     color: "black", // updated to black
-//     fontWeight: "bold",
-//   },
-//   leftCell: {
-//     borderRightWidth: 1,
-//     borderRightColor: "#A93226",
-//   },
-//   rightCell: {
-//     flex: 2, // gives more space for long text
-//   },
-// });
-
-
-
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
-  StyleSheet,
-  ScrollView,
   Image,
   TouchableOpacity,
-  PanResponder,
+  StyleSheet,
+  ActivityIndicator,
+  FlatList,
   useWindowDimensions,
+  StatusBar,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import axios from "axios";
+import { useNavigation } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
 
-export default function VaasthuPage({ navigation }) {
-  const { width } = useWindowDimensions();
-  const isTablet = width >= 600;
+const VaasthuPage0 = () => {
+  const navigation = useNavigation();
+  const { width, height } = useWindowDimensions();
 
-  // Swipe Gesture
-  const panResponder = React.useRef(
-    PanResponder.create({
-      onMoveShouldSetPanResponder: (_, gestureState) =>
-        Math.abs(gestureState.dx) > 20,
-      onPanResponderRelease: (_, gestureState) => {
-        if (gestureState.dx > 50) navigation.goBack();
-      },
-    })
-  ).current;
+  // Enhanced device detection with aspect ratio consideration
+  const isTablet = width >= 600|| (width >= 600 && width / height > 0.7);
+  const isLargeTablet = width >= 1024;
+  
+  // Responsive columns based on device
+  const numColumns = isLargeTablet ? 4 : (isTablet ? 3 : 2);
+  
+  // Responsive spacing
+  const cardMargin = isTablet ? 12 : 8;
+  const listPadding = isTablet ? 16 : 10;
 
-  return (
-    <View
-      style={[styles.container, isTablet && styles.containerTablet]}
-      {...panResponder.panHandlers}
+  const [types, setTypes] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    axios
+      .get("https://hdrss-backend.onrender.com/api/vastu/type")
+      .then((res) => setTypes(res.data))
+      .catch((err) => {
+        console.log(err);
+        setError("Failed to load data. Please try again.");
+      })
+      .finally(() => setLoading(false));
+  }, []);
+
+  const renderItem = ({ item }) => (
+    <TouchableOpacity
+      style={[
+        styles.card,
+        isTablet && styles.tabletCard,
+        isLargeTablet && styles.largeTabletCard,
+        { margin: cardMargin }
+      ]}
+      onPress={() =>
+        navigation.navigate("VaasthuPage1", {
+          typeId: item.id,
+          title: item.name,
+        })
+      }
+      activeOpacity={0.7}
     >
-      {/* Header */}
-      <View style={[styles.header, isTablet && styles.headerTablet]}>
-        <TouchableOpacity onPress={() => navigation.goBack()}>
-          <Ionicons
-            name="chevron-back"
-            size={isTablet ? 32 : 24}
-            color="white"
-          />
-        </TouchableOpacity>
-        <Text style={[styles.headerTitle, isTablet && styles.headerTitleTablet]}>
-          Vastu
+      <Image 
+        source={{ uri: item.image }} 
+        style={[
+          styles.image,
+          isTablet && styles.tabletImage,
+          isLargeTablet && styles.largeTabletImage
+        ]} 
+      />
+      <View style={[
+        styles.cardFooter,
+        isTablet && styles.tabletCardFooter
+      ]}>
+        <Text style={[
+          styles.cardTitle,
+          isTablet && styles.tabletCardTitle,
+          isLargeTablet && styles.largeTabletCardTitle
+        ]} numberOfLines={2}>
+          {item.name}
         </Text>
+        {/* <Ionicons 
+          name="arrow-forward" 
+          size={isTablet ? 20 : 16} 
+          color="#8B1A1A" 
+        /> */}
       </View>
+    </TouchableOpacity>
+  );
 
-      <ScrollView
-        contentContainerStyle={[
-          styles.scrollContent,
-          isTablet && styles.scrollContentTablet,
-        ]}
-      >
-        {/* Image */}
-        <Image
-          source={require("../../../../assets/Vaasthu/vastu.jpg")}
-          style={[styles.image, isTablet && styles.imageTablet]}
-          resizeMode="contain"
-        />
-
-        {/* Content */}
-        <Text style={[styles.mainTitle, isTablet && styles.mainTitleTablet]}>
-          Important Vastu Tips for House
-        </Text>
-
-        <Text style={[styles.subHeading, isTablet && styles.subHeadingTablet]}>
-          1. Check the Shape of the Property
-        </Text>
-        <Text style={[styles.paragraph, isTablet && styles.paragraphTablet]}>
-          An important Vastu tip for a new home is to check the shape of the room.
-          According to Vastu, the shape of the room should always be rectangular
-          or square...
-        </Text>
-
-        <Text style={[styles.subHeading, isTablet && styles.subHeadingTablet]}>
-          2. Check the Orientation & Entrance of Property
-        </Text>
-        <Text style={[styles.paragraph, isTablet && styles.paragraphTablet]}>
-          Property orientation is crucial in Vastu Shastra. Ideally, a property
-          should have its main entrance facing north, east, or northeast...
-        </Text>
-
-        <Text style={[styles.subHeading, isTablet && styles.subHeadingTablet]}>
-          3. Vastu tips for Living Room
-        </Text>
-        <Text style={[styles.paragraph, isTablet && styles.paragraphTablet]}>
-          The living room should ideally be located in the north, east or
-          northeast direction...
-        </Text>
-
-        <Text style={[styles.subHeading, isTablet && styles.subHeadingTablet]}>
-          4. Vastu Tips for Kitchen
-        </Text>
-        <Text style={[styles.paragraph, isTablet && styles.paragraphTablet]}>
-          Ideally, the kitchen should be placed in the southeast direction...
-        </Text>
-
-        <Text style={[styles.subHeading, isTablet && styles.subHeadingTablet]}>
-          5. Vastu Tip for Bathroom
-        </Text>
-        <Text style={[styles.paragraph, isTablet && styles.paragraphTablet]}>
-          According to Vastu, a bathroom in the north or northwest part is the
-          most favourable...
-        </Text>
-
-        {/* Table */}
-        <View style={[styles.table, isTablet && styles.tableTablet]}>
-          <View style={[styles.row, styles.headerRow]}>
-            <Text style={[styles.cell, styles.headerCell, styles.leftCell]}>
-              அடி கணக்கு
-            </Text>
-            <Text style={[styles.cell, styles.headerCell, styles.rightCell]}>
-              பலன்கள்
-            </Text>
-          </View>
-
-          {[
-            ["6 அடி", "நல்லது தரும்."],
-            ["7 அடி", "தனிதிரம் பெறும்."],
-            ["8 அடி", "மிகவும் பாக்கியம் உண்டாகும்."],
-            ["9 அடி", "ஆயுள் குறையும், சுகவீனம் உண்டாகும்."],
-            ["10 அடி", "ஆடுமாடுகள் முதலானவைச் செழிக்கும்."],
-            ["11 அடி", "பிள்ளைப்பேறு உண்டாகும்."],
-            ["12 அடி", "தனிதிரம் பெறும்."],
-            ["13 அடி", "நல்லது தரும்."],
-          ].map((item, index) => (
-            <View key={index} style={styles.row}>
-              <Text style={[styles.cell, styles.leftCell]}>{item[0]}</Text>
-              <Text style={[styles.cell, styles.rightCell]}>{item[1]}</Text>
-            </View>
-          ))}
-        </View>
-      </ScrollView>
+  const renderEmptyState = () => (
+    <View style={styles.emptyContainer}>
+      <Ionicons name="grid-outline" size={60} color="#ccc" />
+      <Text style={[
+        styles.emptyText,
+        isTablet && styles.tabletEmptyText
+      ]}>
+        No categories available
+      </Text>
     </View>
   );
-}
+
+  if (loading) {
+    return (
+      <SafeAreaView style={styles.center}>
+        <ActivityIndicator size="large" color="#8B1A1A" />
+        <Text style={[
+          styles.loadingText,
+          isTablet && styles.tabletLoadingText
+        ]}>Loading...</Text>
+      </SafeAreaView>
+    );
+  }
+
+  if (error) {
+    return (
+      <SafeAreaView style={styles.center}>
+        <Ionicons name="alert-circle-outline" size={50} color="#8B1A1A" />
+        <Text style={[
+          styles.errorText,
+          isTablet && styles.tabletErrorText
+        ]}>{error}</Text>
+        <TouchableOpacity 
+          style={[
+            styles.retryButton,
+            isTablet && styles.tabletRetryButton
+          ]} 
+          onPress={() => {
+            setError(null);
+            setLoading(true);
+            // Re-fetch data
+            axios.get("https://hdrss-backend.onrender.com/api/vastu/type")
+              .then((res) => setTypes(res.data))
+              .catch((err) => setError("Failed to load data. Please try again."))
+              .finally(() => setLoading(false));
+          }}
+        >
+          <Text style={styles.retryButtonText}>Retry</Text>
+        </TouchableOpacity>
+      </SafeAreaView>
+    );
+  }
+
+  return (
+    <SafeAreaView style={styles.container}>
+      <StatusBar backgroundColor="#8B1A1A" barStyle="light-content" />
+
+      {/* HEADER - Responsive */}
+      <View style={[
+        styles.header,
+        isTablet && styles.tabletHeader,
+        isLargeTablet && styles.largeTabletHeader
+      ]}>
+        <TouchableOpacity 
+          onPress={() => navigation.goBack()}
+          style={styles.backButton}
+        >
+          <Ionicons 
+            name="chevron-back" 
+            size={isTablet ? 32 : 26} 
+            color="#fff" 
+          />
+        </TouchableOpacity>
+        <Text style={[
+          styles.headerTitle,
+          isTablet && styles.tabletHeaderTitle,
+          isLargeTablet && styles.largeTabletHeaderTitle
+        ]}>
+          Vaasthu
+        </Text>
+        <View style={{ width: isTablet ? 32 : 26 }} />
+      </View>
+
+      {/* GRID - Responsive */}
+      {types.length > 0 ? (
+        <FlatList
+          data={types}
+          key={numColumns} // This ensures FlatList re-renders when numColumns changes
+          numColumns={numColumns}
+          renderItem={renderItem}
+          keyExtractor={(item) => item.id.toString()}
+          contentContainerStyle={[
+            styles.list,
+            { padding: listPadding }
+          ]}
+          showsVerticalScrollIndicator={false}
+          columnWrapperStyle={numColumns > 1 ? styles.columnWrapper : null}
+        />
+      ) : (
+        renderEmptyState()
+      )}
+    </SafeAreaView>
+  );
+};
+
+export default VaasthuPage0;
 
 /* ================= STYLES ================= */
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#fff" },
-  containerTablet: {},
+  container: {
+    flex: 1,
+    backgroundColor: "#F5F5F5",
+  },
+
+  center: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    padding: 20,
+  },
+
+  loadingText: {
+    marginTop: 10,
+    color: "#8B1A1A",
+    fontWeight: "600",
+    fontSize: 16,
+  },
+
+  tabletLoadingText: {
+    fontSize: 18,
+    marginTop: 15,
+  },
+
+  errorText: {
+    marginTop: 15,
+    color: "#8B1A1A",
+    fontWeight: "600",
+    fontSize: 16,
+    textAlign: "center",
+  },
+
+  tabletErrorText: {
+    fontSize: 18,
+    marginTop: 20,
+  },
+
+  retryButton: {
+    marginTop: 20,
+    backgroundColor: "#8B1A1A",
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 8,
+  },
+
+  tabletRetryButton: {
+    paddingHorizontal: 30,
+    paddingVertical: 15,
+    borderRadius: 10,
+  },
+
+  retryButtonText: {
+    color: "#fff",
+    fontWeight: "600",
+    fontSize: 16,
+  },
 
   header: {
+    backgroundColor: "#8B1A1A",
+    padding: 16,
     flexDirection: "row",
     alignItems: "center",
-    padding: 15,
-    marginTop: 32,
-    backgroundColor: "#93210A",
+    justifyContent: "space-between",
+    elevation: 4,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 3,
   },
-  headerTablet: {
-    paddingVertical: 30,
+
+  tabletHeader: {
+paddingVertical: 46,
     paddingHorizontal: 24,
-    marginTop: 0,
+    marginTop: -27,
   },
 
-   headerTitle: {
+  largeTabletHeader: {
+    padding: 24,
+  },
+
+  backButton: {
+    padding: 4, // Makes touch area larger
+  },
+
+  headerTitle: {
     color: "#fff",
+    fontSize: 23,
     fontWeight: "700",
-    fontSize: 22, marginLeft: 65,
-    padding:8,
-   
-
+    textAlign: "center",
+    right:10,
   },
 
-  headerTitleTablet: {
+  tabletHeaderTitle: {
+    fontSize: 30,
+  },
+
+  largeTabletHeaderTitle: {
     fontSize: 28,
-    padding:8,
-    left:125,
   },
 
-  scrollContent: {
-    padding: 15,
+  list: {
+    flexGrow: 1,
   },
-  scrollContentTablet: {
-    paddingHorizontal: 40,
-    paddingBottom: 40,
+
+  columnWrapper: {
+    justifyContent: 'space-between',
+  },
+
+  card: {
+    flex: 1,
+    backgroundColor: "#fff",
+    borderRadius: 12,
+    overflow: "hidden",
+    elevation: 3,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+  },
+
+  tabletCard: {
+    borderRadius: 16,
+    elevation: 4,
+  },
+
+  largeTabletCard: {
+    borderRadius: 20,
+    elevation: 6,
   },
 
   image: {
     width: "100%",
+    height: 120,
+    resizeMode: "cover",
+  },
+
+  tabletImage: {
+    height: 160,
+  },
+
+  largeTabletImage: {
     height: 180,
-    marginBottom: 15,
-  },
-  imageTablet: {
-    height: 320,
   },
 
-  mainTitle: {
-    fontSize: 18,
-    fontWeight: "bold",
-    marginBottom: 12,
-  },
-  mainTitleTablet: {
-    fontSize: 26,
-  },
-
-  subHeading: {
-    fontSize: 16,
-    fontWeight: "bold",
-    color: "#A93226",
-    marginBottom: 6,
-  },
-  subHeadingTablet: {
-    fontSize: 20,
-  },
-
-  paragraph: {
-    fontSize: 14,
-    color: "#333",
-    marginBottom: 15,
-    lineHeight: 20,
-  },
-  paragraphTablet: {
-    fontSize: 18,
-    lineHeight: 26,
-  },
-
-  table: {
-    marginTop: 20,
-    borderWidth: 1,
-    borderColor: "#A93226",
-  },
-  tableTablet: {
-    marginTop: 30,
-  },
-
-  row: {
+  cardFooter: {
     flexDirection: "row",
-    borderBottomWidth: 1,
-    borderColor: "#A93226",
+    alignItems: "center",
+    justifyContent: "space-between",
+    padding: 10,
+    minHeight: 50,
   },
 
-  headerRow: {
-    backgroundColor: "#fdf2f2",
-  },
-
-  cell: {
-    flex: 1,
+  tabletCardFooter: {
     padding: 12,
+    minHeight: 60,
+  },
+
+  cardTitle: {
     fontSize: 14,
-    textAlign: "center",
+    fontWeight: "600",
     color: "#333",
+    flex: 1,
+    marginRight: 8,
   },
 
-  headerCell: {
-    fontWeight: "bold",
-    color: "#000",
+  tabletCardTitle: {
+    fontSize: 16,
   },
 
-  leftCell: {
-    borderRightWidth: 1,
-    borderRightColor: "#A93226",
+  largeTabletCardTitle: {
+    fontSize: 18,
   },
 
-  rightCell: {
-    flex: 2,
+  emptyContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    padding: 20,
+  },
+
+  emptyText: {
+    marginTop: 15,
+    color: "#666",
+    fontSize: 16,
+    textAlign: "center",
+  },
+
+  tabletEmptyText: {
+    fontSize: 18,
+    marginTop: 20,
   },
 });
-
-

@@ -338,7 +338,7 @@ const styles = StyleSheet.create({
    headerTitle: {
     color: "#fff",
     fontWeight: "700",
-    fontSize: 22,  marginLeft: 65,
+    fontSize: 20,  marginLeft: 18,
     padding:8,
    
 
