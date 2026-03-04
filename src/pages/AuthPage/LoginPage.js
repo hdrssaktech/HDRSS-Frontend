@@ -38,7 +38,6 @@ export default function Loginpage() {
 
   const token = (await Notifications.getExpoPushTokenAsync()).data;
   setExpoPushToken(token);
-  console.log("Expo Push Token:", token);
 
   if (Platform.OS === "android") {
     Notifications.setNotificationChannelAsync("default", {

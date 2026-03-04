@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { useState } from "react";
 import {
   View,
   Text,
@@ -16,6 +16,15 @@ import YoutubePlayer from "react-native-youtube-iframe";
 export default function StoryPage2({ route, navigation }) {
   const { width } = useWindowDimensions();
   const isTablet = width >= 600;
+  const [showFullDescription, setShowFullDescription] = useState(false);
+
+  const DESCRIPTION_MAX_LENGTH = 200;
+  
+const truncateText = (text, maxLength) => {
+  if (!text || text.length <= maxLength) return text;
+  return text.substring(0, maxLength) + '...';
+};
+
 
   const { storyItem } = route.params || {};
 
@@ -52,7 +61,7 @@ export default function StoryPage2({ route, navigation }) {
       {/* 🔹 Header */}
       <View style={[styles.header, isTablet && styles.headerTablet]}>
         <TouchableOpacity onPress={() => navigation.goBack()}>
-          <Ionicons name="chevron-back" size={isTablet ? 32 : 26} color="#fff" />
+          <Ionicons name="chevron-back" size={isTablet ? 32 : 26} style={{margin:10}} color="#fff"  />
         </TouchableOpacity>
         <Text
           style={[styles.headerTitle, isTablet && styles.headerTitleTablet]}
@@ -75,18 +84,31 @@ export default function StoryPage2({ route, navigation }) {
         )}
 
         {/* 🔹 Description - Second Element */}
-        {description && (
-          <View style={styles.content}>
-            <Text
-              style={[
-                styles.description,
-                isTablet && styles.descriptionTablet,
-              ]}
-            >
-              {description}
-            </Text>
-          </View>
-        )}
+{description && (
+  <View style={styles.content}>
+    <Text
+      style={[
+        styles.description,
+        isTablet && styles.descriptionTablet,
+      ]}
+    >
+      {showFullDescription
+        ? description
+        : truncateText(description, DESCRIPTION_MAX_LENGTH)}
+    </Text>
+
+    {description.length > DESCRIPTION_MAX_LENGTH && (
+      <TouchableOpacity
+        onPress={() => setShowFullDescription(!showFullDescription)}
+      >
+        <Text style={styles.readMoreText}>
+          {showFullDescription ? "Read Less" : "Read More"}
+        </Text>
+      </TouchableOpacity>
+    )}
+  </View>
+)}
+
 
         {/* 🎥 Video Section - Third Element */}
         {videoId && (
@@ -100,7 +122,7 @@ export default function StoryPage2({ route, navigation }) {
               Video
             </Text>
             <YoutubePlayer
-              height={isTablet ? 365 : 230}
+              height={isTablet ? 385 : 230}
               width={width}
               play={false}
               videoId={videoId}
@@ -143,10 +165,10 @@ export default function StoryPage2({ route, navigation }) {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#fff" },
 
-  /* 🔹 Header */
-  rection: "row",
-    alignItemsheader: {
-    flexDi: "center",
+ 
+  header:{
+    alignItemsheader:"center" ,
+    flexDirection: "row",
     padding: 15,
     marginTop: 32,
     backgroundColor: "#93210A",
@@ -161,7 +183,7 @@ const styles = StyleSheet.create({
     fontWeight: "700",
     fontSize: 20,
     marginLeft: 37,
-    padding: 8,
+    padding:5,
   },
   headerTitleTablet: {
     fontSize: 28,
@@ -243,4 +265,11 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
   },
+  readMoreText: {
+  color: "#93210A",
+  marginTop: 6,
+  fontWeight: "600",
+  alignSelf: "flex-end",
+},
+
 });

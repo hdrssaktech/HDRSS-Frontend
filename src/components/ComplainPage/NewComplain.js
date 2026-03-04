@@ -20,6 +20,7 @@ import * as ImagePicker from "expo-image-picker";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { createComplaint } from "../../Controller/ComplaintController/ComplaintController";
 
+
 const { width: screenWidth, height: screenHeight } = Dimensions.get("window");
 const isTablet = screenWidth >= 600;
 const isLargeTablet = screenWidth >= 1024;

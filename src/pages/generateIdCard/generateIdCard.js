@@ -297,7 +297,6 @@ const profileBase64 = member.image
     const { uri } = await Print.printToFileAsync({ html: htmlContent });
     const newUri = `${FileSystem.cacheDirectory}idcard.pdf`;
     await FileSystem.copyAsync({ from: uri, to: newUri });
-    console.log("PDF generated:", newUri);
     return newUri;
   } catch (error) {
     console.error("Error generating ID:", error);

@@ -17,7 +17,7 @@ export default function Footer() {
   const { width } = useWindowDimensions();
 
   // Tablet detection
-  const isTablet = width >= 700;
+  const isTablet = width >= 600;
 
   return (
     <SafeAreaView edges={["bottom"]} style={styles.footerSafe}>
@@ -69,6 +69,6 @@ const styles = StyleSheet.create({
 
   // 📲 Tablet
   navBarTablet: {
-    paddingVertical: 30,
+    paddingVertical: 20,
   },
 });

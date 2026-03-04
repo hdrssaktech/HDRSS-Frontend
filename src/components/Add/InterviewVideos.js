@@ -24,8 +24,7 @@ export default function InterviewVideos() {
   // Function to extract YouTube video ID from URL
   const getYouTubeId = (url) => {
     if (!url) return null;
-    
-    console.log("Processing URL:", url);
+  
     
     // Handle different YouTube URL formats
     const patterns = [
@@ -38,19 +37,16 @@ export default function InterviewVideos() {
     for (let pattern of patterns) {
       const match = url.match(pattern);
       if (match && match[1]) {
-        console.log("Found video ID:", match[1]);
         return match[1];
       }
     }
-    
-    console.log("No video ID found");
+  
     return null;
   };
 
   useEffect(() => {
     const fetchVideos = async () => {
       try {
-        console.log("Fetching videos from API...");
         const response = await fetch("https://hdrss-backend.onrender.com/api/add/Interviews");
         
         if (!response.ok) {
@@ -58,7 +54,6 @@ export default function InterviewVideos() {
         }
         
         const data = await response.json();
-        console.log("API Response:", data);
         
         // Check the structure of the response
         let videoArray = [];
@@ -70,11 +65,10 @@ export default function InterviewVideos() {
         } else if (data && Array.isArray(data.data)) {
           videoArray = data.data;
         } else {
-          console.log("Unexpected API response structure:", data);
           videoArray = [];
         }
         
-        console.log("Video array:", videoArray);
+    
         
         // Process videos to extract YouTube IDs
         const processedVideos = videoArray
@@ -91,7 +85,7 @@ export default function InterviewVideos() {
           })
           .filter(video => video !== null);
         
-        console.log("Processed videos:", processedVideos);
+        
         setVideos(processedVideos);
         
       } catch (error) {
@@ -142,7 +136,7 @@ export default function InterviewVideos() {
                 play={playing}
                 videoId={video.videoId}
                 onChangeState={(state) => {
-                  console.log("Video state:", state);
+                  
                   setPlaying(state === 'playing');
                 }}
                 webViewStyle={{ opacity: 0.99 }}
@@ -208,7 +202,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     paddingVertical: 4,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: '#e3adad',
 
     marginHorizontal: 10,
   },
@@ -219,7 +213,7 @@ const styles = StyleSheet.create({
   },
   videoInfo: {
     padding: 10,
-    backgroundColor: '#fff',
+    backgroundColor: '#ffefef',
   },
   videoTitle: {
     fontSize: 14,

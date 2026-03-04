@@ -27,14 +27,13 @@ const VaasthuPage3 = () => {
   const [videoLoading, setVideoLoading] = useState(true);
   const [playing, setPlaying] = useState(false);
 
-  // 🔹 About states
+  /* 🔹 ABOUT STATE */
   const [showFullAbout, setShowFullAbout] = useState(false);
-  const [aboutOverflow, setAboutOverflow] = useState(false);
 
-  // 🔹 Description states (no truncation needed as per your requirement)
+  /* 🔹 DESCRIPTION STATE */
   const [showFullDescription, setShowFullDescription] = useState(false);
 
-  // Extract YouTube video ID from URL
+  /* ================= YOUTUBE ================= */
   const getYoutubeId = (url) => {
     if (!url) return null;
     const reg =
@@ -49,44 +48,7 @@ const VaasthuPage3 = () => {
     ? Math.min(screenWidth * 0.56, 400)
     : Math.min(screenWidth * 0.56, 240);
 
-  // Function to check if text has more than 5 lines
-  const checkTextOverflow = (text, setOverflowFunction) => {
-    if (!text) return;
-    
-    // Count the number of newlines in the text
-    const lineCount = (text.match(/\n/g) || []).length + 1;
-    
-    // If there are more than 5 lines, set overflow to true
-    if (lineCount > 5) {
-      setOverflowFunction(true);
-    }
-  };
-
-  // Call this when component mounts to check About text
-  React.useEffect(() => {
-    if (item.about) {
-      checkTextOverflow(item.about, setAboutOverflow);
-    }
-  }, [item.about]);
-
-  // Function to truncate text to 5 lines
-  const truncateTextToFiveLines = (text) => {
-    if (!text) return "";
-    
-    const lines = text.split('\n');
-    
-    // If text has 5 or fewer lines, return full text
-    if (lines.length <= 5) {
-      return text;
-    }
-    
-    // Return first 5 lines
-    const firstFiveLines = lines.slice(0, 5).join('\n');
-    
-    // Add ellipsis if needed
-    return firstFiveLines + '...';
-  };
-
+  /* ================= HEADER ================= */
   const renderHeader = () => (
     <View style={[styles.header, isTablet && styles.headerTablet]}>
       <TouchableOpacity onPress={() => navigation.goBack()}>
@@ -101,74 +63,75 @@ const VaasthuPage3 = () => {
     </View>
   );
 
-  /* ================= ABOUT SECTION (WITH 5-LINE TRUNCATION) ================= */
+  /* ================= ABOUT ================= */
   const renderAboutSection = () => {
     if (!item.about) return null;
-
-    // Get the text to display
-    const displayAbout = showFullAbout 
-      ? item.about 
-      : truncateTextToFiveLines(item.about);
 
     return (
       <View style={styles.aboutSection}>
         <Text style={[styles.section, isTablet && styles.sectionTablet]}>
           About
         </Text>
-        
-        <Text style={[
-          styles.aboutText,
-          isTablet && styles.aboutTextTablet,
-          !showFullAbout && aboutOverflow && styles.truncatedText
-        ]}>
-          {displayAbout}
+
+        <Text
+          style={[styles.aboutText, isTablet && styles.aboutTextTablet]}
+          numberOfLines={showFullAbout ? undefined : 10}
+        >
+          {item.about}
         </Text>
 
-        {aboutOverflow && (
-          <TouchableOpacity
-            style={styles.readMoreButton}
-            onPress={() => setShowFullAbout(!showFullAbout)}
-          >
-            <Text style={styles.readMoreText}>
-              {showFullAbout ? "Show Less" : "Read More"}
-            </Text>
-            <Ionicons
-              name={showFullAbout ? "chevron-up" : "chevron-down"}
-              size={16}
-              color="#8B1A1A"
-              style={styles.readMoreIcon}
-            />
-          </TouchableOpacity>
-        )}
+        <TouchableOpacity
+          style={styles.readMoreButtonRight}
+          onPress={() => setShowFullAbout(!showFullAbout)}
+        >
+          <Text style={styles.readMoreText}>
+            {showFullAbout ? "Show Less" : "Read More"}
+          </Text>
+          <Ionicons
+            name={showFullAbout ? "chevron-up" : "chevron-down"}
+            size={16}
+            color="#8B1A1A"
+            style={{ marginLeft: 4 }}
+          />
+        </TouchableOpacity>
       </View>
     );
   };
 
-  /* ================= GALLERY ================= */
-  const renderGallery = () => {
-    if (!item.gallery || item.gallery.length === 0) return null;
+  /* ================= DESCRIPTION ================= */
+  const renderDescriptionSection = () => {
+    if (!item.description) return null;
 
     return (
-      <View style={styles.gallerySection}>
+      <View style={styles.descriptionSection}>
         <Text style={[styles.section, isTablet && styles.sectionTablet]}>
-          Gallery
+          Description
         </Text>
-        <ScrollView 
-          horizontal 
-          showsHorizontalScrollIndicator={false}
-          style={styles.galleryScroll}
+
+        <Text
+          style={[
+            styles.description,
+            isTablet && styles.descriptionTablet,
+          ]}
+          numberOfLines={showFullDescription ? undefined : 10}
         >
-          {item.gallery.map((img, i) => (
-            <Image
-              key={i}
-              source={{ uri: img }}
-              style={[
-                styles.galleryImage,
-                isTablet && styles.tabletGalleryImage,
-              ]}
-            />
-          ))}
-        </ScrollView>
+          {item.description}
+        </Text>
+
+        <TouchableOpacity
+          style={styles.readMoreButtonRight}
+          onPress={() => setShowFullDescription(!showFullDescription)}
+        >
+          <Text style={styles.readMoreText}>
+            {showFullDescription ? "Show Less" : "Read More"}
+          </Text>
+          <Ionicons
+            name={showFullDescription ? "chevron-up" : "chevron-down"}
+            size={16}
+            color="#8B1A1A"
+            style={{ marginLeft: 4 }}
+          />
+        </TouchableOpacity>
       </View>
     );
   };
@@ -197,35 +160,34 @@ const VaasthuPage3 = () => {
             videoId={videoId}
             play={playing}
             onReady={() => setVideoLoading(false)}
-            onChangeState={(state) => {
-              if (state === "ended") setPlaying(false);
-            }}
-            onError={(error) => {
-              console.error("YouTube player error:", error);
-              setVideoLoading(false);
-            }}
           />
         </View>
       </View>
     );
   };
 
-  /* ================= DESCRIPTION (FULL TEXT, NO TRUNCATION) ================= */
-  const renderDescriptionSection = () => {
-    if (!item.description) return null;
+  /* ================= GALLERY ================= */
+  const renderGallery = () => {
+    if (!item.gallery || item.gallery.length === 0) return null;
 
     return (
-      <View style={styles.descriptionSection}>
+      <View style={styles.gallerySection}>
         <Text style={[styles.section, isTablet && styles.sectionTablet]}>
-          Description
+          Gallery
         </Text>
-        
-        <Text style={[
-          styles.description,
-          isTablet && styles.descriptionTablet,
-        ]}>
-          {item.description}
-        </Text>
+
+        <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+          {item.gallery.map((img, i) => (
+            <Image
+              key={i}
+              source={{ uri: img }}
+              style={[
+                styles.galleryImage,
+                isTablet && styles.tabletGalleryImage,
+              ]}
+            />
+          ))}
+        </ScrollView>
       </View>
     );
   };
@@ -233,31 +195,19 @@ const VaasthuPage3 = () => {
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar backgroundColor="#8B1A1A" barStyle="light-content" />
-      
+
       {renderHeader()}
 
       <ScrollView showsVerticalScrollIndicator={false}>
-        {/* BANNER */}
         <Image
           source={{ uri: item.bannerImage }}
           style={[styles.banner, isTablet && styles.bannerTablet]}
         />
 
         <View style={[styles.content, isTablet && styles.contentTablet]}>
-          <Text style={[styles.title, isTablet && styles.titleTablet]}>
-            {item.title}
-          </Text>
-
-          {/* ABOUT SECTION (with 5-line truncation) */}
           {renderAboutSection()}
-
-          {/* VIDEO SECTION */}
           {item.video && renderVideoSection()}
-
-          {/* GALLERY SECTION */}
           {renderGallery()}
-
-          {/* DESCRIPTION SECTION (full text, no truncation) */}
           {renderDescriptionSection()}
         </View>
       </ScrollView>
@@ -270,23 +220,15 @@ export default VaasthuPage3;
 /* ================= STYLES ================= */
 
 const styles = StyleSheet.create({
-  container: { 
-    flex: 1, 
-    backgroundColor: "#F5F5F5" 
-  },
+  container: { flex: 1, backgroundColor: "#F5F5F5" },
 
   header: {
     backgroundColor: "#8B1A1A",
     padding: 14,
     flexDirection: "row",
     alignItems: "center",
-    elevation: 4,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 3,
   },
-  headerTablet: { 
+  headerTablet: {
     paddingVertical: 46,
     paddingHorizontal: 24,
     marginTop: -27,
@@ -298,15 +240,10 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontSize: 18,
     fontWeight: "700",
-    paddingHorizontal: 8,
   },
   headerTitleTablet: { fontSize: 24 },
 
-  banner: { 
-    width: "100%", 
-    height: 220,
-    resizeMode: "cover" 
-  },
+  banner: { width: "100%", height: 220 },
   bannerTablet: { height: 320 },
 
   content: { padding: 16 },
@@ -317,91 +254,43 @@ const styles = StyleSheet.create({
     width: "100%",
   },
 
-  title: { 
-    fontSize: 22, 
-    fontWeight: "700", 
-    color: "#333",
-    marginTop: 15,
-    marginBottom: 10,
-  },
-  titleTablet: { 
-    fontSize: 28, 
-    marginTop: 20,
-    marginBottom: 15,
-  },
-
   section: {
     fontSize: 18,
     fontWeight: "700",
     color: "#8B1A1A",
     marginBottom: 10,
   },
-  sectionTablet: { 
-    fontSize: 22, 
-    marginBottom: 12,
-  },
+  sectionTablet: { fontSize: 22 },
 
-  /* ========== ABOUT SECTION STYLES ========== */
-  aboutSection: {
-    marginBottom: 20,
-  },
+  aboutSection: { marginBottom: 20 },
+  aboutText: { fontSize: 15, lineHeight: 24, color: "#444", textAlign: "justify" },
+  aboutTextTablet: { fontSize: 17, lineHeight: 28 },
 
-  aboutText: {
-    fontSize: 15,
-    lineHeight: 22,
-    color: "#444",
-  },
-  aboutTextTablet: {
-    fontSize: 17,
-    lineHeight: 26,
-  },
-
-  truncatedText: {
-    // Optional: Add styles for truncated text if needed
-    // opacity: 0.9,
-  },
-
-  /* ========== READ MORE BUTTON ========== */
-  readMoreButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginTop: 10,
-    alignSelf: "flex-start",
-    paddingVertical: 5,
-  },
-
-  readMoreText: {
-    color: "#8B1A1A",
-    fontSize: 14,
-    fontWeight: "600",
-    marginRight: 4,
-  },
-
-  readMoreIcon: {
-    marginTop: 2,
-  },
-
-  /* ========== DESCRIPTION SECTION ========== */
-  descriptionSection: {
-    marginTop: 25,
-  },
-
+  descriptionSection: { marginTop: 25 },
   description: {
     fontSize: 15,
-    lineHeight: 22,
+    lineHeight: 24,
     color: "#444",
+    textAlign: "justify",
   },
   descriptionTablet: {
     fontSize: 17,
-    lineHeight: 26,
+    lineHeight: 28,
   },
 
-  /* ========== VIDEO SECTION ========== */
-  videoSection: {
-    marginTop: 20,
-    marginBottom: 20,
+  readMoreButtonRight: {
+    flexDirection: "row",
+    alignItems: "center",
+    alignSelf: "flex-end",
+    marginTop: 10,
+  },
+  readMoreText: {
+    color: "#8B1A1A",
+    fontSize: 14,
+    fontWeight: "700",
   },
 
+  videoSection: { marginVertical: 20 },
   videoContainer: {
     width: "100%",
     borderRadius: 12,
@@ -409,42 +298,30 @@ const styles = StyleSheet.create({
     backgroundColor: "#000",
     marginTop: 10,
   },
-
   videoLoader: {
-    width: "100%",
     justifyContent: "center",
     alignItems: "center",
     backgroundColor: "#f0f0f0",
     borderRadius: 12,
   },
-
   videoLoadingText: {
     marginTop: 10,
     color: "#8B1A1A",
     fontSize: 16,
   },
 
-  /* ========== GALLERY SECTION ========== */
-  gallerySection: {
-    marginTop: 20,
-    marginBottom: 20,
-  },
-
-  galleryScroll: {
-    marginHorizontal: -5,
-  },
-
+  gallerySection: { marginVertical: 20 },
   galleryImage: {
     width: 200,
     height: 150,
     borderRadius: 10,
-    marginHorizontal: 5,
-    resizeMode: "cover",
+    marginRight: 10,
   },
-
   tabletGalleryImage: {
     width: 280,
     height: 200,
     borderRadius: 12,
   },
 });
+
+

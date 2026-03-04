@@ -1,263 +1,11 @@
-// import React, { useEffect, useState } from "react";
-// import {
-//   View,
-//   Text,
-//   FlatList,
-//   ActivityIndicator,
-//   StyleSheet,
-//   Image,
-//   TouchableOpacity,
-//   Linking,
-// } from "react-native";
-// import { useRoute, useNavigation } from "@react-navigation/native";
-// import Icon from "react-native-vector-icons/Ionicons"; // ✅ for icons
-
-// const GovernmentPage2 = () => {
-//   const route = useRoute();
-//   const navigation = useNavigation();
-//   const { governmentId } = route.params;
-//   const [services, setServices] = useState([]);
-//   const [loading, setLoading] = useState(true);
-
-//   useEffect(() => {
-//     const fetchServices = async () => {
-//       try {
-//         const response = await fetch(
-//          `https://hdrss-backend.onrender.com/api/governments/services/${governmentId}`
-//         );
-//         const data = await response.json();
-//         console.log("✅ Government Services:", data);
-
-//         setServices(Array.isArray(data) ? data : []);
-//       } catch (error) {
-//         console.log("❌ Error fetching services:", error);
-//       } finally {
-//         setLoading(false);
-//       }
-//     };
-
-//     fetchServices();
-//   }, [governmentId]);
-
-//   const openMap = (url) => {
-//     if (url) Linking.openURL(url);
-//   };
-
-//   const callNumber = (number) => {
-//    if (number) Linking.openURL(`tel:${number}`);
-//   };
-
-//   if (loading) {
-//     return (
-//       <View style={styles.loaderContainer}>
-//         <ActivityIndicator size="large" color="#93210A" />
-//         <Text>Loading...</Text>
-//       </View>
-//     );
-//   }
-
-//   if (services.length === 0) {
-//     return (
-//       <View style={styles.container}>
-//         <View style={styles.headerBox}>
-//           <TouchableOpacity
-//             onPress={() => navigation.goBack()}
-//             style={styles.backButton}
-//           >
-//             <Icon name="chevron-back" size={26} color="#fff" />
-//           </TouchableOpacity>
-//           <Text style={styles.headerText}>Services under this Government</Text>
-//         </View>
-//         <Text style={styles.emptyText}>
-//           No services found for this government.
-//         </Text>
-//       </View>
-//     );
-//   }
-
-//   return (
-//     <View style={styles.container}>
-//       {/* ✅ Header with Back Button */}
-//       <View style={styles.headerBox}>
-//         <TouchableOpacity
-//           onPress={() => navigation.goBack()}
-//           style={styles.backButton}
-//         >
-//           <Icon name="chevron-back" size={22} color="#fff" />
-//         </TouchableOpacity>
-//         <Text style={styles.headerText}>Services under this Government</Text>
-//       </View>
-
-//       <FlatList
-//         data={services}
-//         keyExtractor={(item, index) => item.id?.toString() || index.toString()}
-//         renderItem={({ item, index }) => {
-//           const placeholderImages = [
-//             "https://via.placeholder.com/150/93210A/FFFFFF?text=Service+1",
-//             "https://via.placeholder.com/150/555/FFFFFF?text=Service+2",
-//             "https://via.placeholder.com/150/777/FFFFFF?text=Service+3",
-//           ];
-//           const imageUrl = item.image || placeholderImages[index % 3];
-
-//           return (
-//             <View style={styles.card}>
-//               {/* Image + Text Row */}
-//               <View style={styles.row}>
-//                 <Image source={{ uri: imageUrl }} style={styles.image} />
-//                 <View style={styles.textContainer}>
-//                   <Text style={styles.title}>
-//                     {item?.name || "Unnamed Service"}
-//                   </Text>
-//                   <Text style={styles.localArea}>
-//                     📍 {item?.localArea || "No location info"}
-//                   </Text>
-//                 </View>
-//               </View>
-
-//               {/* Bottom Buttons */}
-//               <View style={styles.bottomRow}>
-//                 <TouchableOpacity
-//                   onPress={() => callNumber(item.phoneNumber)}
-//                   style={styles.callButton}
-//                 >
-//                   <Icon name="call" size={16} color="#fff" />
-//                   <Text style={styles.callText}>
-//                     {item?.phoneNumber || "N/A"}
-//                   </Text>
-//                 </TouchableOpacity>
-
-//                 <TouchableOpacity
-//                   onPress={() => openMap(item.location)}
-//                   style={styles.mapButton}
-//                 >
-//                   <Icon name="map" size={18} color="#93210A" />
-//                 </TouchableOpacity>
-//               </View>
-//             </View>
-//           );
-//         }}
-//       />
-//     </View>
-//   );
-// };
-
-// export default GovernmentPage2;
-
-// const styles = StyleSheet.create({
-//   container: {
-//     flex: 1,
-//     backgroundColor: "#FFF8F8",
-//     // padding: 15,
-//   },
-//   loaderContainer: {
-//     flex: 1,
-//     justifyContent: "center",
-//     alignItems: "center",
-//   },
-//   headerBox: {
-//     backgroundColor: "#93210A",
-//     paddingVertical: 40,
-//     paddingHorizontal: 30,
-//     flexDirection: "row",
-//     alignItems: "center",
-//     elevation: 5,
-//     shadowColor: "#93210A",
-//     shadowOpacity: 0.25,
-//     shadowOffset: { width: 0, height: 3 },
-//   },
-//   backButton: {
-//     marginRight: 10,
-//     marginTop: -2, // 👈 slightly raised
-//     padding: 4,
-//   },
-//   headerText: {
-//     color: "#fff",
-//     fontSize: 18,
-//     fontWeight: "bold",
-//     textAlign: "left",
-//     flex: 1,
-//   },
-//   card: {
-//     backgroundColor: "#fff",
-//     padding: 12,
-//     marginVertical: 8,
-//     marginHorizontal: 15,
-//     borderRadius: 12,
-//     elevation: 4,
-//     shadowColor: "#000",
-//     shadowOpacity: 0.2,
-//     shadowRadius: 3,
-//     shadowOffset: { width: 0, height: 2 },
-//   },
-//   row: {
-//     flexDirection: "row",
-//     alignItems: "center",
-//   },
-//   image: {
-//     width: "30%",
-//     height: 80,
-//     borderRadius: 10,
-//     marginRight: 12,
-//   },
-//   textContainer: {
-//     flex: 1,
-//     justifyContent: "center",
-//   },
-//   title: {
-//     fontSize: 16,
-//     fontWeight: "700",
-//     color: "#93210A",
-//     marginBottom: 4,
-//   },
-//   localArea: {
-//     fontSize: 13,
-//     color: "#555",
-//   },
-//   bottomRow: {
-//     flexDirection: "row",
-//     justifyContent: "space-between",
-//     marginTop: 10,
-//     borderTopWidth: 1,
-//     borderTopColor: "#eee",
-//     paddingTop: 8,
-//   },
-//   callButton: {
-//     flexDirection: "row",
-//     alignItems: "center",
-//     backgroundColor: "#93210A",
-//     paddingVertical: 6,
-//     paddingHorizontal: 10,
-//     borderRadius: 8,
-//   },
-//   callText: {
-//     color: "#fff",
-//     fontSize: 13,
-//     fontWeight: "600",
-//     marginLeft: 5,
-//   },
-//   mapButton: {
-//     padding: 6,
-//     borderRadius: 6,
-//     backgroundColor: "#f5e4e1",
-//   },
-//   emptyText: {
-//     textAlign: "center",
-//     marginTop: 20,
-//     color: "#93210A",
-//   },
-// });
-
-
-
-
 import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
   FlatList,
-  ActivityIndicator,
+  ActivityIndicator, 
   StyleSheet,
-  Image,
+  Image, 
   TouchableOpacity,
   Linking,
   useWindowDimensions,
@@ -326,7 +74,7 @@ const GovernmentPage2 = () => {
         <Text
           style={isTablet ? styles.headerTextTablet : styles.headerTextMobile}
         >
-          Government Services
+          Governments Services
         </Text>
       </View>
 
@@ -339,7 +87,7 @@ const GovernmentPage2 = () => {
           item.id?.toString() || index.toString()
         }
         columnWrapperStyle={
-          isTablet && { justifyContent: "space-between" }
+          isTablet && { justifyContent: "space-between", marginBottom: 15 }
         }
         contentContainerStyle={{ paddingBottom: 20 }}
         showsVerticalScrollIndicator={false}
@@ -359,46 +107,58 @@ const GovernmentPage2 = () => {
                 isTablet && styles.cardTablet,
               ]}
             >
-              {/* Image */}
-              <Image
-                source={{ uri: imageUrl }}
-                style={isTablet ? styles.imageTablet : styles.imageMobile}
-              />
+              {/* Card Content Row */}
+              <View style={styles.cardContentRow}>
+                {/* Image on LEFT - Square Shape */}
+                <View style={styles.imageContainer}>
+                  <Image
+                    source={{ uri: imageUrl }}
+                    style={isTablet ? styles.imageTablet : styles.imageMobile}
+                    resizeMode="cover"
+                  />
+                </View>
 
-              {/* Content */}
-              <View style={styles.textContainer}>
-                <Text
-                  style={
-                    isTablet ? styles.titleTablet : styles.titleMobile
-                  }
-                  numberOfLines={2}
-                >
-                  {item?.name || "Unnamed Service"}
-                </Text>
-
-                <Text style={styles.localArea}>
-                  📍 {item?.localArea || "No location info"}
-                </Text>
-              </View>
-
-              {/* Actions */}
-              <View style={styles.bottomRow}>
-                <TouchableOpacity
-                  onPress={() => callNumber(item.phoneNumber)}
-                  style={styles.callButton}
-                >
-                  <Icon name="call" size={16} color="#fff" />
-                  <Text style={styles.callText}>
-                    {item?.phoneNumber || "N/A"}
+                {/* Details on RIGHT */}
+                <View style={styles.detailsContainer}>
+                  <Text
+                    style={
+                      isTablet ? styles.titleTablet : styles.titleMobile
+                    }
+                    numberOfLines={2}
+                  >
+                    {item?.name || "Unnamed Service"}
                   </Text>
-                </TouchableOpacity>
 
-                <TouchableOpacity
-                  onPress={() => openMap(item.location)}
-                  style={styles.mapButton}
-                >
-                  <Icon name="map" size={18} color="#93210A" />
-                </TouchableOpacity>
+                  <Text style={styles.localArea} numberOfLines={2}>
+                    {item?.localArea || "No location info"}
+                  </Text>
+
+                  {/* Phone Number - Moved to details section */}
+                  <View style={styles.phoneContainer}>
+                    <Icon name="call" size={14} color="#93210A" />
+                    <Text style={styles.phoneText} numberOfLines={1}>
+                      {item?.phoneNumber || "N/A"}
+                    </Text>
+                  </View>
+
+                  {/* Actions Row */}
+                  <View style={styles.actionsRow}>
+                    <TouchableOpacity
+                      onPress={() => callNumber(item.phoneNumber)}
+                      style={styles.callButton}
+                    >
+                      <Icon name="call" size={16} color="#fff" />
+                      <Text style={styles.callText}>Call</Text>
+                    </TouchableOpacity>
+
+                    <TouchableOpacity
+                      onPress={() => openMap(item.location)}
+                      style={styles.mapButton}
+                    >
+                      <Icon name="map" size={18} color="#93210A" />
+                    </TouchableOpacity>
+                  </View>
+                </View>
               </View>
             </View>
           );
@@ -428,7 +188,6 @@ const styles = StyleSheet.create({
   },
 
   /* ================= HEADER ================= */
-
   headerMobile: {
     backgroundColor: "#93210A",
     paddingVertical: 35,
@@ -447,28 +206,26 @@ const styles = StyleSheet.create({
 
   backButton: {
     marginRight: 12,
-    bottom:-10,
-
+    bottom: -10,
   },
 
   headerTextMobile: {
     color: "#fff",
     fontSize: 18,
     fontWeight: "bold",
-    bottom:-10,
-    left:50,
+    bottom: -10,
+    left: 50,
   },
 
   headerTextTablet: {
     color: "#fff",
     fontSize: 24,
     fontWeight: "bold",
-    top:10,
-    left:150,
+    top: 10,
+    left: 150,
   },
 
   /* ================= CARD ================= */
-
   card: {
     backgroundColor: "#fff",
     marginHorizontal: 15,
@@ -487,56 +244,81 @@ const styles = StyleSheet.create({
     padding: 16,
   },
 
-  /* ================= IMAGE ================= */
+  /* ================= CARD CONTENT ROW ================= */
+  cardContentRow: {
+    flexDirection: "row",
+    alignItems: "flex-start", // Align items to top
+  },
+
+  /* ================= IMAGE CONTAINER ================= */
+  imageContainer: {
+    marginRight: 12,
+  },
 
   imageMobile: {
-    width: "100%",
-    height: 160,
+    width: 100, // Square shape width
+    height: 100, // Square shape height
     borderRadius: 10,
-    marginBottom: 10,
   },
 
   imageTablet: {
-    width: "100%",
-    height: 220,
+    width: 140, // Larger square for tablet
+    height: 140, // Larger square for tablet
     borderRadius: 14,
-    marginBottom: 14,
   },
 
-  /* ================= TEXT ================= */
-
-  textContainer: {
-    marginBottom: 8,
+  /* ================= DETAILS CONTAINER ================= */
+  detailsContainer: {
+    flex: 1, // Takes remaining space
+    flexDirection: "column",
+    justifyContent: "space-between",
+    minHeight: 100, // Match image height for mobile
   },
 
+  /* ================= TITLE ================= */
   titleMobile: {
     fontSize: 16,
     fontWeight: "700",
     color: "#93210A",
-    marginBottom: 4,
+    marginBottom: 6,
+    flexWrap: "wrap",
   },
 
   titleTablet: {
-    fontSize: 19,
+    fontSize: 15,
     fontWeight: "700",
     color: "#93210A",
-    marginBottom: 6,
+    marginBottom: 8,
+    flexWrap: "wrap",
   },
 
+  /* ================= LOCAL AREA ================= */
   localArea: {
     fontSize: 14,
     color: "#555",
+    marginBottom: 10,
+    flexWrap: "wrap",
   },
 
-  /* ================= ACTIONS ================= */
+  /* ================= PHONE CONTAINER ================= */
+  phoneContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 12,
+  },
 
-  bottomRow: {
+  phoneText: {
+    fontSize: 13,
+    color: "#666",
+    marginLeft: 6,
+    flex: 1,
+  },
+
+  /* ================= ACTIONS ROW ================= */
+  actionsRow: {
     flexDirection: "row",
     justifyContent: "space-between",
-    borderTopWidth: 1,
-    borderTopColor: "#eee",
-    paddingTop: 10,
-    marginTop: 10,
+    alignItems: "center",
   },
 
   callButton: {
@@ -544,8 +326,9 @@ const styles = StyleSheet.create({
     alignItems: "center",
     backgroundColor: "#93210A",
     paddingVertical: 8,
-    paddingHorizontal: 12,
+    paddingHorizontal: 16,
     borderRadius: 8,
+    minWidth: 80,
   },
 
   callText: {
@@ -557,7 +340,11 @@ const styles = StyleSheet.create({
 
   mapButton: {
     backgroundColor: "#f5e4e1",
-    padding: 8,
+    padding: 10,
     borderRadius: 8,
+    width: 40,
+    height: 40,
+    alignItems: "center",
+    justifyContent: "center",
   },
 });

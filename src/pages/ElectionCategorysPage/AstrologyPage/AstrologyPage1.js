@@ -1,151 +1,4 @@
-// import React, { useEffect, useState } from "react";
-// import {
-//   View,
-//   Text,
-//   StyleSheet,
-//   TouchableOpacity,
-//   Image,
-//   ScrollView,
-//   ActivityIndicator,
-// } from "react-native";
-// import Icon from "react-native-vector-icons/MaterialIcons";
-// import { useNavigation } from "@react-navigation/native";
-// import { fetchAstrologyTypes } from "../../../Controller/AstrologyController/AstrologyController"; // ✅ Controller import
-
-// export default function AstrologyPage1() {
-//   const navigation = useNavigation();
-//   const [astrologyData, setAstrologyData] = useState([]);
-//   const [loading, setLoading] = useState(true);
-
-//   // 🔮 Fetch Astrology Data
-//   useEffect(() => {
-//     const loadAstrologyData = async () => {
-//       try {
-//         const data = await fetchAstrologyTypes();
-//         setAstrologyData(data);
-//       } catch (error) {
-//         console.error("Error loading astrology data:", error);
-//       } finally {
-//         setLoading(false);
-//       }
-//     };
-//     loadAstrologyData();
-//   }, []);
-
-//   // 🔹 Handle card press
-//   const handleCardPress = (item) => {
-//     if (item.name === "Planetary Predictions") {
-//       navigation.navigate("AstrologyPage2", { astrologyType: item });
-//     } else {
-//       alert(`You clicked ${item.name}`);
-//     }
-//   };
-
-//   return (
-//     <View style={styles.container}>
-//       {/* 🔹 Header */}
-//       <View style={styles.header}>
-//         <TouchableOpacity onPress={() => navigation.goBack()}>
-//           <Icon name="arrow-back" size={20} color="#fff" />
-//         </TouchableOpacity>
-//         <Text style={styles.headerTitle}>Astrology</Text>
-//       </View>
-
-//       {/* 🔹 Astrology Types Section */}
-//       <ScrollView contentContainerStyle={styles.scrollContainer}>
-//         <Text style={styles.sectionTitle}>Astrology Types</Text>
-
-//         {loading ? (
-//           <ActivityIndicator size="large" color="#93210A" style={{ marginTop: 40 }} />
-//         ) : astrologyData.length === 0 ? (
-//           <Text style={styles.emptyText}>No astrology data found.</Text>
-//         ) : (
-//           <View style={styles.grid}>
-//             {astrologyData.map((item, index) => (
-//               <TouchableOpacity
-//                 key={index}
-//                 style={styles.card}
-//                 onPress={() => handleCardPress(item)}
-//                 activeOpacity={0.8}
-//               >
-//                 <Image source={{ uri: item.image }} style={styles.cardImage} />
-//                 <Text style={styles.cardText}>{item.name}</Text>
-//               </TouchableOpacity>
-//             ))}
-//           </View>
-//         )}
-//       </ScrollView>
-//     </View>
-//   );
-// }
-
-// const styles = StyleSheet.create({
-//   container: { flex: 1, backgroundColor: "#fff" },
-
-  
-//   header: {
-//     flexDirection: "row",
-//     alignItems: "center",
-//     padding: 15,
-//     marginTop: 32,
-//     backgroundColor: "#93210A",
-//   },
-//   headerTitle: {
-//     fontSize: 20,
-//     fontWeight: "bold",
-//     color: "#fff",
-//     marginLeft: 12,
-//   },
-
-//   scrollContainer: {
-//     padding: 16,
-//   },
-//   sectionTitle: {
-//     fontSize: 18,
-//     fontWeight: "bold",
-//     color: "#93210A",
-//     marginBottom: 16,
-//   },
-//   grid: {
-//     flexDirection: "row",
-//     flexWrap: "wrap",
-//     justifyContent: "space-between",
-//   },
-//   card: {
-//     width: "47%",
-//     backgroundColor: "#FFF7F5",
-//     borderRadius: 15,
-//     padding: 12,
-//     marginBottom: 16,
-//     alignItems: "center",
-//     elevation: 3,
-//   },
-//   cardImage: {
-//     width: 100,
-//     height: 100,
-//     borderRadius: 10,
-//     marginBottom: 8,
-//   },
-//   cardText: {
-//     fontSize: 16,
-//     fontWeight: "600",
-//     color: "#93210A",
-//     textAlign: "center",
-//   },
-//   emptyText: {
-//     fontSize: 16,
-//     color: "#93210A",
-//     textAlign: "center",
-//     marginTop: 40,
-//   },
-// });
-
-
-
-
-
-
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import {
   View,
   Text,
@@ -155,33 +8,99 @@ import {
   ScrollView,
   ActivityIndicator,
   useWindowDimensions,
+  Animated,
+  Platform,
 } from "react-native";
 import Icon from "react-native-vector-icons/MaterialIcons";
 import { useNavigation } from "@react-navigation/native";
 import { fetchAstrologyTypes } from "../../../Controller/AstrologyController/AstrologyController";
+import YoutubePlayer from "react-native-youtube-iframe";
 
 export default function AstrologyPage1() {
   const navigation = useNavigation();
-  const { width } = useWindowDimensions();
+  const { width, height } = useWindowDimensions();
   const isTablet = width >= 600;
+  const isLargeTablet = width >= 1024;
 
   const [astrologyData, setAstrologyData] = useState([]);
+  const [adData, setAdData] = useState({ images: [], videos: [] });
   const [loading, setLoading] = useState(true);
+  const [adLoading, setAdLoading] = useState(true);
+  const [currentAdIndex, setCurrentAdIndex] = useState(0);
+  
+  // Advertisement carousel refs
+  const scrollX = useRef(new Animated.Value(0)).current;
+  const flatListRef = useRef(null);
 
-  // 🔮 Fetch Astrology Data
+  const responsiveSize = (mobile, tablet, largeTablet) => {
+    if (isLargeTablet) return largeTablet || tablet;
+    return isTablet ? tablet : mobile;
+  };
+
+  const getAdHeight = () => {
+    if (isLargeTablet) return 220;
+    if (isTablet) return 280;
+    return 150;
+  };
+  const getVideoHeight = () => {
+    if (isLargeTablet) return 280;
+    if (isTablet) return 380;
+    return 200;
+  };
+
   useEffect(() => {
-    const loadAstrologyData = async () => {
+    const loadAllData = async () => {
       try {
-        const data = await fetchAstrologyTypes();
-        setAstrologyData(data);
+        // Fetch astrology data
+        const astrologyData = await fetchAstrologyTypes();
+        setAstrologyData(astrologyData);
+
+        // Fetch advertisement data
+        const adResponse = await fetch("https://hdrss-backend.onrender.com/api/add/Astrology1");
+        const adJson = await adResponse.json();
+        setAdData({
+          images: adJson.images || [],
+          videos: adJson.videos || []
+        });
       } catch (error) {
-        console.error("Error loading astrology data:", error);
+        console.error("Error loading data:", error);
       } finally {
         setLoading(false);
+        setAdLoading(false);
       }
     };
-    loadAstrologyData();
+    loadAllData();
   }, []);
+
+  // Auto-scroll advertisements
+  useEffect(() => {
+    if (adData.images.length <= 1) return;
+
+    const interval = setInterval(() => {
+      setCurrentAdIndex(prevIndex => {
+        const nextIndex = (prevIndex + 1) % adData.images.length;
+        
+        if (flatListRef.current) {
+          flatListRef.current.scrollToIndex({
+            index: nextIndex,
+            animated: true,
+          });
+        }
+        
+        return nextIndex;
+      });
+    }, 3000);
+
+    return () => clearInterval(interval);
+  }, [adData.images.length]);
+
+  // Extract YouTube ID
+  const extractYouTubeId = (url) => {
+    if (!url) return null;
+    const regex = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/;
+    const match = url.match(regex);
+    return match ? match[1] : null;
+  };
 
   // 🔹 Handle card press → Navigate to next page
   const handleCardPress = (item) => {
@@ -190,63 +109,266 @@ export default function AstrologyPage1() {
     });
   };
 
+  // Calculate card width for responsive grid
+  const cardWidth = isTablet ? (width - 96) / 4 : (width - 48) / 3; // 4 columns on tablet, 3 on mobile
+
+  // Render advertisement item
+  const renderAdItem = ({ item, index }) => (
+    <View style={{ width }}>
+      <Image
+        source={{ uri: item }}
+        style={[
+          styles.topAdImage,
+          { 
+            width: width,
+            height: getAdHeight()
+          }
+        ]}
+        resizeMode="cover"
+      />
+    </View>
+  );
+
   return (
     <View style={styles.container}>
       {/* 🔴 HEADER */}
-      <View style={[styles.header, isTablet && styles.headerTablet]}>
-        <TouchableOpacity onPress={() => navigation.goBack()}>
-          <Icon name="arrow-back" size={isTablet ? 26 : 22} color="#fff" />
+      <View style={[
+        styles.header,
+        { 
+          padding: responsiveSize(15, 20, 25),
+          marginTop: Platform.OS === "ios" ? responsiveSize(32, 40, 48) : responsiveSize(28, 36, 44)
+        }
+      ]}>
+        <TouchableOpacity 
+          onPress={() => navigation.goBack()}
+          style={[
+            styles.backButton,
+            { 
+              padding: responsiveSize(8, 10, 12),
+              borderRadius: responsiveSize(20, 24, 28)
+            }
+          ]}
+        >
+          <Icon 
+            name="arrow-back" 
+            size={responsiveSize(22, 26, 30)} 
+            color="#fff" 
+          />
         </TouchableOpacity>
-        <Text style={[styles.headerTitle, isTablet && styles.headerTitleTablet]}>
+        
+        <Text style={[
+          styles.headerTitle,
+          { fontSize: responsiveSize(22, 28, 32) }
+        ]}>
           Astrology
         </Text>
+        
+        <View style={{ width: responsiveSize(40, 50, 60) }} />
       </View>
 
       {/* 🔹 CONTENT */}
-      <ScrollView contentContainerStyle={styles.scrollContainer}>
-        <Text
-          style={[
-            styles.sectionTitle,
-            isTablet && styles.sectionTitleTablet,
-          ]}
-        >
-          Astrology Types
-        </Text>
+      <ScrollView 
+        contentContainerStyle={[
+          styles.scrollContainer,
+          { 
+            padding: responsiveSize(8, 15, 22),
+            paddingBottom: responsiveSize(30, 40, 50)
+          }
+        ]}
+        showsVerticalScrollIndicator={false}
+      >
+        {/* 📢 TOP ADVERTISEMENT - Full Width Image Carousel */}
+        {!adLoading && adData.images.length > 0 && (
+          <View style={[
+            styles.topAdContainer,
+            { 
+              marginBottom: responsiveSize(20, 25, 30),
+              width: '100%'
+            }
+          ]}>
+            <Animated.FlatList
+              ref={flatListRef}
+              data={adData.images}
+              renderItem={renderAdItem}
+              keyExtractor={(item, index) => index.toString()}
+              horizontal
+              pagingEnabled
+              showsHorizontalScrollIndicator={false}
+              onScroll={Animated.event(
+                [{ nativeEvent: { contentOffset: { x: scrollX } } }],
+                { useNativeDriver: false }
+              )}
+              onMomentumScrollEnd={(event) => {
+                const newIndex = Math.round(event.nativeEvent.contentOffset.x / width);
+                setCurrentAdIndex(newIndex);
+              }}
+              scrollEventThrottle={16}
+              style={{ width: '100%' }}
+            />
+            
+            {/* Dot Indicators */}
+            {adData.images.length > 1 && (
+              <View style={[
+                styles.dotContainer,
+                { bottom: responsiveSize(15, 20, 25) }
+              ]}>
+                {adData.images.map((_, index) => (
+                  <View
+                    key={index}
+                    style={[
+                      styles.dot,
+                      { 
+                        backgroundColor: index === currentAdIndex ? '#93210A' : '#D3D3D3',
+                        width: index === currentAdIndex ? responsiveSize(10, 12, 14) : responsiveSize(6, 8, 10),
+                        height: responsiveSize(6, 8, 10),
+                        borderRadius: responsiveSize(3, 4, 5),
+                        marginHorizontal: responsiveSize(3, 4, 5)
+                      }
+                    ]}
+                  />
+                ))}
+              </View>
+            )}
+          </View>
+        )}
 
+        {/* 🔮 ASTROLOGY TYPES GRID */}
         {loading ? (
-          <ActivityIndicator
-            size="large"
-            color="#93210A"
-            style={{ marginTop: 40 }}
-          />
+          <View style={styles.loaderContainer}>
+            <ActivityIndicator
+              size={responsiveSize("large", 50, 60)}
+              color="#93210A"
+            />
+            <Text style={[
+              styles.loaderText,
+              { fontSize: responsiveSize(14, 16, 18) }
+            ]}>
+              Loading astrology types...
+            </Text>
+          </View>
         ) : astrologyData.length === 0 ? (
-          <Text style={styles.emptyText}>No astrology data found.</Text>
+          <View style={styles.emptyContainer}>
+            <Icon name="error-outline" size={responsiveSize(60, 80, 100)} color="#93210A" />
+            <Text style={[
+              styles.emptyText,
+              { fontSize: responsiveSize(16, 20, 24) }
+            ]}>
+              No astrology data found
+            </Text>
+            <Text style={[
+              styles.emptySubtext,
+              { fontSize: responsiveSize(14, 16, 18) }
+            ]}>
+              Please try again later
+            </Text>
+          </View>
         ) : (
-          <View style={styles.grid}>
-            {astrologyData.map((item, index) => (
-              <TouchableOpacity
-                key={index}
-                style={[styles.card, isTablet && styles.cardTablet]}
-                onPress={() => handleCardPress(item)}
-                activeOpacity={0.8}
-              >
-                <Image
-                  source={{ uri: item.image }}
+          <>
+            <Text style={[
+              styles.sectionTitle,
+              { 
+                fontSize: responsiveSize(18, 22, 26),
+                marginBottom: responsiveSize(20, 24, 28)
+              }
+            ]}>
+              Astrology Services
+            </Text>
+            
+            <View style={[
+              styles.gridContainer,
+              { marginBottom: responsiveSize(30, 35, 40) }
+            ]}>
+              <View style={styles.grid}>
+                {astrologyData.map((item, index) => (
+                  <TouchableOpacity
+                    key={index}
+                    style={[
+                      styles.card,
+                      { 
+                        width: cardWidth,
+                        padding: responsiveSize(8, 12, 16),
+                        marginBottom: responsiveSize(12, 16, 20),
+                        borderRadius: responsiveSize(12, 16, 20)
+                      }
+                    ]}
+                    onPress={() => handleCardPress(item)}
+                    activeOpacity={0.8}
+                  >
+                    <Image
+                      source={{ uri: item.image }}
+                      style={[
+                        styles.cardImage,
+                        { 
+                          width: responsiveSize(70, 90, 110),
+                          height: responsiveSize(70, 90, 110),
+                          borderRadius: responsiveSize(8, 12, 16),
+                          marginBottom: responsiveSize(8, 10, 12)
+                        }
+                      ]}
+                    />
+                    <Text style={[
+                      styles.cardText,
+                      { 
+                        fontSize: responsiveSize(13, 16, 18),
+                        lineHeight: responsiveSize(16, 20, 22)
+                      }
+                    ]} numberOfLines={2}>
+                      {item.name}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            </View>
+          </>
+        )}
+
+        {/* 📢 BOTTOM ADVERTISEMENT - YouTube Video */}
+        {!adLoading && adData.videos.length > 0 && (
+          <View style={[
+            styles.videoAdContainer,
+            { 
+              marginTop: responsiveSize(20, 25, 30),
+              width: '100%'
+            }
+          ]}>
+            <Text style={[
+              styles.videoTitle,
+              { 
+                fontSize: responsiveSize(16, 20, 24),
+                marginBottom: responsiveSize(10, 12, 14)
+              }
+            ]}>
+              Watch Video
+            </Text>
+            
+            {adData.videos.map((videoUrl, index) => {
+              const videoId = extractYouTubeId(videoUrl);
+              if (!videoId) return null;
+              
+              return (
+                <View 
+                  key={index} 
                   style={[
-                    styles.cardImage,
-                    isTablet && styles.cardImageTablet,
-                  ]}
-                />
-                <Text
-                  style={[
-                    styles.cardText,
-                    isTablet && styles.cardTextTablet,
+                    styles.videoWrapper,
+                    { 
+                      width: '100%',
+                      borderRadius: responsiveSize(10, 14, 18),
+                      marginBottom: responsiveSize(15, 20, 25)
+                    }
                   ]}
                 >
-                  {item.name}
-                </Text>
-              </TouchableOpacity>
-            ))}
+                  <YoutubePlayer
+                    height={getVideoHeight()}
+                    play={false}
+                    videoId={videoId}
+                    webViewStyle={{ 
+                      borderRadius: responsiveSize(10, 14, 18),
+                      overflow: 'hidden'
+                    }}
+                  />
+                </View>
+              );
+            })}
           </View>
         )}
       </ScrollView>
@@ -266,51 +388,96 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: "row",
     alignItems: "center",
-    padding: 15,
-    marginTop: 32,
+    justifyContent: "space-between",
     backgroundColor: "#93210A",
   },
-
-  headerTablet: {
-    paddingVertical: 35,
-    paddingHorizontal: 25,
-    marginTop: -3,
+  
+  backButton: {
+    backgroundColor: "rgba(255,255,255,0.2)",
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-
-   headerTitle: {
+  
+  headerTitle: {
     color: "#fff",
     fontWeight: "700",
-    fontSize: 22, marginLeft: 75,
-    padding:8,
-   
-
-  },
-
-  headerTitleTablet: {
-    fontSize: 28,
-    padding:8,
-    left:125,
+    textAlign: 'center',
+    flex: 1,
   },
 
   /* 📜 CONTENT */
   scrollContainer: {
-    padding: 16,
+    flexGrow: 1,
   },
 
+  /* 📢 TOP ADVERTISEMENT */
+  topAdContainer: {
+    alignItems: "center",
+    position: 'relative',
+    overflow: 'hidden',
+  },
+  
+  topAdImage: {
+    alignSelf: 'center',
+  },
+  
+  dotContainer: {
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+    position: 'absolute',
+    alignSelf: 'center',
+  },
+
+  dot: {
+    backgroundColor: '#D3D3D3',
+  },
+
+  /* 🔮 LOADER */
+  loaderContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    paddingVertical: 60,
+  },
+  
+  loaderText: {
+    color: "#666",
+    marginTop: 15,
+  },
+
+  /* EMPTY STATE */
+  emptyContainer: {
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 80,
+  },
+  
+  emptyText: {
+    color: "#93210A",
+    fontWeight: "600",
+    textAlign: "center",
+    marginTop: 20,
+  },
+  
+  emptySubtext: {
+    color: "#666",
+    textAlign: "center",
+    marginTop: 10,
+  },
+
+  /* 🏷️ SECTION TITLE */
   sectionTitle: {
-    fontSize: 18,
     fontWeight: "bold",
     color: "#93210A",
-    marginBottom: 16,
-    left: 80,
+    textAlign: "center",
   },
 
-  sectionTitleTablet: {
-    fontSize: 24,
-    marginBottom: 24,
-    left: 230,
+  /* 🔳 GRID CONTAINER */
+  gridContainer: {
+    width: '100%',
   },
-
+  
   grid: {
     flexDirection: "row",
     flexWrap: "wrap",
@@ -319,48 +486,38 @@ const styles = StyleSheet.create({
 
   /* 🟧 CARD */
   card: {
-    width: "47%",
     backgroundColor: "#FFF7F5",
-    borderRadius: 15,
-    padding: 12,
-    marginBottom: 16,
     alignItems: "center",
-    elevation: 3,
+    elevation: 4,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 6,
   },
-
-  cardTablet: {
-    width: "40%",
-    padding: 18,
-    marginBottom: 24,
-  },
-
+  
   cardImage: {
-    width: 100,
-    height: 100,
-    borderRadius: 10,
-    marginBottom: 8,
+    backgroundColor: '#f0f0f0',
   },
-
-  cardImageTablet: {
-    width: 120,
-    height: 120,
-  },
-
+  
   cardText: {
-    fontSize: 16,
     fontWeight: "600",
     color: "#93210A",
     textAlign: "center",
   },
 
-  cardTextTablet: {
-    fontSize: 18,
+  /* 🎥 VIDEO ADVERTISEMENT */
+  videoAdContainer: {
+    alignItems: 'center',
   },
-
-  emptyText: {
-    fontSize: 16,
+  
+  videoTitle: {
+    fontWeight: "bold",
     color: "#93210A",
-    textAlign: "center",
-    marginTop: 40,
+    alignSelf: 'flex-start',
+  },
+  
+  videoWrapper: {
+    overflow: "hidden",
+    backgroundColor: '#000',
   },
 });

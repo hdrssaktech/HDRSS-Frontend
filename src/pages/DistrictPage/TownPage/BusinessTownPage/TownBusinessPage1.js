@@ -33,10 +33,9 @@ export default function TownBusinessPage1() {
   // Safely get parameters with fallback
   const subcategoryId = route.params?.subcategoryId || 13;
   const townId = route.params?.townId ||1;
-  console.log(townId)
   const townName = route.params?.townName || "Town";
   const entityId = route.params?.entityId || subcategoryId;
-  console.log(entityId)
+
 
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -265,9 +264,9 @@ export default function TownBusinessPage1() {
         <View style={[
           styles.adsContainer,
           { 
-            height: isLargeTablet ? 200 : 
-                   isTablet ? 180 : 
-                   160 
+            height: isLargeTablet ? 400 : 
+                   isTablet ? 300 : 
+                   200 
           }
         ]}>
           {adsLoading ? (
@@ -331,12 +330,6 @@ export default function TownBusinessPage1() {
         >
           <View style={styles.sectionHeader}>
             <Text style={[
-              styles.sectionTitle,
-              isTablet && styles.sectionTitleTablet
-            ]}>
-              Available Categories
-            </Text>
-            <Text style={[
               styles.sectionSubtitle,
               isTablet && styles.sectionSubtitleTablet
             ]}>
@@ -385,14 +378,6 @@ export default function TownBusinessPage1() {
                     >
                       {item.title || "Business Category"}
                     </Text>
-
-                    <Text
-                      style={isTablet ? styles.cardSubTablet : styles.cardSubMobile}
-                      numberOfLines={2}
-                    >
-                      {item.description || "Explore local businesses"}
-                    </Text>
-
                     <View style={styles.exploreRow}>
                       <Text style={styles.exploreText}>View Businesses</Text>
                       <Ionicons
@@ -448,6 +433,7 @@ const styles = StyleSheet.create({
   /* ================= HEADER STYLES (FIRST) ================= */
   headerContainer: {
     height: 80,
+    
   },
   
   headerContainerTablet: {
@@ -459,6 +445,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 16,
+    paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
   },
   
   headerTitle: {
@@ -481,6 +468,7 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(255,255,255,0.25)",
     padding: 8,
     borderRadius: 12,
+    marginTop:5,
     position: 'absolute',
     left: 16,
     zIndex: 2,
@@ -489,6 +477,7 @@ const styles = StyleSheet.create({
   backTablet: {
     backgroundColor: "rgba(255,255,255,0.25)",
     padding: 10,
+    marginTop:8,
     borderRadius: 14,
     position: 'absolute',
     left: 20,
@@ -697,7 +686,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: 'space-between',
-    marginTop: 8,
+    marginTop:2,
     paddingTop: 8,
     borderTopWidth: 1,
     borderTopColor: '#f0f0f0',

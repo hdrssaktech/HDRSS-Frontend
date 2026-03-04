@@ -79,7 +79,6 @@ export const getProfileApi = async (token) => {
       Authorization: `Bearer ${token}`,
     },
   });
-
   return res.json();
 };
 
@@ -101,7 +100,6 @@ export const getPlacesByCategory = async (districtId, categoryName, foodType) =>
     let url = `${BASE_URL}/districts/${districtId}/places/category/${formattedCategory}`;
     if (formattedFoodType) url += `/${formattedFoodType}`;
 
-    console.log("🌐 Fetching from:", url);
 
     // ✅ Try fetching data
     const response = await axios.get(url);
@@ -137,8 +135,6 @@ export const getPlaceDetails = async (districtId, categoryName, placeId) => {
     const url = `${BASE_URL}/districts/${districtId}/places/category/${encodeURIComponent(
       categoryName
     )}/${placeId}`;
-
-    console.log("🌐 Fetching place details from:", url);
     const response = await axios.get(url);
 
     // ✅ Handle different data shapes
@@ -188,9 +184,9 @@ export const fetchCharities = async () => {
 /* ---------------------------
    🖼️ Gallery
 ---------------------------- */
-export const getGalleryList = async () => {
+export const getGalleryList = async (id) => {
   try {
-    const response = await axios.get(`${BASE_URL}/gallery`);
+    const response = await axios.get(`${BASE_URL}/gallery/district/${id}`);
     return response.data;
   } catch (error) {
     console.error("❌ API Error (getGalleryList):", error);
@@ -360,11 +356,7 @@ export const fetchElectionByIdAPI = async (id) => {
   }
 };
 
-
 // Astrology
-
-
- 
 
 export const getAstrologyTypes = async () => {
   try {
@@ -376,9 +368,7 @@ export const getAstrologyTypes = async () => {
   }
 };
 
-
 //Stories
-
 
 export const getStories = async () => {
   try {
@@ -450,3 +440,40 @@ export const getHomeAdsApi = async () => {
     return null;
   }
 };
+
+
+
+// vote api
+
+
+const API = axios.create({
+  baseURL: "https://hdrss-backend.onrender.com/api",
+});
+
+export const getDistricts = () => {
+  return API.get("/districtAssembly-by-vote");
+};
+export const getAssembliesByDistrict = (districtName) => {
+  return API.get(`/districtAssembly-by-vote/${districtName}/assemblies`);
+};
+export const getParties = () => {
+  return API.get("/district-by-parties");
+};
+// NEW: Get all votes with aggregation
+export const getAllVotes = () => {
+  return API.get("/votes");
+};
+// NEW: Get filtered votes
+export const getFilteredVotes = (params) => {
+  return API.get("/votes/filter", { params });
+};
+// NEW: Get results by district
+export const getResultsByDistrict = (districtId) => {
+  return API.get(`/votes/filter?districtId=${districtId}`);
+};
+// NEW: Get results by assembly
+export const getResultsByAssembly = (assemblyId) => {
+  return API.get(`/votes/filter?assemblyId=${assemblyId}`);
+};
+
+

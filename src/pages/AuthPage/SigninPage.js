@@ -63,11 +63,10 @@ export default function SignupPage({ navigation }) {
       dob: formatDate(dob),
     };
 
-    console.log("Signup Data:", userData);
 
     try {
       const res = await signupApi(userData);
-      console.log("Signup success:", res);
+
 
       const loginSuccess = await login(phoneNumber, password);
       if (loginSuccess) {

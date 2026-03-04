@@ -29,7 +29,6 @@ export default function DistrictCategorysPage1() {
     const fetchData = async () => {
       try {
         const data = await getPlacesByCategory(districtId, categoryName, foodType);
-        console.log("✅ Loaded places:", data);
         setPlaces(data);
       } catch (error) {
         console.error("❌ Error fetching category places:", error);

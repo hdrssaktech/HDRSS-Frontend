@@ -1,123 +1,3 @@
-// import React, { useEffect, useState } from "react";
-// import {
-//   View,
-//   Text,
-//   Image,
-//   StyleSheet,
-//   TouchableOpacity,
-//   ScrollView,
-//   ActivityIndicator,
-// } from "react-native";
-// import { Ionicons } from "@expo/vector-icons";
-// import { fetchAllPoojas } from "../../../Controller/PoojaController/PoojaController";
-
-// export default function PoojaPage1({ navigation }) {
-//   const [poojas, setPoojas] = useState([]);
-//   const [loading, setLoading] = useState(true);
-
-//   useEffect(() => {
-//     const loadPoojas = async () => {
-//       try {
-//         const data = await fetchAllPoojas();
-//         setPoojas(data);
-//       } catch (error) {
-//         console.error("Error loading poojas:", error);
-//       } finally {
-//         setLoading(false);
-//       }
-//     };
-//     loadPoojas();
-//   }, []);
-
-//   if (loading) {
-//     return (
-//       <View style={[styles.container, { justifyContent: "center", alignItems: "center" }]}>
-//         <ActivityIndicator size="large" color="#93210A" />
-//       </View>
-//     );
-//   }
-
-//   return (
-//     <View style={{ flex: 1 }}>
-//       {/* Header */}
-//       <View style={styles.header}>
-//         <TouchableOpacity onPress={() => navigation.goBack()}>
-//           <Ionicons name="chevron-back" size={30} color="white" />
-//         </TouchableOpacity>
-//         <Text style={styles.headerTitle}>Pooja</Text>
-//       </View>
-
-//       {/* Pooja List */}
-//       <ScrollView contentContainerStyle={styles.container} showsVerticalScrollIndicator={false}>
-//         {poojas.map((item) => (
-//           <TouchableOpacity
-//             key={item.id}
-//             style={styles.card}
-//             onPress={() => navigation.navigate("PoojaPage2", { id: item.id })}
-//           >
-//             <Image source={{ uri: item.bannerimg }} style={styles.image} resizeMode="cover" />
-//             <View style={styles.bottomRow}>
-//               <Text style={styles.title}>{item.title}</Text>
-//               <Ionicons name="play" size={20} color="maroon" />
-//             </View>
-//           </TouchableOpacity>
-//         ))}
-//       </ScrollView>
-//     </View>
-//   );
-// }
-
-// const styles = StyleSheet.create({
-//   header: {
-//     flexDirection: "row",
-//     alignItems: "center",
-//     padding: 15,
-//     marginTop: 31,
-//     backgroundColor: "#93210A",
-//   },
-//   headerTitle: {
-//     color: "#fff",
-//     fontSize: 20,
-//     fontWeight: "bold",
-//     marginLeft: 16,
-//   },
-//   container: {
-//     padding: 20,
-//   },
-//   card: {
-//     backgroundColor: "#fff",
-//     marginBottom: 20,
-//     borderRadius: 20,
-//     overflow: "hidden",
-//     elevation: 3,
-//     shadowColor: "#000",
-//     shadowOpacity: 0.2,
-//     shadowRadius: 4,
-//   },
-//   image: {
-//     width: "100%",
-//     height: 150,
-//   },
-//   bottomRow: {
-//     flexDirection: "row",
-//     justifyContent: "space-between",
-//     alignItems: "center",
-//     paddingHorizontal: 10,
-//     paddingVertical: 8,
-//   },
-//   title: {
-//     fontSize: 16,
-//     fontWeight: "600",
-//     color: "#000",
-//   },
-// });
-
-
-
-
-
-
-
 import React, { useEffect, useState } from "react";
 import {
   View,
@@ -161,7 +41,8 @@ export default function PoojaPage1({ navigation }) {
     );
   }
 
-  const numColumns = isTablet ? 2 : 1;
+  // Always use 2 columns for both mobile and tablet
+  const numColumns = 2;
 
   return (
     <View style={styles.screen}>
@@ -191,15 +72,16 @@ export default function PoojaPage1({ navigation }) {
           styles.container,
           isTablet && styles.containerTablet,
         ]}
-        renderItem={({ item }) => (
+        renderItem={({ item, index }) => (
           <TouchableOpacity
             style={[
               styles.card,
               isTablet && styles.cardTablet,
+              index % 2 === 0 ? styles.leftCard : styles.rightCard,
             ]}
             activeOpacity={0.85}
             onPress={() =>
-              navigation.navigate("PoojaPage2", { id: item.id })
+              navigation.navigate("Poojacategory", { id: item.id })
             }
           >
             <Image
@@ -220,15 +102,10 @@ export default function PoojaPage1({ navigation }) {
               >
                 {item.title}
               </Text>
-
-              <Ionicons
-                name="play"
-                size={isTablet ? 26 : 20}
-                color="maroon"
-              />
             </View>
           </TouchableOpacity>
         )}
+        keyExtractor={(item) => item.id.toString()}
       />
     </View>
   );
@@ -247,6 +124,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
+    backgroundColor: "#fff",
   },
 
   /* 🔹 Header */
@@ -262,29 +140,26 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
     marginTop: -3,
   },
-   headerTitle: {
+  headerTitle: {
     color: "#fff",
     fontWeight: "700",
-    fontSize: 22, marginLeft: 65,
-    padding:8,
-   
-
+    fontSize: 22,
+    marginLeft: 65,
+    padding: 8,
   },
-
   headerTitleTablet: {
     fontSize: 28,
-    padding:8,
-    left:125,
+    padding: 8,
+    left: 125,
   },
-
 
   /* 🔹 Grid Container */
   container: {
-    padding: 16,
+    padding: 10,
     paddingBottom: 30,
   },
   containerTablet: {
-    paddingHorizontal: 28,
+    paddingHorizontal: 20,
     paddingTop: 24,
   },
 
@@ -292,27 +167,40 @@ const styles = StyleSheet.create({
   card: {
     flex: 1,
     backgroundColor: "#fff",
-    marginBottom: 20,
-    borderRadius: 20,
+    margin: 6,
+    borderRadius: 12,
     overflow: "hidden",
     elevation: 3,
     shadowColor: "#000",
-    shadowOpacity: 0.15,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
     shadowRadius: 4,
-    marginHorizontal: 6, // spacing between columns
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: "#f0f0f0",
   },
   cardTablet: {
-    marginBottom: 28,
-    borderRadius: 24,
+    borderRadius: 16,
+    margin: 10,
+    marginBottom: 20,
+  },
+  leftCard: {
+    marginLeft: 10,
+    marginRight: 5,
+  },
+  rightCard: {
+    marginLeft: 5,
+    marginRight: 10,
   },
 
   /* 🔹 Image */
   image: {
     width: "100%",
-    height: 150,
+    height: 120,
+    backgroundColor: "#f5f5f5",
   },
   imageTablet: {
-    height: 220,
+    height: 160,
   },
 
   /* 🔹 Bottom Row */
@@ -322,21 +210,25 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingHorizontal: 12,
     paddingVertical: 10,
+    backgroundColor: "#fff",
   },
   bottomRowTablet: {
-    paddingHorizontal: 18,
+    paddingHorizontal: 16,
     paddingVertical: 14,
   },
 
   /* 🔹 Title */
   title: {
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: "600",
-    color: "#000",
+    color: "#333",
     flex: 1,
-    marginRight: 10,
+    marginRight: 8,
+    textAlign: "center",
   },
   titleTablet: {
-    fontSize: 20,
+    fontSize: 18,
   },
 });
+
+

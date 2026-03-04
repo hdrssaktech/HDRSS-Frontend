@@ -23,17 +23,19 @@ export default function DistrictCategorysPage2() {
   const [place, setPlace] = useState(null);
   const [loading, setLoading] = useState(true);
   const [playing, setPlaying] = useState(false);
+  const[show,Setshow] = useState(false);
+
+  const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
+  const isTablet = screenWidth >= 600;
 
   const { width } = Dimensions.get("window");
 
   useEffect(() => {
     const fetchPlace = async () => {
       try {
-        console.log("🧭 Fetching place details for:", { districtId, categoryName, placeId });
         const data = await getPlaceDetails(districtId, categoryName, placeId);
 
         if (data) {
-          console.log("✅ Place details fetched successfully:", data.name);
           setPlace(data);
         } else {
           console.warn("⚠️ No place details found");
@@ -207,15 +209,21 @@ export default function DistrictCategorysPage2() {
       {/* 📝 About Section */}
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>About</Text>
-        <Text style={styles.description}>
+        <Text style={styles.description} numberOfLines={show ? undefined:4} >
           {place.description || "No description available for this place."}
         </Text>
+        <TouchableOpacity onPress={()=>Setshow(!show)}>
+          <View>
+          <Text style={{color:'#93210A',fontSize:15,textAlign:'right'}} >{show ? 'Read Less...' : 'Read More...'}</Text>
+        </View>
+        </TouchableOpacity>
+      
       </View>
 
       {/* 🖼️ Gallery Section */}
       {place.gallery && Array.isArray(place.gallery) && place.gallery.length > 0 && (
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Gallery</Text>
+          <Text style={styles.sectionTitle}>Visiting Places</Text>
           <ScrollView 
             horizontal 
             showsHorizontalScrollIndicator={false}
@@ -239,7 +247,7 @@ export default function DistrictCategorysPage2() {
           <Text style={styles.sectionTitle}>Video</Text>
           <View style={styles.videoContainer}>
             <YoutubePlayer
-              height={220}
+              height={isTablet ? 380 : 200}
               width={width - 50} // Account for padding
               play={playing}
               videoId={youtubeId}

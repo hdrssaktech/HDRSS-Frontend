@@ -169,7 +169,7 @@ const isTablet = width >= 600; // ✅ Tablet detection
 export default function Member0() {
   const navigation = useNavigation();
   const route = useRoute();
-  const { districtId, districtName } = route.params || {};
+  // const { districtId, districtName } = route.params || {};
 
   return (
     <View style={styles.container}>
@@ -194,8 +194,8 @@ export default function Member0() {
           onPress={() =>
             navigation.navigate("Member", {
               categoryType: "State",
-              districtId,
-              districtName,
+              // districtId,
+              // districtName,
             })
           }
         >
@@ -209,8 +209,8 @@ export default function Member0() {
           onPress={() =>
             navigation.navigate("Member", {
               categoryType: "Districts",
-              districtId,
-              districtName,
+              // districtId,
+              // districtName,
             })
           }
         >
@@ -223,7 +223,7 @@ export default function Member0() {
       <View style={styles.joinContainer}>
         <TouchableOpacity
           style={styles.joinButton}
-          onPress={() => navigation.navigate("Member1", { districtName })}
+          onPress={() => navigation.navigate("Member1")}
         >
           <Ionicons name="person-add-outline" size={28} color="#fff" />
           <Text style={styles.joinButtonText}>Join With Us</Text>

@@ -12,22 +12,26 @@ import {
   StatusBar,
   Platform,
 } from "react-native";
-import { useNavigation } from "@react-navigation/native";
+import { useNavigation,useRoute } from "@react-navigation/native";
 import Icon from "react-native-vector-icons/Ionicons";
 import { fetchGalleryList } from "../../Controller/GalleryController/GalleryController";
 
 const { width, height } = Dimensions.get("window");
 const isTablet = width >= 600;
-const isLargeTablet = width >= 1024;
+const numColumns = isTablet ? 3 : 2;
+
 
 export default function GalleryFull() {
   const navigation = useNavigation();
+  const route = useRoute();
   const [galleryList, setGalleryList] = useState([]);
   const [loading, setLoading] = useState(true);
+  const { districtId} = route.params || {};
+
 
   useEffect(() => {
     const loadData = async () => {
-      const data = await fetchGalleryList();
+      const data = await fetchGalleryList(districtId);
       setGalleryList(data || []);
       setLoading(false);
     };
@@ -70,21 +74,31 @@ export default function GalleryFull() {
 
       {/* Gallery List */}
       <FlatList
-        data={galleryList}
-        key={isTablet ? "tablet-2col" : "mobile-1col"}
-        numColumns={isTablet ? 2 : 1} // 1 column on mobile, 2 columns on tablet
+        data={galleryList || []}
+        key={numColumns}
+        numColumns={numColumns}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={[
           styles.listContainer,
-          isTablet && styles.listContainerTablet
+          isTablet && styles.listContainerTablet,
+          galleryList?.length === 0 && styles.emptyListContainer
         ]}
-        columnWrapperStyle={isTablet && styles.columnWrapper}
+        columnWrapperStyle={{
+        justifyContent: "space-between",
+        marginBottom: isTablet ? 24 : 20,
+      }}
+
         keyExtractor={(item, index) =>
           item.id?.toString() || index.toString()
         }
         renderItem={({ item }) => (
           <TouchableOpacity
-            style={[styles.card, isTablet && styles.cardTablet]}
+            style={[
+              styles.card,
+              {
+                width: `${100 / numColumns - 2}%`,
+              },
+            ]}
             activeOpacity={0.85}
             onPress={() =>
               navigation.navigate("GalleryPage2", {
@@ -101,9 +115,7 @@ export default function GalleryFull() {
               style={[styles.image, isTablet && styles.imageTablet]}
               resizeMode="cover"
             />
-
             <View style={styles.overlay} />
-
             <View style={[styles.textBox, isTablet && styles.textBoxTablet]}>
               <Text
                 style={[styles.title, isTablet && styles.titleTablet]}
@@ -111,18 +123,16 @@ export default function GalleryFull() {
               >
                 {item.title}
               </Text>
-              {/* {item.description && (
-                <Text 
-                  style={[styles.description, isTablet && styles.descriptionTablet]}
-                  numberOfLines={2}
-                >
-                  {item.description}
-                </Text> */}
-             {/* // )} */}
             </View>
           </TouchableOpacity>
         )}
+        ListEmptyComponent={
+          <View style={styles.noDataContainer}>
+            <Text style={styles.noDataText}>No gallery found</Text>
+          </View>
+        }
       />
+
     </View>
   );
 }
@@ -151,6 +161,22 @@ const styles = StyleSheet.create({
     fontSize: 16,
     marginTop: 15,
   },
+    noDataContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    marginTop: 60,
+  },
+  noDataText: {
+    fontSize: 16,
+    color: "#888",
+    fontWeight: "500",
+  },
+  emptyListContainer: {
+    flexGrow: 1,
+    justifyContent: "center",
+  },
+
 
   // Header - Mobile (1 column)
   header: {
@@ -232,7 +258,6 @@ const styles = StyleSheet.create({
   },
   // Card - Tablet (2 columns - 48% width each)
   cardTablet: {
-    width: "48%", // Each card takes 48% width for 2-column layout
     marginBottom: 24,
     borderRadius: 20,
   },

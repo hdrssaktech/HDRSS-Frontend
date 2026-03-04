@@ -26,6 +26,7 @@ export default function GalleryInformation() {
   const route = useRoute();
   const { title, mainImage, description, images = [], videoLink } = route.params || {};
   const [currentIndex, setCurrentIndex] = useState(0);
+ const [isExpanded, setIsExpanded] = useState(false);
 
   const handleNext = () =>
     setCurrentIndex((prevIndex) => (prevIndex === images.length - 1 ? 0 : prevIndex + 1));
@@ -75,9 +76,23 @@ export default function GalleryInformation() {
             resizeMode="cover"
           />
           
-          <Text style={[styles.info, isTablet && styles.infoTablet]}>
-            {description}
-          </Text>
+
+         <Text
+          style={[styles.info, isTablet && styles.infoTablet]}
+          numberOfLines={isExpanded ? undefined : 4}
+        >
+          {description}
+        </Text>
+          {/* read more method */}
+          {description?.length > 120 && (
+            <TouchableOpacity onPress={() => setIsExpanded(!isExpanded)}>
+              <Text style={[styles.readMoreText,isTablet && styles.readMoreTextTablet]}>
+                {isExpanded ? "Read Less" : "Read More"}
+              </Text>
+            </TouchableOpacity>
+          )}
+
+
         </View>
 
         {/* Image Slider */}
@@ -199,6 +214,17 @@ const styles = StyleSheet.create({
     paddingHorizontal: 30,
     paddingVertical: 25,
   },
+  readMoreText: {
+  marginTop: 10,
+  color: "#93210A",
+  fontSize: 15,
+  fontWeight: "600",
+  alignSelf: "flex-end",
+},
+readMoreTextTablet: {
+  fontSize: 17,
+},
+
 
   // Main Title - Mobile
   mainTitle: {

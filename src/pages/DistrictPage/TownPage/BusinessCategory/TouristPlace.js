@@ -1,4 +1,4 @@
-import React from "react";
+import React ,{useState} from "react";
 import {
   View,
   Text,
@@ -11,6 +11,7 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
+import YoutubePlayer from "react-native-youtube-iframe";
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get("window");
 const isTablet = screenWidth >= 600;
@@ -19,6 +20,9 @@ const isLargeTablet = screenWidth >= 1024;
 const TouristSpotDetails = ({ route }) => {
   const { spot } = route.params;
   const navigation = useNavigation();
+  const [expanded, setExpanded] = useState(false);
+
+  
 
   // Responsive dimensions
   const bannerHeight = isTablet ? (isLargeTablet ? 350 : 320) : 260;
@@ -28,7 +32,14 @@ const TouristSpotDetails = ({ route }) => {
   const actionBtnFontSize = isTablet ? (isLargeTablet ? 16 : 15) : 14;
   const distanceFontSize = isTablet ? (isLargeTablet ? 16 : 15) : 14;
   const iconSize = isTablet ? 20 : 18;
-
+  const videoHeight = isTablet ? (isLargeTablet ? 250 : 350) : 200;
+  const isLongText = (spot.title?.split(" ").length || 0) > 20;
+  const extractYouTubeId = (url) => {
+  const regex =
+    /(?:youtube\.com\/(?:watch\?v=|embed\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/;
+  const match = url.match(regex);
+  return match ? match[1] : null;
+};
   return (
     <ScrollView style={styles.container}>
       {/* Banner */}
@@ -132,14 +143,45 @@ const TouristSpotDetails = ({ route }) => {
       </View>
 
       {/* About */}
-      {spot.description && (
-        <View style={[styles.card, isTablet && styles.cardTablet]}>
-          <Text style={[styles.cardTitle, { fontSize: cardTitleFontSize }]}>
-            About
+     {spot.title && (
+      <View style={[styles.card, isTablet && styles.cardTablet]}>
+        <Text style={[styles.cardTitle, { fontSize: cardTitleFontSize }]}>
+          About
+        </Text>
+
+        <Text
+          style={[styles.cardText, { fontSize: cardTextFontSize }]}
+          numberOfLines={expanded ? undefined : 8}
+        >
+          {spot.title}
+        </Text>
+
+        {isLongText && (
+          <Text
+            style={styles.readMoreText}
+            onPress={() => setExpanded(!expanded)}
+          >
+            {expanded ? "Read less" : "Read more"}
           </Text>
-          <Text style={[styles.cardText, { fontSize: cardTextFontSize }]}>
-            {spot.description}
-          </Text>
+        )}
+      </View>
+    )}
+
+      {spot.video && (
+        <View style={styles.card}>
+        <Text style={[styles.cardTitle, { fontSize: cardTitleFontSize }]}> 
+        Video
+        </Text>
+          <View style={[styles.videoContainer, { height: videoHeight }]}>
+          <YoutubePlayer
+            height={videoHeight}
+            play={false}
+            videoId={extractYouTubeId(spot.video)}
+            webViewProps={{
+              allowsFullscreenVideo: true,
+            }}
+          />
+        </View>
         </View>
       )}
     </ScrollView>
@@ -243,6 +285,13 @@ const styles = StyleSheet.create({
     padding: 22,
     borderRadius: 16,
   },
+  readMoreText: {
+  marginTop: 6,
+  color: "#93210A",
+  fontWeight: "600",
+  textAlign: "right",
+},
+
   cardTitle: {
     fontWeight: "bold",
     color: "#93210A",
@@ -255,5 +304,12 @@ const styles = StyleSheet.create({
   },
   cardTextTablet: {
     lineHeight: 28,
+  },
+  videopart:{
+    margin:10
+  },
+    videoContainer: {
+    borderRadius: 10,
+    overflow: "hidden",
   },
 });

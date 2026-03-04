@@ -113,9 +113,9 @@ export default function Recovery({ navigation }) {
         <Text style={styles.bottomText}>Don’t have an Account</Text>
         <TouchableOpacity
           style={styles.LogInButton}
-          onPress={() => navigation.navigate('SigninPage')}
+          onPress={() => navigation.navigate('Login')}
         >
-          <Text style={styles.LoginText}>SIGN IN</Text>
+          <Text style={styles.LoginText}>LOGIN</Text>
         </TouchableOpacity>
       </View>
     </View>

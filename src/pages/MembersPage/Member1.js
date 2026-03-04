@@ -26,7 +26,6 @@ export default function Membership1() {
   const route = useRoute();
   const navigation = useNavigation();
   const { districtName} = route.params || {};
-  // console.log("District Name in Member1:", districtName);
 
   const [categoryType, setCategoryType] = useState("District");
   const [isChecked, setIsChecked] = useState(false);

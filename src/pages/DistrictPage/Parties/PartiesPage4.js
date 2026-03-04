@@ -12,14 +12,13 @@ import {
   ActivityIndicator,
   Linking,
   Modal,
-  opacity
 } from "react-native";
 import { useRoute, useNavigation } from "@react-navigation/native";
 import { Ionicons, Feather } from "@expo/vector-icons";
 import YoutubePlayer from "react-native-youtube-iframe";
 
 const { width, height } = Dimensions.get("window");
-const isTablet = width >= 768;
+const isTablet = width >= 600;
 const isSmallDevice = width < 375;
 
 const PartiesPage4 = () => {
@@ -72,12 +71,10 @@ const PartiesPage4 = () => {
   };
 
   const handleImageError = (e) => {
-    console.log("Image error:", e.nativeEvent.error);
     setIsLoadingImage(false);
   };
 
   const handleVideoThumbnailError = (e) => {
-    console.log("Video thumbnail error:", e.nativeEvent.error);
     setIsLoadingVideo(false);
   };
 
@@ -153,12 +150,6 @@ const PartiesPage4 = () => {
                   <Text style={styles.titleText} numberOfLines={1}>
                     {item.title || "N/A"}
                   </Text>
-                  {/* {item.orderNo && (
-                    <View style={styles.orderBadge}>
-                      <Ionicons name="list" size={14} color="#fff" />
-                      <Text style={styles.orderText}>Order: #{item.orderNo}</Text>
-                    </View>
-                  )} */}
                 </View>
               </View>
             </View>
@@ -174,8 +165,6 @@ const PartiesPage4 = () => {
                 style={styles.actionButton}
                 activeOpacity={0.7}
                 onPress={handleCall}
-                onPressIn={(e) => e.currentTarget}
-                onPressOut={(e) => e.currentTarget}
               >
                 <View style={styles.actionIconContainer}>
                   <Ionicons name="call" size={isTablet ? 28 : 24} color="#93210A" />
@@ -478,18 +467,23 @@ const styles = StyleSheet.create({
     paddingBottom: 60,
   },
 
-  // Hero Section
+  // Hero Section - Fixed Image Styling
   heroSection: {
     marginBottom: 25,
   },
   imageWrapper: {
     position: "relative",
+    width: "100%",
     height: isTablet ? height * 0.5 : height * 0.35,
     minHeight: isTablet ? 400 : 250,
     backgroundColor: "#E8E8E8",
   },
   imageLoading: {
-    ...StyleSheet.absoluteFillObject,
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
     backgroundColor: "#F0F0F0",
     justifyContent: "center",
     alignItems: "center",
@@ -498,17 +492,21 @@ const styles = StyleSheet.create({
   heroImage: {
     width: "100%",
     height: "100%",
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
   },
   imageOverlay: {
     position: "absolute",
     bottom: 0,
     left: 0,
     right: 0,
-    backgroundColor: "linear-gradient(transparent, rgba(0,0,0,0.7))",
+    backgroundColor: "rgba(0, 0, 0, 0.7)",
     paddingTop: 40,
     paddingBottom: isTablet ? 35 : 25,
     paddingHorizontal: isTablet ? 30 : 20,
-    backgroundColor: "rgba(0, 0, 0, 0.7)",
   },
   titleContainer: {
     maxWidth: isTablet ? "80%" : "100%",
@@ -533,13 +531,6 @@ const styles = StyleSheet.create({
     textShadowColor: "rgba(0, 0, 0, 0.5)",
     textShadowOffset: { width: 1, height: 1 },
     textShadowRadius: 2,
-  },
-  orderText: {
-    color: "#FFFFFF",
-    fontSize: isTablet ? 16 : 12,
-    fontWeight: "600",
-    fontFamily: Platform.OS === "ios" ? "System" : "Roboto",
-    marginLeft: 6,
   },
 
   // Quick Actions Bar
@@ -706,7 +697,11 @@ const styles = StyleSheet.create({
     }),
   },
   videoLoading: {
-    ...StyleSheet.absoluteFillObject,
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
     backgroundColor: "#1A1A1A",
     justifyContent: "center",
     alignItems: "center",
@@ -731,7 +726,11 @@ const styles = StyleSheet.create({
     fontFamily: Platform.OS === "ios" ? "System" : "Roboto",
   },
   playButtonOverlay: {
-    ...StyleSheet.absoluteFillObject,
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
     backgroundColor: "rgba(0, 0, 0, 0.4)",
     justifyContent: "center",
     alignItems: "center",

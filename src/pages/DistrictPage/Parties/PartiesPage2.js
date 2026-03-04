@@ -1,31 +1,48 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import {
   View,
   Text,
   StyleSheet,
   Image,
   TouchableOpacity,
-  ScrollView,
+  FlatList,
   Dimensions,
   Platform,
   SafeAreaView,
+  StatusBar,
   ActivityIndicator,
+  useWindowDimensions,
 } from "react-native";
 import { useRoute, useNavigation } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
 
-const { width, height } = Dimensions.get("window");
-const isTablet = width >= 768;
-const isSmallDevice = width < 375;
-
 const PartiesPage2 = () => {
   const route = useRoute();
   const navigation = useNavigation();
-  const { partyId } = route.params;
-
+  const { partyId, partyName } = route.params || {};
+  
+  const { width, height } = useWindowDimensions();
+  
   const [titles, setTitles] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  // ✅ Tablet check with proper dimensions
+  const isTablet = useMemo(() => {
+    return width >= 600 || (width > height && width >= 600);
+  }, [width, height]);
+
+  // ✅ Mobile: 1 column | Tablet: 2 columns
+  const numColumns = useMemo(() => (isTablet ? 2 : 1), [isTablet]);
+
+  // ✅ Dynamic card width with better spacing
+  const cardWidth = useMemo(() => {
+    if (numColumns === 1) return width - 32; // Mobile: full width minus padding
+    const horizontalPadding = isTablet ? 32 : 16;
+    const spacing = isTablet ? 20 : 16;
+    const totalSpacing = (numColumns - 1) * spacing;
+    return (width - horizontalPadding * 2 - totalSpacing) / numColumns;
+  }, [numColumns, width, isTablet]);
 
   useEffect(() => {
     if (!partyId) return;
@@ -33,6 +50,8 @@ const PartiesPage2 = () => {
     const fetchData = async () => {
       try {
         setLoading(true);
+        setError(null);
+        
         const res = await fetch(
           `https://hdrss-backend.onrender.com/api/party/category/${partyId}`
         );
@@ -49,7 +68,6 @@ const PartiesPage2 = () => {
         ];
 
         setTitles(uniqueTitles);
-        setError(null);
       } catch (err) {
         console.error("API error:", err);
         setError("Failed to load data. Please try again.");
@@ -61,104 +79,151 @@ const PartiesPage2 = () => {
     fetchData();
   }, [partyId]);
 
-  if (loading) {
-    return (
-      <View style={styles.centerContainer}>
-        <ActivityIndicator size={isTablet ? "large" : "small"} color="#93210A" />
-        <Text style={styles.loadingText}>Loading categories...</Text>
-      </View>
-    );
-  }
+  const renderHeader = () => (
+    <View style={[styles.header, isTablet && styles.headerTablet]}>
+      <TouchableOpacity
+        style={[styles.backButton, isTablet && styles.backButtonTablet]}
+        onPress={() => navigation.goBack()}
+        activeOpacity={0.8}
+      >
+        <Ionicons name="chevron-back" size={isTablet ? 30 : 26} color="#fff" />
+      </TouchableOpacity>
 
-  if (error) {
-    return (
-      <View style={styles.centerContainer}>
-        <Ionicons name="alert-circle-outline" size={60} color="#93210A" />
-        <Text style={styles.errorText}>{error}</Text>
-        <TouchableOpacity 
-          style={styles.retryButton}
-          onPress={() => setLoading(true)}
-        >
-          <Text style={styles.retryButtonText}>Retry</Text>
-        </TouchableOpacity>
+      <View style={styles.headerTitleWrap}>
+        <Text style={[styles.headerTitle, isTablet && styles.headerTitleTablet]}>
+          {partyName || "Parties"}
+        </Text>
       </View>
+      
+      <View style={[styles.headerSpacer, isTablet && styles.headerSpacerTablet]} />
+    </View>
+  );
+
+  const renderPartyCard = ({ item, index }) => {
+    const isLastInRow = (index + 1) % numColumns === 0;
+
+    return (
+      <TouchableOpacity
+        style={[
+          styles.card,
+          isTablet && styles.cardTablet,
+          { 
+            width: cardWidth,
+            marginRight: numColumns === 1 || isLastInRow ? 0 : (isTablet ? 20 : 16)
+          },
+        ]}
+        activeOpacity={0.85}
+        onPress={() =>
+          navigation.navigate("Partiespage3", {
+            partyTitle: item.title,
+            partyId: partyId,
+          })
+        }
+      >
+        <View style={styles.cardContent}>
+          {/* Old Icon Design - Party/People Icon */}
+          <View style={[styles.oldIconContainer, isTablet && styles.oldIconContainerTablet]}>
+            <Ionicons 
+              name="people" 
+              size={isTablet ? 36 : 30} 
+              color="#8B0000" 
+            />
+          </View>
+          
+          <View style={styles.textContainer}>
+            <Text 
+              style={[styles.title, isTablet && styles.titleTablet]} 
+              numberOfLines={2}
+            >
+              {item.title}
+            </Text>
+            
+            <View style={styles.arrowContainer}>
+              <Ionicons 
+                name="chevron-forward" 
+                size={isTablet ? 20 : 18} 
+                color="#8B0000" 
+              />
+            </View>
+          </View>
+        </View>
+      </TouchableOpacity>
     );
-  }
+  };
+
+  const renderContent = () => {
+    if (loading) {
+      return (
+        <View style={[styles.centerContainer, isTablet && styles.centerContainerTablet]}>
+          <ActivityIndicator size={isTablet ? "large" : "large"} color="#8B0000" />
+          <Text style={[styles.loadingText, isTablet && styles.loadingTextTablet]}>
+            Loading categories...
+          </Text>
+        </View>
+      );
+    }
+
+    if (error) {
+      return (
+        <View style={[styles.centerContainer, isTablet && styles.centerContainerTablet]}>
+          <Ionicons 
+            name="alert-circle-outline" 
+            size={isTablet ? 60 : 50} 
+            color="#8B0000" 
+          />
+          <Text style={[styles.errorText, isTablet && styles.errorTextTablet]}>
+            {error}
+          </Text>
+          <TouchableOpacity 
+            style={[styles.retryButton, isTablet && styles.retryButtonTablet]}
+            onPress={() => setLoading(true)}
+          >
+            <Text style={[styles.retryButtonText, isTablet && styles.retryButtonTextTablet]}>
+              Retry
+            </Text>
+          </TouchableOpacity>
+        </View>
+      );
+    }
+
+    if (titles.length === 0) {
+      return (
+        <View style={[styles.centerContainer, isTablet && styles.centerContainerTablet]}>
+          <Ionicons 
+            name="people-outline" 
+            size={isTablet ? 60 : 50} 
+            color="#bbb" 
+          />
+          <Text style={[styles.emptyText, isTablet && styles.emptyTextTablet]}>
+            No categories found
+          </Text>
+        </View>
+      );
+    }
+
+    return (
+      <FlatList
+        data={titles}
+        key={`${numColumns}_${width}`}
+        numColumns={numColumns}
+        showsVerticalScrollIndicator={false}
+        keyExtractor={(item, index) => `title-${index}`}
+        renderItem={renderPartyCard}
+        contentContainerStyle={[
+          styles.listContainer,
+          isTablet && styles.listContainerTablet,
+        ]}
+        ListFooterComponent={<View style={{ height: isTablet ? 40 : 30 }} />}
+      />
+    );
+  };
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <SafeAreaView style={styles.safe}>
+      <StatusBar backgroundColor="#8B0000" barStyle="light-content" />
       <View style={styles.container}>
-        {/* Header */}
-        <View style={styles.header}>
-          <TouchableOpacity 
-            onPress={() => navigation.goBack()}
-            style={styles.backButton}
-            activeOpacity={0.7}
-          >
-            <Ionicons name="chevron-back" size={28} color="#fff" />
-          </TouchableOpacity>
-          <View style={styles.headerTitleContainer}>
-            <Text style={styles.headerTitle}>Parties</Text>
-            {titles.length > 0 && (
-              <Text style={styles.headerSubtitle}>
-                {/* {titles.length} categor{titles.length === 1 ? 'y' : 'ies'} */}
-              </Text>
-            )}
-          </View>
-          <View style={{ width: 40 }} />
-        </View>
-
-        {/* Content */}
-        <ScrollView 
-          style={styles.scrollView}
-          contentContainerStyle={styles.scrollViewContent}
-          showsVerticalScrollIndicator={false}
-        >
-          {titles.length === 0 ? (
-            <View style={styles.emptyContainer}>
-              <Ionicons name="folder-open-outline" size={80} color="#CCCCCC" />
-              <Text style={styles.emptyText}>No categories found</Text>
-            </View>
-          ) : (
-            <View style={styles.gridContainer}>
-              {titles.map((item, index) => (
-                <TouchableOpacity
-                  key={index}
-                  style={[
-                    styles.card,
-                    isTablet && styles.cardTablet,
-                    isSmallDevice && styles.cardSmall
-                  ]}
-                  activeOpacity={0.7}
-                  onPress={() =>
-                    navigation.navigate("Partiespage3", {
-                      partyTitle: item.title,
-                      partyId: partyId,
-                    })
-                  }
-                >
-                  <View style={styles.cardContent}>
-                    <View style={styles.iconContainer}>
-                      <Image
-                        source={{
-                          uri: "https://cdn-icons-png.flaticon.com/512/3135/3135715.png",
-                        }}
-                        style={styles.icon}
-                        resizeMode="contain"
-                      />
-                    </View>
-                    <Text style={styles.title} numberOfLines={2}>
-                      {item.title}
-                    </Text>
-                    <View style={styles.arrowContainer}>
-                      <Ionicons name="chevron-forward" size={20} color="#93210A" />
-                    </View>
-                  </View>
-                </TouchableOpacity>
-              ))}
-            </View>
-          )}
-        </ScrollView>
+        {renderHeader()}
+        {renderContent()}
       </View>
     </SafeAreaView>
   );
@@ -167,164 +232,209 @@ const PartiesPage2 = () => {
 export default PartiesPage2;
 
 const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-    backgroundColor: "#93210A",
+  safe: { 
+    flex: 1, 
+    backgroundColor: "#8B0000",
   },
   container: {
     flex: 1,
-    backgroundColor: "#F8F9FA",
+    backgroundColor: "#FFFFFF",
   },
+
+  // Header
+  header: {
+    backgroundColor: "#8B0000",
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 16,
+    paddingTop: Platform.OS === "ios" ? 10 : 40,
+    paddingBottom: 12,
+  },
+  headerTablet: {
+    paddingHorizontal: 32,
+    paddingTop: Platform.OS === "ios" ? 15 : 45,
+    paddingBottom: 15,
+  },
+  backButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: "rgba(255,255,255,0.15)",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  backButtonTablet: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+  },
+  headerTitleWrap: {
+    flex: 1,
+    alignItems: "center",
+    paddingHorizontal: 10,
+  },
+  headerTitle: {
+    color: "#fff",
+    fontSize: 18,
+    fontWeight: "900",
+    marginRight: 40,
+  },
+  headerTitleTablet: {
+    fontSize: 24,
+  },
+  headerSpacer: {
+    width: 40,
+  },
+  headerSpacerTablet: {
+    width: 50,
+  },
+
+  // Center States
   centerContainer: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#F8F9FA",
     padding: 20,
+    backgroundColor: "#FFFFFF",
+  },
+  centerContainerTablet: {
+    padding: 40,
   },
   loadingText: {
-    marginTop: 20,
+    marginTop: 12,
+    color: "#8B0000",
     fontSize: 16,
-    color: "#666",
-    fontFamily: Platform.OS === "ios" ? "System" : "Roboto",
+    fontWeight: "700",
+  },
+  loadingTextTablet: {
+    fontSize: 18,
+    marginTop: 16,
   },
   errorText: {
-    marginTop: 20,
+    marginTop: 14,
+    color: "#8B0000",
     fontSize: 16,
-    color: "#93210A",
     textAlign: "center",
-    fontFamily: Platform.OS === "ios" ? "System" : "Roboto",
-    marginBottom: 20,
+    fontWeight: "700",
+    lineHeight: 22,
+    paddingHorizontal: 20,
+  },
+  errorTextTablet: {
+    fontSize: 18,
+    lineHeight: 26,
+    marginTop: 20,
+    maxWidth: 500,
+  },
+  emptyText: {
+    marginTop: 12,
+    color: "#777",
+    fontSize: 16,
+    fontWeight: "600",
+  },
+  emptyTextTablet: {
+    fontSize: 18,
+    marginTop: 16,
   },
   retryButton: {
-    backgroundColor: "#93210A",
-    paddingHorizontal: 30,
+    marginTop: 20,
+    backgroundColor: "#8B0000",
+    paddingHorizontal: 24,
     paddingVertical: 12,
-    borderRadius: 25,
-    marginTop: 10,
+    borderRadius: 8,
+    elevation: 3,
+  },
+  retryButtonTablet: {
+    paddingHorizontal: 32,
+    paddingVertical: 16,
+    borderRadius: 10,
+    marginTop: 24,
   },
   retryButtonText: {
     color: "#fff",
-    fontSize: 16,
-    fontWeight: "600",
-    fontFamily: Platform.OS === "ios" ? "System" : "Roboto",
-  },
-  header: {
-    backgroundColor: "#93210A",
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingHorizontal: 16,
-    paddingTop: Platform.OS === "ios" ? 10 : 35,
-    paddingBottom: 20,
-    ...Platform.select({
-      ios: {
-        shadowColor: "#000",
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.25,
-        shadowRadius: 3.84,
-      },
-      android: {
-        elevation: 5,
-      },
-    }),
-  },
-  backButton: {
-    padding: 8,
-    borderRadius: 20,
-    backgroundColor: "rgba(255, 255, 255, 0.2)",
-  },
-  headerTitleContainer: {
-    flex: 1,
-    alignItems: "center",
-  },
-  headerTitle: {
-    fontSize: isTablet ? 28 : 22,
     fontWeight: "800",
-    color: "#FFFFFF",
-    paddingTop:20,
-    fontFamily: Platform.OS === "ios" ? "System" : "Roboto",
+    fontSize: 15,
   },
-  // headerSubtitle: {
-  //   fontSize: isTablet ? 16 : 14,
-  //   color: "rgba(255, 255, 255, 0.8)",
-  //   marginTop: 4,
-  //   fontFamily: Platform.OS === "ios" ? "System" : "Roboto",
-  // },
-  scrollView: {
-    flex: 1,
+  retryButtonTextTablet: {
+    fontSize: 17,
   },
-  scrollViewContent: {
-    flexGrow: 1,
-    paddingBottom: 20,
+
+  // List Container
+  listContainer: {
+    paddingHorizontal: 16,
+    paddingTop: 20,
   },
-  emptyContainer: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    minHeight: height * 0.6,
+  listContainerTablet: {
+    paddingHorizontal: 32,
+    paddingTop: 30,
   },
-  emptyText: {
-    fontSize: 18,
-    color: "#666",
-    marginTop: 20,
-    fontFamily: Platform.OS === "ios" ? "System" : "Roboto",
-  },
-  gridContainer: {
-    padding: 16,
-    paddingBottom: 30,
-  },
+
+  // Card
   card: {
-    backgroundColor: "#FFFFFF",
-    borderRadius: 20,
-    marginBottom: 16,
-    ...Platform.select({
-      ios: {
-        shadowColor: "#000",
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
-        shadowRadius: 8,
-      },
-      android: {
-        elevation: 4,
-      },
-    }),
+    backgroundColor: "#fff",
+    borderRadius: 16,
     overflow: "hidden",
+    elevation: 4,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.1,
+    shadowRadius: 6,
+    borderWidth: 1,
+    borderColor: "rgba(139, 0, 0, 0.1)",
+    marginBottom: 16,
   },
   cardTablet: {
-    marginHorizontal: isTablet ? width * 0.1 : 0,
+    borderRadius: 18,
+    elevation: 6,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
     marginBottom: 20,
   },
-  cardSmall: {
-    marginHorizontal: 8,
-  },
+
   cardContent: {
-    padding: 20,
     flexDirection: "row",
     alignItems: "center",
+    padding: 16,
   },
-  iconContainer: {
-    width: isTablet ? 80 : 60,
-    height: isTablet ? 80 : 60,
-    borderRadius: 15,
-    backgroundColor: "#FFF5F2",
+
+  // Old Icon Design (Party/People Icon)
+  oldIconContainer: {
+    width: 60,
+    height: 60,
+    borderRadius: 12,
+    backgroundColor: "rgba(139, 0, 0, 0.05)",
     justifyContent: "center",
     alignItems: "center",
     marginRight: 16,
   },
-  icon: {
-    width: isTablet ? 50 : 40,
-    height: isTablet ? 50 : 40,
+  oldIconContainerTablet: {
+    width: 70,
+    height: 70,
+    borderRadius: 14,
   },
+
+  textContainer: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
+
   title: {
     flex: 1,
-    fontSize: isTablet ? 20 : 16,
-    fontWeight: "600",
-    color: "#2D3748",
-    fontFamily: Platform.OS === "ios" ? "System" : "Roboto",
-    lineHeight: 24,
+    fontSize: 16,
+    fontWeight: "800",
+    color: "#8B0000",
+    lineHeight: 20,
+    paddingRight: 12,
   },
+  titleTablet: {
+    fontSize: 17,
+    fontWeight: "900",
+    lineHeight: 22,
+  },
+
   arrowContainer: {
-    padding: 8,
+    paddingLeft: 4,
   },
 });

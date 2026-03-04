@@ -68,7 +68,7 @@ export default function Header({ toggleSidebar }) {
             isTablet && styles.tamilTextTablet,
           ]}
         >
-          இந்து தர்ம ரக்ஷ சேனா
+         வீர இந்து தர்ம ரக்ஷ சேனா
         </Text>
 
         <Text
@@ -77,7 +77,7 @@ export default function Header({ toggleSidebar }) {
             isTablet && styles.hinduTextTablet,
           ]}
         >
-          हिन्दू धर्म रक्षा सेना
+          वीरा हिन्दू धर्म रक्षा सेना
         </Text>
 
         <Text
@@ -86,7 +86,7 @@ export default function Header({ toggleSidebar }) {
             isTablet && styles.englishTextTablet,
           ]}
         >
-          HINDU DHARMA RAKSHA SENA
+          VEERA HINDU DHARMA RAKSHA SENA
         </Text>
       </View>
 
@@ -120,7 +120,8 @@ export default function Header({ toggleSidebar }) {
               isTablet && styles.regNoTablet,
             ]}
           >
-            REGD.NO: 152/2021
+            {/* REGD.NO: 152/2021 */}
+            காவி
           </Text>
 
           <Image
@@ -188,7 +189,7 @@ const styles = StyleSheet.create({
   },
 
   tamilText: {
-     color: "white",
+  color: "white",
   fontSize: 16,
   fontWeight: "800",
   fontFamily: "Impact",
@@ -205,7 +206,7 @@ const styles = StyleSheet.create({
 
   hinduText: {
    color: "white",
-  fontSize: 17,
+  fontSize: 16,
   fontWeight: "900",
   fontFamily: "Impact",
   letterSpacing: 5,
@@ -220,8 +221,8 @@ const styles = StyleSheet.create({
   },
 
   englishText: {
-    color: "white",
-  fontSize: 17,
+  color: "white",
+  fontSize: 16,
   fontWeight: "1200",
   fontFamily: "Impact",
   letterSpacing: -0,
@@ -267,18 +268,16 @@ const styles = StyleSheet.create({
   regNo: {
     position: "absolute",
     top: 10,
-    right: 6,
-    fontSize: 9,
+    right:28,
+    fontSize:10,
     fontWeight: "bold",
     color: "#000",
   },
-
   regNoTablet: {
-    fontSize: 12,
+    fontSize: 18,
     top: -40,
-    right: 10,
+    right: 40,
   },
-
   /* SUN */
   sunWrapper: {
     position: "absolute",

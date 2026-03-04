@@ -7,54 +7,86 @@ import {
   StyleSheet,
   Image,
   TouchableOpacity,
-  Dimensions,
+  useWindowDimensions,
+  SafeAreaView,
+  StatusBar,
+  Platform,
 } from "react-native";
 import { useRoute, useNavigation } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
 
-const { width } = Dimensions.get("window");
-
-// 🔹 Breakpoints
-const isTablet = width >= 600;
-
 const PartiesPage1 = () => {
   const route = useRoute();
   const navigation = useNavigation();
-  const { districtId } = route.params;
-
+  const { districtId, districtName } = route.params || {};
+  
+  const { width, height } = useWindowDimensions();
+  
   const [parties, setParties] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  // ✅ Mobile: 2 | Tablet: 3
-  const numColumns = useMemo(() => (isTablet ? 2 : 2), []);
+  // ✅ Tablet check with proper dimensions
+  const isTablet = useMemo(() => {
+    return width >= 600 || (width > height && width >= 600);
+  }, [width, height]);
 
-  // ✅ Dynamic card width
+  // ✅ Mobile: 2 columns | Tablet: 3 columns
+  const numColumns = useMemo(() => (isTablet ? 3 : 2), [isTablet]);
+
+  // ✅ Dynamic card width with better spacing
   const itemWidth = useMemo(() => {
-    const horizontalPadding = isTablet ? 80 : 30;
-    const spacing = isTablet ? 20 : 15;
+    const horizontalPadding = isTablet ? 32 : 16;
+    const spacing = isTablet ? 20 : 12;
     const totalSpacing = (numColumns - 1) * spacing;
-
     return (width - horizontalPadding * 2 - totalSpacing) / numColumns;
-  }, [numColumns]);
+  }, [numColumns, width, isTablet]);
+
+  // ✅ Responsive image height
+  const imageHeight = useMemo(() => {
+    return isTablet ? 160 : 140;
+  }, [isTablet]);
+
+  // ✅ Responsive title font size
+  const titleFontSize = useMemo(() => {
+    return isTablet ? 15 : 14;
+  }, [isTablet]);
 
   useEffect(() => {
     const fetchParties = async () => {
       try {
+        setLoading(true);
+        setError(null);
+        
         const response = await fetch(
           `https://hdrss-backend.onrender.com/api/party/categories/district/${districtId}`
         );
+        
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
         const data = await response.json();
-        // console.log("✅ Parties API Response:", data);
-
+        
         if (Array.isArray(data)) {
           setParties(data);
-        } else if (data && typeof data === "object" && !data.message) {
-          setParties([data]);
+        } else if (data && typeof data === "object") {
+          // Handle single object or object with array property
+          if (Array.isArray(data.data)) {
+            setParties(data.data);
+          } else if (Array.isArray(data.categories)) {
+            setParties(data.categories);
+          } else if (!data.message) {
+            setParties([data]);
+          } else {
+            setParties([]);
+          }
         } else {
           setParties([]);
         }
       } catch (error) {
         console.log("❌ Error fetching parties:", error);
+        setError("Failed to load parties. Please try again.");
         setParties([]);
       } finally {
         setLoading(false);
@@ -69,241 +101,356 @@ const PartiesPage1 = () => {
       style={[
         styles.card,
         isTablet && styles.cardTablet,
-        { width: itemWidth },
+        { 
+          width: itemWidth,
+          marginBottom: isTablet ? 20 : 15,
+          marginRight: (index % numColumns !== numColumns - 1) ? (isTablet ? 20 : 12) : 0
+        },
       ]}
       activeOpacity={0.85}
-      onPress={() => navigation.navigate("Partiespage2", { partyId: item.id })}
+      onPress={() => navigation.navigate("Partiespage2", { 
+        partyId: item.id,
+        partyName: item.name 
+      })}
     >
       <View style={styles.imageContainer}>
         <Image
           source={{
             uri:
               item.image ||
-              "https://via.placeholder.com/400x250/93210A/FFFFFF?text=No+Image",
+              "https://via.placeholder.com/400x250/f0f0f0/8B0000?text=Party",
           }}
-          style={[styles.image, isTablet && styles.imageTablet]}
+          style={[
+            styles.image, 
+            { height: imageHeight },
+            isTablet && styles.imageTablet
+          ]}
+          resizeMode="cover"
         />
-        <View style={styles.overlay} />
-        <View style={styles.badge}>
-          {/* <Text style={styles.badgeText}>{index + 1}</Text> */}
-        </View>
       </View>
 
-      <View style={styles.textContainer}>
+      <View style={[styles.textContainer, isTablet && styles.textContainerTablet]}>
         <Text
-          style={[styles.title, isTablet && styles.titleTablet]}
+          style={[
+            styles.title, 
+            { fontSize: titleFontSize },
+            isTablet && styles.titleTablet
+          ]}
           numberOfLines={2}
         >
           {item.name || "Unnamed Party"}
         </Text>
-
-        {/* <View style={styles.viewButton}>
-          <Text style={styles.viewButtonText}>View Details</Text>
-          <Ionicons
-            name="arrow-forward"
-            size={16}
-            color="#93210A"
-            style={{ marginTop: 2 }}
+        
+        <View style={styles.arrowContainer}>
+          <Ionicons 
+            name="arrow-forward" 
+            size={isTablet ? 18 : 16} 
+            color="#8B0000" 
           />
-        </View> */}
+        </View>
       </View>
     </TouchableOpacity>
   );
 
-  if (loading) {
-    return (
-      <View style={styles.loaderContainer}>
-        <ActivityIndicator size="large" color="#93210A" />
-        <Text style={styles.loadingText}>Loading parties...</Text>
-      </View>
-    );
-  }
+  const renderHeader = () => (
+    <View style={[styles.header, isTablet && styles.headerTablet]}>
+      <TouchableOpacity
+        style={[styles.backButton, isTablet && styles.backButtonTablet]}
+        onPress={() => navigation.goBack()}
+      >
+        <Ionicons name="chevron-back" size={isTablet ? 30 : 26} color="#fff" />
+      </TouchableOpacity>
 
-  return (
-    <View style={[styles.container, isTablet && styles.containerTablet]}>
-      {/* 🔹 Header */}
-      <View style={[styles.headerBox, isTablet && styles.headerBoxTablet]}>
-        <TouchableOpacity
-          onPress={() => navigation.goBack()}
-          style={styles.backButton}
-        >
-          <Ionicons name="chevron-back" size={isTablet ? 32 : 26} color="#fff" />
-        </TouchableOpacity>
-
-        <Text
-          style={[styles.headerTitle, isTablet && styles.headerTitleTablet]}
-        >
-          Parties 
+      <View style={styles.headerTitleWrap}>
+        <Text style={[styles.headerTitle, isTablet && styles.headerTitleTablet]}>
+          Parties
         </Text>
+        {districtName && (
+          <Text style={[styles.subTitle, isTablet && styles.subTitleTablet]} numberOfLines={1}>
+            {districtName}
+          </Text>
+        )}
       </View>
+      
+      <View style={[styles.headerSpacer, isTablet && styles.headerSpacerTablet]} />
+    </View>
+  );
 
-      {/* 🔹 List */}
+  const renderContent = () => {
+    if (loading) {
+      return (
+        <View style={[styles.centerContainer, isTablet && styles.centerContainerTablet]}>
+          <ActivityIndicator size="large" color="#8B0000" />
+          <Text style={[styles.loadingText, isTablet && styles.loadingTextTablet]}>
+            Loading parties...
+          </Text>
+        </View>
+      );
+    }
+
+    if (error) {
+      return (
+        <View style={[styles.centerContainer, isTablet && styles.centerContainerTablet]}>
+          <Ionicons name="alert-circle-outline" size={isTablet ? 60 : 50} color="#8B0000" />
+          <Text style={[styles.errorText, isTablet && styles.errorTextTablet]}>
+            {error}
+          </Text>
+          <TouchableOpacity 
+            style={[styles.retryButton, isTablet && styles.retryButtonTablet]}
+            onPress={() => setLoading(true)}
+          >
+            <Text style={[styles.retryButtonText, isTablet && styles.retryButtonTextTablet]}>
+              Retry
+            </Text>
+          </TouchableOpacity>
+        </View>
+      );
+    }
+
+    if (parties.length === 0) {
+      return (
+        <View style={[styles.centerContainer, isTablet && styles.centerContainerTablet]}>
+          <Ionicons name="people-outline" size={isTablet ? 60 : 50} color="#bbb" />
+          <Text style={[styles.emptyText, isTablet && styles.emptyTextTablet]}>
+            No parties available
+          </Text>
+        </View>
+      );
+    }
+
+    return (
       <FlatList
         data={parties}
-        key={numColumns} // 🔥 important
+        key={`${numColumns}_${width}`}
         numColumns={numColumns}
         showsVerticalScrollIndicator={false}
-        keyExtractor={(item, index) =>
-          item.id?.toString() || index.toString()
-        }
+        keyExtractor={(item, index) => item.id?.toString() || `party-${index}`}
         renderItem={renderPartyCard}
-        columnWrapperStyle={numColumns > 1 ? styles.columnWrapper : null}
         contentContainerStyle={[
           styles.listContainer,
           isTablet && styles.listContainerTablet,
         ]}
-        ListFooterComponent={<View style={{ height: 40 }} />}
+        ListFooterComponent={<View style={{ height: isTablet ? 40 : 30 }} />}
       />
-    </View>
+    );
+  };
+
+  return (
+    <SafeAreaView style={styles.safe}>
+      <StatusBar backgroundColor="#8B0000" barStyle="light-content" />
+      <View style={styles.container}>
+        {renderHeader()}
+        {renderContent()}
+      </View>
+    </SafeAreaView>
   );
 };
 
 export default PartiesPage1;
 
-
-
 const styles = StyleSheet.create({
+  safe: { 
+    flex: 1, 
+    backgroundColor: "#8B0000",
+  },
   container: {
     flex: 1,
-    backgroundColor: "#FDF7F7",
-  },
-  containerTablet: {
-    backgroundColor: "#F8F9FA",
+    backgroundColor: "#FFFFFF",
   },
 
-  // 🔹 Header
-  headerBox: {
+  // Header
+  header: {
+    backgroundColor: "#8B0000",
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#93210A",
-    paddingTop: 50,
-    paddingBottom: 20,
-    paddingHorizontal: 20,
-   
+    paddingHorizontal: 16,
+    paddingTop: Platform.OS === "ios" ? 10 : 40,
+    paddingBottom: 12,
   },
-  headerBoxTablet: {
-    paddingTop: 60,
-    paddingBottom: 26,
-    paddingHorizontal: 40,
-   
+  headerTablet: {
+    paddingHorizontal: 32,
+    paddingTop: Platform.OS === "ios" ? 15 : 45,
+    paddingBottom: 15,
   },
   backButton: {
-    marginRight: 10,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: "rgba(255,255,255,0.15)",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  backButtonTablet: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+  },
+  headerTitleWrap: {
+    flex: 1,
+    alignItems: "center",
+    paddingHorizontal: 10,
   },
   headerTitle: {
-    flex: 1,
-    textAlign: "center",
-    marginRight: 30,
-    fontSize: 20,
-    fontWeight: "bold",
     color: "#fff",
+    fontSize: 18,
+    fontWeight: "900",
+    marginRight: 40,
   },
   headerTitleTablet: {
-    fontSize: 29,
+    fontSize: 24,
+  },
+  subTitle: {
+    color: "rgba(255,255,255,0.9)",
+    fontSize: 12,
+    fontWeight: "600",
+    marginTop: 2,
+  },
+  subTitleTablet: {
+    fontSize: 14,
+  },
+  headerSpacer: {
+    width: 40,
+  },
+  headerSpacerTablet: {
+    width: 50,
   },
 
-  // 🔹 Loader
-  loaderContainer: {
+  // Center States
+  centerContainer: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
+    padding: 20,
+    backgroundColor: "#FFFFFF",
+  },
+  centerContainerTablet: {
+    padding: 40,
   },
   loadingText: {
     marginTop: 12,
-    color: "#93210A",
+    color: "#8B0000",
     fontSize: 16,
-    fontWeight: "500",
+    fontWeight: "700",
+  },
+  loadingTextTablet: {
+    fontSize: 18,
+    marginTop: 16,
+  },
+  errorText: {
+    marginTop: 14,
+    color: "#8B0000",
+    fontSize: 16,
+    textAlign: "center",
+    fontWeight: "700",
+    lineHeight: 22,
+    paddingHorizontal: 20,
+  },
+  errorTextTablet: {
+    fontSize: 18,
+    lineHeight: 26,
+    marginTop: 20,
+    maxWidth: 500,
+  },
+  emptyText: {
+    marginTop: 12,
+    color: "#777",
+    fontSize: 16,
+    fontWeight: "600",
+  },
+  emptyTextTablet: {
+    fontSize: 18,
+    marginTop: 16,
+  },
+  retryButton: {
+    marginTop: 20,
+    backgroundColor: "#8B0000",
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    borderRadius: 8,
+    elevation: 3,
+  },
+  retryButtonTablet: {
+    paddingHorizontal: 32,
+    paddingVertical: 16,
+    borderRadius: 10,
+    marginTop: 24,
+  },
+  retryButtonText: {
+    color: "#fff",
+    fontWeight: "800",
+    fontSize: 15,
+  },
+  retryButtonTextTablet: {
+    fontSize: 17,
   },
 
-  // 🔹 Grid
+  // List Container
   listContainer: {
-    paddingHorizontal: 15,
+    paddingHorizontal: 16,
     paddingTop: 20,
   },
   listContainerTablet: {
-    paddingHorizontal: 40,
+    paddingHorizontal: 32,
     paddingTop: 30,
   },
-  columnWrapper: {
-    justifyContent: "space-between",
-    marginBottom: 15,
-  },
 
-  // 🔹 Card
+  // Card
   card: {
     backgroundColor: "#fff",
     borderRadius: 16,
     overflow: "hidden",
-    elevation: 6,
-    marginBottom: 15,
+    elevation: 4,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.1,
+    shadowRadius: 6,
+    borderWidth: 1,
+    borderColor: "rgba(139, 0, 0, 0.1)",
   },
   cardTablet: {
-    borderRadius: 20,
-    elevation: 8,
+    borderRadius: 18,
+    elevation: 6,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
   },
 
   imageContainer: {
-    position: "relative",
+    width: "100%",
+    overflow: "hidden",
+    backgroundColor: "#f5f5f5",
   },
   image: {
     width: "100%",
-    height: 170,
-    resizeMode: "cover",
   },
   imageTablet: {
-    height: 270,
+    // Additional tablet image styles
   },
-  // overlay: {
-  //   ...StyleSheet.absoluteFillObject,
-  //   backgroundColor: "rgba(147,33,10,0.1)",
-  // },
-  // badge: {
-  //   position: "absolute",
-  //   top: 12,
-  //   left: 12,
-  //   width: 30,
-  //   height: 30,
-  //   borderRadius: 15,
-  //   backgroundColor: "#93210A",
-  //   alignItems: "center",
-  //   justifyContent: "center",
-  // },
-  // badgeText: {
-  //   color: "#fff",
-  //   fontWeight: "bold",
-  // },
 
   textContainer: {
-    padding: 16,
-  },
-  title: {
-    fontSize: 18,
-    fontWeight: "bold",
-    color: "#c10404ff",
-    textAlign: "center",
-    marginBottom: 6,
-  },
-  titleTablet: {
-    fontSize: 18,
-  },
-  description: {
-    fontSize: 14,
-    color: "#6B7280",
-    marginBottom: 12,
-  },
-  descriptionTablet: {
-    fontSize: 15,
-  },
-
-  viewButton: {
+    padding: 12,
     flexDirection: "row",
     alignItems: "center",
+    justifyContent: "space-between",
+    minHeight: 60,
+    backgroundColor: "#FFFFFF",
   },
-  viewButtonText: {
-    color: "#93210A",
-    fontWeight: "600",
-    marginRight: 6,
+  textContainerTablet: {
+    padding: 14,
+    minHeight: 70,
+  },
+  title: {
+    flex: 1,
+    fontWeight: "800",
+    color: "#8B0000",
+    lineHeight: 18,
+    paddingRight: 8,
+  },
+  titleTablet: {
+    fontWeight: "900",
+    lineHeight: 20,
+  },
+  arrowContainer: {
+    paddingLeft: 4,
   },
 });
-
-

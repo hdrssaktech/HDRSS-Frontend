@@ -36,7 +36,6 @@ export const getDistrictById = async (id) => {
 export const fetchPlacesByCategory = async (districtId, category, foodType) => {
   try {
     const places = await getPlacesByCategory(districtId, category, foodType);
-    console.log(`✅ ${places.length} places loaded for ${category} (${foodType})`);
     return places;
   } catch (error) {
     console.error("❌ Controller Error (fetchPlacesByCategory):", error);

@@ -1,162 +1,3 @@
-// import React, { useEffect, useState } from "react";
-// import {
-//   View,
-//   Text,
-//   Image,
-//   ScrollView,
-//   StyleSheet,
-//   TouchableOpacity,
-//   ActivityIndicator,
-//   Dimensions,
-// } from "react-native";
-// import { SafeAreaView } from "react-native-safe-area-context";
-// import { Ionicons } from "@expo/vector-icons";
-// import { useNavigation } from "@react-navigation/native";
-// import { fetchStories } from "../../../Controller/StoriesController/StoriesController";
-
-// const { width } = Dimensions.get("window");
-// const CARD_SIZE = (width - 48) / 2; // spacing calculation
-
-// export default function StoryPage1() {
-//   const navigation = useNavigation();
-//   const [stories, setStories] = useState([]);
-//   const [loading, setLoading] = useState(true);
-
-//   useEffect(() => {
-//     const loadStories = async () => {
-//       try {
-//         const data = await fetchStories();
-//         setStories(data);
-//       } catch (error) {
-//         console.error("Error loading stories:", error);
-//       } finally {
-//         setLoading(false);
-//       }
-//     };
-//     loadStories();
-//   }, []);
-
-//   return (
-//     <SafeAreaView style={styles.safeArea}>
-//       {/* 🔹 Header */}
-//       <View style={styles.header}>
-//         <Ionicons
-//           name="chevron-back"
-//           size={26}
-//           color="#fff"
-//           onPress={() => navigation.goBack()}
-//           style={styles.backIcon}
-//         />
-//         <Text style={styles.title}>Stories</Text>
-//       </View>
-
-//       {/* 🔹 Content */}
-//       <ScrollView contentContainerStyle={styles.scrollContainer}>
-//         {loading ? (
-//           <ActivityIndicator
-//             size="large"
-//             color="#93210A"
-//             style={{ marginTop: 50 }}
-//           />
-//         ) : stories.length === 0 ? (
-//           <Text style={styles.emptyText}>No stories available.</Text>
-//         ) : (
-//           <View style={styles.cardRow}>
-//             {stories.map((story, index) => (
-//               <TouchableOpacity
-//                 key={index}
-//                 style={[
-//                   styles.card,
-//                   // ⬇ Extra space for bottom cards
-//                   index >= stories.length - 2 && { marginBottom: 60 },
-//                 ]}
-//                 onPress={() =>
-//                   navigation.navigate("StoryPage2", { storyItem: story })
-//                 }
-//               >
-//                 <Image source={{ uri: story.image }} style={styles.image} />
-//                 <Text style={styles.cardText}>{story.title}</Text>
-//               </TouchableOpacity>
-//             ))}
-//           </View>
-//         )}
-//       </ScrollView>
-//     </SafeAreaView>
-//   );
-// }
-
-// /* --- Styles --- */
-// const styles = StyleSheet.create({
-//   safeArea: {
-//     flex: 1,
-//     backgroundColor: "#fff",
-//   },
-//   header: {
-//     flexDirection: "row",
-//     alignItems: "center",
-//     backgroundColor: "#93210A",
-//     paddingVertical: 15,
-//     paddingHorizontal: 16,
-//   },
-//   backIcon: {
-//     marginRight: 10,
-//   },
-//   title: {
-//     fontSize: 20,
-//     color: "#fff",
-//     fontWeight: "bold",
-//   },
-//   scrollContainer: {
-//     paddingHorizontal: 16,
-//     paddingTop: 25, // ⬅ added extra top padding to push cards a bit lower
-//     paddingBottom: 50,
-//   },
-//   cardRow: {
-//     flexDirection: "row",
-//     flexWrap: "wrap",
-//     justifyContent: "space-between",
-//     paddingBottom: 30,
-//   },
-//   card: {
-//     width: CARD_SIZE,
-//     height: CARD_SIZE,
-//     backgroundColor: "#fff",
-//     borderRadius: 18,
-//     elevation: 3,
-//     shadowColor: "#000",
-//     shadowOpacity: 0.1,
-//     shadowOffset: { width: 0, height: 2 },
-//     shadowRadius: 3,
-//     marginBottom: 30, // ⬅ increased bottom space for all cards
-//     overflow: "hidden",
-//     alignItems: "center",
-//   },
-//   image: {
-//     width: "100%",
-//     height: "80%",
-//     resizeMode: "cover",
-//     borderRadius: 18,
-//   },
-//   cardText: {
-//     fontSize: 13,
-//     fontWeight: "600",
-//     color: "#333",
-//     textAlign: "center",
-//     paddingTop: 5,
-//   },
-//   emptyText: {
-//     fontSize: 16,
-//     color: "#93210A",
-//     textAlign: "center",
-//     marginTop: 40,
-//   },
-// });
-
-
-
-
-
-
 import React, { useEffect, useState } from "react";
 import {
   View,
@@ -172,6 +13,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import { fetchStories } from "../../../Controller/StoriesController/StoriesController";
+import { TextInput } from "react-native";
 
 export default function StoryPage1() {
   const navigation = useNavigation();
@@ -180,6 +22,10 @@ export default function StoryPage1() {
 
   const [stories, setStories] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [searchText, setSearchText] = useState("");
+  const [filteredStories, setFilteredStories] = useState([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+
 
   // 🔹 Responsive card size
   const CARD_SIZE = isTablet
@@ -191,6 +37,7 @@ export default function StoryPage1() {
       try {
         const data = await fetchStories();
         setStories(data);
+        setFilteredStories(data);
       } catch (error) {
         console.error("Error loading stories:", error);
       } finally {
@@ -199,6 +46,25 @@ export default function StoryPage1() {
     };
     loadStories();
   }, []);
+  const handleSearch = (text) => {
+    setSearchText(text);
+    setShowSuggestions(true);
+
+    const filtered = stories.filter((item) =>
+      item.title.toLowerCase().includes(text.toLowerCase())
+    );
+
+    setFilteredStories(filtered);
+  };
+    const handleSelectStory = (title) => {
+    setSearchText(title);
+    setShowSuggestions(false);
+
+    const filtered = stories.filter(
+      (item) => item.title === title
+    );
+    setFilteredStories(filtered);
+  };
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -216,6 +82,40 @@ export default function StoryPage1() {
         </Text>
       </View>
 
+      <View style={styles.searchWrapper}>
+  <View style={styles.searchContainer}>
+    <Ionicons name="search" size={20} color="#999" />
+    <TextInput
+      placeholder="Search stories..."
+      value={searchText}
+      onChangeText={handleSearch}
+      onFocus={() => {
+        setShowSuggestions(true);
+        setFilteredStories(stories); // show all titles on click
+      }}
+      style={styles.searchInput}
+      placeholderTextColor="#999"
+    />
+  </View>
+
+  {/* 🔽 Suggestions */}
+  {showSuggestions && filteredStories.length > 0 && (
+    <View style={styles.suggestionBox}>
+      {filteredStories.map((item, index) => (
+        <TouchableOpacity
+          key={index}
+          style={styles.suggestionItem}
+          onPress={() => handleSelectStory(item.title)}
+        >
+          <Text style={styles.suggestionText}>{item.title}</Text>
+        </TouchableOpacity>
+      ))}
+    </View>
+  )}
+</View>
+
+
+
       {/* 🔹 CONTENT */}
       <ScrollView contentContainerStyle={styles.scrollContainer}>
         {loading ? (
@@ -228,7 +128,7 @@ export default function StoryPage1() {
           <Text style={styles.emptyText}>No stories available.</Text>
         ) : (
           <View style={styles.cardRow}>
-            {stories.map((story, index) => (
+            {filteredStories.map((story, index) => (
               <TouchableOpacity
                 key={index}
                 style={[
@@ -286,6 +186,50 @@ const styles = StyleSheet.create({
   backIcon: {
     marginRight: 10,
   },
+searchWrapper: {
+  marginHorizontal: 16,
+  marginTop: 15,
+  zIndex: 10,
+},
+
+searchContainer: {
+  flexDirection: "row",
+  alignItems: "center",
+  backgroundColor: "#f5f5f5",
+  borderRadius: 12,
+  paddingHorizontal: 12,
+  height: 45,
+},
+
+searchInput: {
+  flex: 1,
+  marginLeft: 8,
+  fontSize: 14,
+  color: "#333",
+},
+
+suggestionBox: {
+  backgroundColor: "#fff",
+  borderRadius: 10,
+  marginTop: 6,
+  maxHeight: 200,
+  elevation: 4,
+  shadowColor: "#000",
+  shadowOpacity: 0.1,
+  shadowOffset: { width: 0, height: 2 },
+},
+
+suggestionItem: {
+  padding: 12,
+  borderBottomWidth: 1,
+  borderBottomColor: "#eee",
+},
+
+suggestionText: {
+  fontSize: 14,
+  color: "#333",
+},
+
 
  title: {
     color: "#fff",
@@ -326,6 +270,7 @@ const styles = StyleSheet.create({
     marginBottom: 30,
     overflow: "hidden",
     alignItems: "center",
+    padding:10
   },
 
   image: {

@@ -13,14 +13,28 @@ import {
   Linking,
   FlatList,
   Animated,
+  TextInput,
 } from "react-native";
 import { useRoute, useNavigation } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get("window");
-const isTablet = screenWidth >= 600;
-const isLargeTablet = screenWidth >= 1024;
+const isTablet = screenWidth >=600;
+const isLargeTablet = screenWidth >= 800;
+
+// Responsive size helper
+const responsiveSize = (mobile, tablet, largeTablet) => {
+  if (isLargeTablet) return largeTablet || tablet;
+  return isTablet ? tablet : mobile;
+};
+
+// Advertisement heights based on screen size
+const getAdHeight = () => {
+  if (isLargeTablet) return 240;
+  if (isTablet) return 200;
+  return 160;
+};
 
 // 2 Default ad images
 const DEFAULT_AD_IMAGES = [
@@ -62,14 +76,8 @@ export default function TownBusinessPage3() {
   // Get all parameters from route
   const { subcategoryItemId, entityId, townId, categoryName } = route.params;
   const [businesses, setBusinesses] = useState([]);
-
-  console.log('📱 Page 3 Params:', {
-    subcategoryItemId,
-    entityId,
-    townId,
-    categoryName
-  });
-  console.log(subcategoryItemId)
+  const [searchQuery, setSearchQuery] = useState('');
+  const [filteredData, setFilteredData] = useState([]);
 
   const [data, setData] = useState([]);
   const [adsData, setAdsData] = useState([]);
@@ -98,26 +106,44 @@ export default function TownBusinessPage3() {
     return isValidImageUrl(url) ? url : DEFAULT_BUSINESS_IMAGE;
   };
 
+  // Search filter function
+  const filterData = (query) => {
+    if (!query.trim()) {
+      setFilteredData(data);
+      return;
+    }
+
+    const lowerCaseQuery = query.toLowerCase().trim();
+
+    const filtered = data.filter(item =>
+      item.title &&
+      item.title.toLowerCase().includes(lowerCaseQuery)
+    );
+
+    setFilteredData(filtered);
+  };
+
+  // Handle search input change
+  const handleSearchChange = (text) => {
+    setSearchQuery(text);
+    filterData(text);
+  };
+
+  // Clear search
+  const clearSearch = () => {
+    setSearchQuery('');
+    setFilteredData(data);
+  };
+
   /* ================= IMPROVED ADS FETCHING ================= */
   useEffect(() => {
     const fetchAds = async () => {
       try {
-        console.log(`🔍 FETCHING ADS for Page 3:`, {
-          townId,
-          pageLevel: 3,
-          entityId
-        });
-        
-        // Test the API endpoint first to see the actual response
         const testResponse = await fetch(
-          `https://hdrss-backend.onrender.com/api/town-business-ads/filter?townId=${townId}&pageLevel=3&entityId=17}`
+          `https://hdrss-backend.onrender.com/api/town-business-ads/filter?townId=${townId}&pageLevel=3&entityId=${entityId}}`
         );
         
-        console.log('📊 API Response status:', testResponse.status);
-        console.log('📊 API Response headers:', testResponse.headers);
-        
         const json = await testResponse.json();
-        console.log('📊 FULL API RESPONSE:', JSON.stringify(json, null, 2));
         
         // Process the response based on actual structure
         const processedAds = [];
@@ -126,8 +152,6 @@ export default function TownBusinessPage3() {
           // Case 1: json.data is an array
           if (Array.isArray(json.data)) {
             json.data.forEach((adItem, index) => {
-              console.log('📊 Processing ad item:', adItem);
-              
               // Try different field names for images
               const possibleImageFields = [
                 'adImages', 'images', 'imageUrls', 'bannerImages', 
@@ -193,7 +217,6 @@ export default function TownBusinessPage3() {
           // Case 2: json.data is a single object
           else if (typeof json.data === 'object') {
             const adItem = json.data;
-            console.log('📊 Processing single ad object:', adItem);
             
             // Check for images in the object
             const imageFields = Object.keys(adItem).filter(key => 
@@ -263,7 +286,6 @@ export default function TownBusinessPage3() {
         } 
         // Case 3: json is directly an array
         else if (Array.isArray(json)) {
-          console.log('📊 Response is directly an array:', json);
           json.forEach((adItem, index) => {
             // Look for any string that might be an image URL
             Object.keys(adItem).forEach(key => {
@@ -280,44 +302,29 @@ export default function TownBusinessPage3() {
           });
         }
         
-        console.log(`📊 Processed ${processedAds.length} ads from API`);
-        
         if (processedAds.length > 0) {
-          console.log('✅ Successfully loaded ads:', processedAds);
           setAdsData(processedAds);
         } else {
-          console.log('⚠️ No ads found in API response, checking for manual test');
-          // Manual test with sample ad images
           await testWithSampleImages();
         }
         
       } catch (error) {
-        console.log("❌ Ads fetch error:", error.message);
         await testWithSampleImages();
       } finally {
         setAdsLoading(false);
       }
     };
 
-    // Function to test with sample images
     const testWithSampleImages = async () => {
-      console.log('🔄 Testing with sample ad images...');
-      
-      // Try a different approach - directly test if the API returns any data
       try {
-        // Try a simpler fetch to see what's available
         const testUrl = `https://hdrss-backend.onrender.com/api/town-business-ads`;
-        console.log('🔄 Testing URL:', testUrl);
         
         const testRes = await fetch(testUrl);
         const testData = await testRes.json();
-        console.log('📊 Test API response:', testData);
         
-        // If we still get no ads, use defaults
         if (testData && testData.length > 0) {
           const testAds = [];
           testData.forEach((item, index) => {
-            // Try to extract any image URLs
             Object.keys(item).forEach(key => {
               const value = item[key];
               if (typeof value === 'string' && isValidImageUrl(value)) {
@@ -332,7 +339,6 @@ export default function TownBusinessPage3() {
           });
           
           if (testAds.length > 0) {
-            console.log(`✅ Found ${testAds.length} test ads`);
             setAdsData(testAds);
             return;
           }
@@ -341,8 +347,6 @@ export default function TownBusinessPage3() {
         console.log('❌ Test fetch error:', testError.message);
       }
       
-      // Final fallback to default images
-      console.log('⚠️ Using default ad images');
       const defaultAds = getDefaultAdImages().map((img, index) => ({
         id: `default-${index}-${Date.now()}`,
         type: 'image',
@@ -352,11 +356,9 @@ export default function TownBusinessPage3() {
       setAdsData(defaultAds);
     };
 
-    // Only fetch ads if we have valid parameters
     if (townId && entityId) {
       fetchAds();
     } else {
-      console.log('⚠️ Missing parameters for ads fetch:', { townId, entityId });
       setAdsLoading(false);
       setAdsData(getDefaultAdImages().map((img, index) => ({
         id: `default-${index}-${Date.now()}`,
@@ -369,8 +371,6 @@ export default function TownBusinessPage3() {
 
   /* ================= FETCH BUSINESSES ================= */
   useEffect(() => {
-    console.log(`🔍 FETCHING BUSINESSES for ID: ${subcategoryItemId}`);
-    
     fetch(
       `https://hdrss-backend.onrender.com/api/tb/business/by-subcategory/${subcategoryItemId}`
     )
@@ -381,8 +381,6 @@ export default function TownBusinessPage3() {
         return res.json();
       })
       .then(jsonData => {
-        console.log('📊 Businesses response:', jsonData);
-        
         let dataArray = [];
         if (Array.isArray(jsonData)) {
           dataArray = jsonData;
@@ -397,16 +395,19 @@ export default function TownBusinessPage3() {
           whatsapp: item.whatsapp || '',
           location: item.location || '',
           image: getSafeImageUrl(item.image || item.imageUrl || ''),
+          gallery: item.gallery || '',
+          videos: item.videos || '',
           description: item.description || '',
           email: item.email || '',
         }));
         
         setData(processedData);
-        console.log(`✅ Loaded ${processedData.length} businesses`);
+        setFilteredData(processedData);
       })
       .catch(error => {
         console.log("❌ Businesses fetch error:", error.message);
         setData([]);
+        setFilteredData([]);
       })
       .finally(() => setLoading(false));
   }, [subcategoryItemId]);
@@ -458,8 +459,6 @@ export default function TownBusinessPage3() {
 
   // Render advertisement item
   const renderAdItem = ({ item, index }) => {
-    console.log(`🖼️ Rendering ad ${index}:`, item);
-    
     if (item.type === 'image') {
       return (
         <View style={[
@@ -471,8 +470,6 @@ export default function TownBusinessPage3() {
             style={styles.adImage}
             resizeMode="cover"
             onError={(e) => {
-              console.log(`❌ Ad image failed to load: ${item.url}`, e.nativeEvent.error);
-              // Fallback to default if image fails
               item.url = DEFAULT_AD_IMAGES[index % DEFAULT_AD_IMAGES.length];
             }}
           />
@@ -480,10 +477,6 @@ export default function TownBusinessPage3() {
             colors={['rgba(0,0,0,0.1)', 'rgba(0,0,0,0.4)', 'rgba(0,0,0,0.7)']}
             style={styles.adGradient}
           />
-          {/* Debug info overlay - can remove in production */}
-          <View style={styles.debugInfo}>
-            <Text style={styles.debugText}>Source: {item.source}</Text>
-          </View>
         </View>
       );
     } else {
@@ -493,9 +486,8 @@ export default function TownBusinessPage3() {
           { width: screenWidth }
         ]}>
           <View style={styles.videoPlaceholder}>
-            <Ionicons name="play-circle" size={50} color="#93210A" />
+            <Ionicons name="play-circle" size={responsiveSize(50, 60, 70)} color="#93210A" />
             <Text style={styles.videoText}>Video Ad</Text>
-            <Text style={styles.videoSubtext}>{item.source}</Text>
           </View>
           <LinearGradient
             colors={['rgba(0,0,0,0.1)', 'rgba(0,0,0,0.4)', 'rgba(0,0,0,0.7)']}
@@ -509,9 +501,12 @@ export default function TownBusinessPage3() {
   /* ================= LOADER ================= */
   if (loading) {
     return (
-      <View style={isTablet ? styles.loaderTablet : styles.loaderMobile}>
-        <ActivityIndicator size="large" color="#93210A" />
-        <Text style={isTablet ? styles.loaderTextTablet : styles.loaderTextMobile}>
+      <View style={styles.loaderContainer}>
+        <ActivityIndicator size={responsiveSize("large", 60, 70)} color="#93210A" />
+        <Text style={[
+          styles.loaderText,
+          { fontSize: responsiveSize(14, 18, 20) }
+        ]}>
           Loading businesses...
         </Text>
       </View>
@@ -519,41 +514,70 @@ export default function TownBusinessPage3() {
   }
 
   return (
-    <View style={isTablet ? styles.containerTablet : styles.containerMobile}>
+    <View style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor="#93210A" />
 
       {/* ================= HEADER ================= */}
       <LinearGradient
         colors={["#93210A", "#B32A0C"]}
-        style={isTablet ? styles.headerTablet : styles.headerMobile}
+        style={[
+          styles.header,
+          { 
+            paddingTop: Platform.OS === "ios" ? responsiveSize(55, 65, 70) : responsiveSize(45, 55, 60),
+            paddingBottom: responsiveSize(20, 25, 30),
+          }
+        ]}
       >
         <TouchableOpacity
-          style={isTablet ? styles.backTablet : styles.backMobile}
+          style={[
+            styles.backButton,
+            { 
+              top: Platform.OS === "ios" ? responsiveSize(55, 65, 70) : responsiveSize(45, 55, 60),
+              left: responsiveSize(16, 25, 30),
+              padding: responsiveSize(8, 10, 12),
+              borderRadius: responsiveSize(10, 12, 14)
+            }
+          ]}
           onPress={() => navigation.goBack()}
         >
-          <Ionicons name="chevron-back" size={26} color="#fff" />
+          <Ionicons name="chevron-back" size={responsiveSize(24, 28, 32)} color="#fff" />
         </TouchableOpacity>
 
-        <Text
-          style={isTablet ? styles.headerTitleTablet : styles.headerTitleMobile}
-        >
+        <Text style={[
+          styles.headerTitle,
+          { fontSize: responsiveSize(20, 26, 30) }
+        ]}>
           {categoryName}
         </Text>
+        
+        {isTablet && (
+          <Text style={[
+            styles.headerSubtitle,
+            { fontSize: responsiveSize(14, 16, 18) }
+          ]}>
+            Find local businesses and services
+          </Text>
+        )}
       </LinearGradient>
 
       {/* ================= ADVERTISEMENT BANNER ================= */}
       <View style={[
         styles.adsContainer,
         { 
-          height: isLargeTablet ? 200 : 
-                 isTablet ? 180 : 
-                 160 
+          height: getAdHeight(),
+          borderRadius: responsiveSize(0, 0, 0),
+          overflow: 'hidden',
         }
       ]}>
         {adsLoading ? (
           <View style={styles.adsLoadingContainer}>
-            <ActivityIndicator size="large" color="#93210A" />
-            <Text style={styles.adsLoadingText}>Loading ads...</Text>
+            <ActivityIndicator size={responsiveSize("large", 50, 60)} color="#93210A" />
+            <Text style={[
+              styles.adsLoadingText,
+              { fontSize: responsiveSize(14, 16, 18) }
+            ]}>
+              Loading ads...
+            </Text>
           </View>
         ) : adsData.length > 0 ? (
           <>
@@ -588,7 +612,9 @@ export default function TownBusinessPage3() {
                       styles.paginationDot,
                       { 
                         opacity: i === adIndex.current ? 1 : 0.5,
-                        width: i === adIndex.current ? 10 : 6,
+                        width: i === adIndex.current ? responsiveSize(10, 12, 14) : responsiveSize(6, 8, 10),
+                        height: responsiveSize(6, 8, 10),
+                        borderRadius: responsiveSize(3, 4, 5),
                       }
                     ]} 
                   />
@@ -611,21 +637,94 @@ export default function TownBusinessPage3() {
         )}
       </View>
 
-      {/* ================= CONTENT ================= */}
+      {/* ================= SEARCH BAR ================= */}
+      <View style={[
+        styles.searchContainer,
+        { 
+          paddingHorizontal: responsiveSize(16, 25, 30),
+          paddingVertical: responsiveSize(15, 20, 25),
+          backgroundColor: '#fff',
+          borderBottomWidth: 1,
+          borderBottomColor: '#e0e0e0',
+        }
+      ]}>
+        <View style={[
+          styles.searchBar,
+          { 
+            height: responsiveSize(48, 56, 62),
+            borderRadius: responsiveSize(12, 14, 16),
+            paddingHorizontal: responsiveSize(15, 18, 20)
+          }
+        ]}>
+          <Ionicons 
+            name="search" 
+            size={responsiveSize(20, 24, 26)} 
+            color="#666" 
+            style={styles.searchIcon} 
+          />
+          <TextInput
+            style={[
+              styles.searchInput,
+              { fontSize: responsiveSize(15, 17, 19) }
+            ]}
+            placeholder="Search businesses by name..."
+            placeholderTextColor="#999"
+            value={searchQuery}
+            onChangeText={handleSearchChange}
+            clearButtonMode="while-editing"
+          />
+          {searchQuery.length > 0 && (
+            <TouchableOpacity onPress={clearSearch} style={styles.clearButton}>
+              <Ionicons name="close-circle" size={responsiveSize(20, 24, 26)} color="#666" />
+            </TouchableOpacity>
+          )}
+        </View>
+      </View>
+
+      {/* ================= BUSINESS COUNT ================= */}
+      {searchQuery.length > 0 && (
+        <View style={[
+          styles.resultsContainer,
+          { 
+            paddingHorizontal: responsiveSize(16, 25, 30),
+            paddingVertical: responsiveSize(10, 12, 14),
+          }
+        ]}>
+          <Text style={[
+            styles.resultsCount,
+            { fontSize: responsiveSize(14, 16, 18) }
+          ]}>
+            {filteredData.length} business{filteredData.length !== 1 ? 'es' : ''} found for "{searchQuery}"
+          </Text>
+        </View>
+      )}
+
+      {/* ================= BUSINESS CARDS ================= */}
       <ScrollView
         contentContainerStyle={[
-          isTablet ? styles.contentTablet : styles.contentMobile,
-          { paddingTop: 10 }
+          styles.content,
+          { 
+            padding: responsiveSize(16, 25, 30),
+            paddingTop: responsiveSize(20, 25, 30)
+          }
         ]}
         showsVerticalScrollIndicator={false}
       >
-        <View style={isTablet ? styles.gridTablet : styles.listMobile}>
-          {data.length > 0 ? (
-            data.map((item, index) => (
+        {filteredData.length > 0 ? (
+          <View style={styles.cardsContainer}>
+            {filteredData.map((item, index) => (
               <TouchableOpacity
                 key={item.id || index}
                 activeOpacity={0.85}
-                style={isTablet ? styles.cardTablet : styles.cardMobile}
+                style={[
+                  styles.card,
+                  { 
+                    borderRadius: responsiveSize(16, 20, 24),
+                    padding: responsiveSize(15, 20, 25),
+                    marginBottom: responsiveSize(20, 25, 30),
+                    minHeight: responsiveSize(140, 160, 180)
+                  }
+                ]}
                 onPress={() =>
                   navigation.navigate("TownBusiness4", {
                     businessId: item.id,
@@ -636,77 +735,236 @@ export default function TownBusinessPage3() {
                   })
                 }
               >
-                <Image
-                  source={{ uri: getSafeImageUrl(item.image) }}
-                  style={isTablet ? styles.imageTablet : styles.imageMobile}
-                  onError={(e) => {
-                    console.log(`❌ Business image failed to load: ${item.image}`, e.nativeEvent.error);
-                  }}
-                />
+                {/* Card with 40% Image and 60% Content */}
+                <View style={styles.cardInner}>
+                  
+                  {/* Left Side: Image (40%) */}
+                  <View style={[
+                    styles.cardImageContainer,
+                    { 
+                      width: '40%',
+                      marginRight: responsiveSize(15, 20, 25)
+                    }
+                  ]}>
+                    <Image
+                      source={{ uri: getSafeImageUrl(item.image) }}
+                      style={[
+                        styles.cardImage,
+                        { 
+                          borderRadius: responsiveSize(12, 14, 16),
+                          height: '100%'
+                        }
+                      ]}
+                      resizeMode="cover"
+                    />
+                    <LinearGradient
+                      colors={['transparent', 'rgba(0,0,0,0.2)']}
+                      style={styles.cardImageOverlay}
+                    />
+                  </View>
 
-                <Text
-                  numberOfLines={2}
-                  style={isTablet ? styles.titleTablet : styles.titleMobile}
-                >
-                  {item.title}
-                </Text>
-
-                <View
-                  style={isTablet ? styles.iconRowTablet : styles.iconRowMobile}
-                >
-                  {item.phone && (
-                    <TouchableOpacity
-                      onPress={() => handleCall(item.phone)}
-                      style={
-                        isTablet
-                          ? styles.phoneIconTablet
-                          : styles.phoneIconMobile
+                  {/* Right Side: Content (60%) */}
+                  <View style={[
+                    styles.cardContent,
+                    { width: '60%' }
+                  ]}>
+                    {/* Title Only - No Description */}
+                    <Text numberOfLines={2} style={[
+                      styles.cardTitle,
+                      { 
+                        fontSize: responsiveSize(16, 20, 22),
+                        lineHeight: responsiveSize(22, 26, 28),
+                        marginBottom: responsiveSize(12, 16, 20)
                       }
-                    >
-                      <Ionicons name="call" size={16} color="#fff" />
-                    </TouchableOpacity>
-                  )}
+                    ]}>
+                      {item.title}
+                    </Text>
 
-                  {item.location && (
-                    <TouchableOpacity
-                      onPress={() => handleLocation(item.location)}
-                      style={
-                        isTablet
-                          ? styles.locationIconTablet
-                          : styles.locationIconMobile
-                      }
-                    >
-                      <Ionicons name="location" size={16} color="#fff" />
-                    </TouchableOpacity>
-                  )}
+                    {/* Contact Information - Icons Only */}
+                    <View style={styles.contactInfo}>
+                      {/* Phone */}
+                      {item.phone && (
+                        <View style={[
+                          styles.contactRow,
+                          { marginBottom: responsiveSize(10, 12, 14) }
+                        ]}>
+                          <TouchableOpacity
+                            onPress={(e) => {
+                              e.stopPropagation();
+                              handleCall(item.phone);
+                            }}
+                            style={[
+                              styles.contactIconButton,
+                              { 
+                                padding: responsiveSize(10, 12, 14),
+                                borderRadius: responsiveSize(10, 12, 14),
+                              }
+                            ]}
+                          >
+                            <Ionicons 
+                              name="call" 
+                              size={responsiveSize(18, 22, 24)} 
+                              color="#fff" 
+                            />
+                          </TouchableOpacity>
+      
+                        </View>
+                      )}
 
-                  {item.whatsapp && (
+                      {/* Location */}
+                      {item.location && (
+                        <View style={[
+                          styles.contactRow,
+                          { marginBottom: responsiveSize(10, 12, 14) }
+                        ]}>
+                          <TouchableOpacity
+                            onPress={(e) => {
+                              e.stopPropagation();
+                              handleLocation(item.location);
+                            }}
+                            style={[
+                              styles.contactIconButton,
+                              styles.locationButton,
+                              { 
+                                padding: responsiveSize(10, 12, 14),
+                                borderRadius: responsiveSize(10, 12, 14),
+                              }
+                            ]}
+                          >
+                            <Ionicons 
+                              name="location" 
+                              size={responsiveSize(18, 22, 24)} 
+                              color="#fff" 
+                            />
+                          </TouchableOpacity>
+                         
+                        </View>
+                      )}
+
+                      {/* WhatsApp */}
+                      {item.whatsapp && (
+                        <View style={styles.contactRow}>
+                          <TouchableOpacity
+                            onPress={(e) => {
+                              e.stopPropagation();
+                              handleWhatsapp(item.whatsapp);
+                            }}
+                            style={[
+                              styles.contactIconButton,
+                              styles.whatsappButton,
+                              { 
+                                padding: responsiveSize(10, 12, 14),
+                                borderRadius: responsiveSize(10, 12, 14),
+                              }
+                            ]}
+                          >
+                            <Ionicons 
+                              name="logo-whatsapp" 
+                              size={responsiveSize(18, 22, 24)} 
+                              color="#fff" 
+                            />
+                          </TouchableOpacity>
+                        
+                        </View>
+                      )}
+                    </View>
+
+                    {/* View Details Button */}
                     <TouchableOpacity
-                      onPress={() => handleWhatsapp(item.whatsapp)}
-                      style={
-                        isTablet
-                          ? styles.whatsappIconTablet
-                          : styles.whatsappIconMobile
-                      }
+                      onPress={(e) => {
+                        e.stopPropagation();
+                        navigation.navigate("TownBusiness4", {
+                          businessId: item.id,
+                          businessData: item,
+                          entityId: entityId,
+                          townId: townId,
+                          categoryName: categoryName,
+                        });
+                      }}
+                      style={[
+                        styles.detailsButton,
+                        { 
+                          marginTop: responsiveSize(12, 16, 20),
+                          paddingHorizontal: responsiveSize(12, 16, 20),
+                          paddingVertical: responsiveSize(10, 12, 14),
+                          borderRadius: responsiveSize(10, 12, 14),
+                        }
+                      ]}
                     >
-                      <Ionicons name="logo-whatsapp" size={16} color="#fff" />
+                      <Text style={[
+                        styles.detailsText,
+                        { fontSize: responsiveSize(14, 16, 18) }
+                      ]}>
+                        View Details
+                      </Text>
+                      <Ionicons 
+                        name="chevron-forward" 
+                        size={responsiveSize(16, 18, 20)} 
+                        color="#93210A" 
+                        style={{ marginLeft: 8 }}
+                      />
                     </TouchableOpacity>
-                  )}
+                  </View>
                 </View>
               </TouchableOpacity>
-            ))
-          ) : (
-            <View style={styles.noDataContainer}>
-              <Ionicons name="business-outline" size={60} color="#ccc" />
-              <Text style={styles.noDataText}>
-                No businesses available
-              </Text>
-              <Text style={styles.noDataSubtext}>
-                Check back later for new listings
-              </Text>
-            </View>
-          )}
-        </View>
+            ))}
+          </View>
+        ) : (
+          <View style={[
+            styles.noDataContainer,
+            { 
+              paddingVertical: responsiveSize(60, 80, 100),
+              paddingHorizontal: responsiveSize(20, 40, 60),
+              borderRadius: responsiveSize(16, 20, 24),
+              marginTop: responsiveSize(20, 30, 40),
+            }
+          ]}>
+            <Ionicons 
+              name="search-outline" 
+              size={responsiveSize(60, 80, 100)} 
+              color="#ccc" 
+            />
+            <Text style={[
+              styles.noDataText,
+              { fontSize: responsiveSize(18, 22, 24) }
+            ]}>
+              {searchQuery.length > 0 ? 'No businesses found' : 'No businesses available'}
+            </Text>
+            <Text style={[
+              styles.noDataSubtext,
+              { 
+                fontSize: responsiveSize(14, 16, 18),
+                marginTop: responsiveSize(8, 12, 16),
+                marginBottom: responsiveSize(24, 30, 36),
+                lineHeight: responsiveSize(20, 22, 24)
+              }
+            ]}>
+              {searchQuery.length > 0 
+                ? 'Try a different search term' 
+                : 'Check back later for new listings'}
+            </Text>
+            {searchQuery.length > 0 && (
+              <TouchableOpacity 
+                onPress={clearSearch} 
+                style={[
+                  styles.clearSearchButton,
+                  { 
+                    paddingHorizontal: responsiveSize(20, 25, 30),
+                    paddingVertical: responsiveSize(10, 12, 14),
+                    borderRadius: responsiveSize(8, 10, 12)
+                  }
+                ]}
+              >
+                <Text style={[
+                  styles.clearSearchText,
+                  { fontSize: responsiveSize(14, 16, 18) }
+                ]}>
+                  Clear Search
+                </Text>
+              </TouchableOpacity>
+            )}
+          </View>
+        )}
       </ScrollView>
     </View>
   );
@@ -717,208 +975,39 @@ export default function TownBusinessPage3() {
 /* ================================================= */
 
 const styles = StyleSheet.create({
-  /* ================= MOBILE ================= */
-  containerMobile: {
+  /* ================= BASE CONTAINERS ================= */
+  container: {
     flex: 1,
-    backgroundColor: "#F6F7F9",
+    backgroundColor: "#F8F9FA",
   },
 
-  headerMobile: {
-    paddingTop: Platform.OS === "ios" ? 55 : 45,
-    paddingBottom: 20,
+  /* ================= HEADER STYLES ================= */
+  header: {
     alignItems: "center",
+    justifyContent: "center",
+    paddingBottom: 15,
   },
 
-  backMobile: {
+  backButton: {
     position: "absolute",
+    backgroundColor: "rgba(255,255,255,0.2)",
     left: 16,
-    top: Platform.OS === "ios" ? 55 : 45,
-    backgroundColor: "rgba(255,255,255,0.25)",
-    padding: 8,
-    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 
-  headerTitleMobile: {
-    fontSize: 22,
-    fontWeight: "800",
-    color: "#fff",
-  },
-
-  contentMobile: {
-    padding: 16,
-    paddingBottom: 30,
-  },
-
-  listMobile: {
-    flexDirection: "column",
-  },
-
-  cardMobile: {
-    backgroundColor: "#fff",
-    borderRadius: 16,
-    padding: 14,
-    marginBottom: 14,
-    alignItems: "center",
-    elevation: 3,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-  },
-
-  imageMobile: {
-    width: "100%",
-    height: 150,
-    borderRadius: 12,
-    marginBottom: 10,
-    backgroundColor: '#f0f0f0',
-  },
-
-  titleMobile: {
-    fontSize: 15,
+  headerTitle: {
     fontWeight: "700",
-    textAlign: "center",
-    marginBottom: 10,
-    color: '#333',
-  },
-
-  iconRowMobile: {
-    flexDirection: "row",
-    gap: 10,
-  },
-
-  phoneIconMobile: {
-    backgroundColor: "#93210A",
-    padding: 8,
-    borderRadius: 10,
-  },
-
-  locationIconMobile: {
-    backgroundColor: "#2E8B57",
-    padding: 8,
-    borderRadius: 10,
-  },
-
-  whatsappIconMobile: {
-    backgroundColor: "#25D366",
-    padding: 8,
-    borderRadius: 10,
-  },
-
-  loaderMobile: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: '#fff',
-  },
-
-  loaderTextMobile: {
-    marginTop: 10,
-    color: "#666",
-    fontSize: 14,
-  },
-
-  /* ================= TABLET ================= */
-  containerTablet: {
-    flex: 1,
-    backgroundColor: "#F2F3F5",
-  },
-
-  headerTablet: {
-    paddingTop: 65,
-    paddingBottom: 30,
-    alignItems: "center",
-  },
-
-  backTablet: {
-    position: "absolute",
-    left: 40,
-    top: 65,
-    backgroundColor: "rgba(255,255,255,0.25)",
-    padding: 10,
-    borderRadius: 14,
-  },
-
-  headerTitleTablet: {
-    fontSize: 30,
-    fontWeight: "800",
     color: "#fff",
+    textAlign: "center",
+    marginTop: 5,
   },
 
-  contentTablet: {
-    padding: 30,
-    paddingBottom: 40,
-  },
-
-  gridTablet: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    justifyContent: "space-between",
-  },
-
-  cardTablet: {
-    width: "48%",
-    backgroundColor: "#fff",
-    borderRadius: 20,
-    padding: 18,
-    marginBottom: 20,
-    alignItems: "center",
-    elevation: 5,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.15,
-    shadowRadius: 6,
-  },
-
-  imageTablet: {
-    width: "100%",
-    height: 180,
-    borderRadius: 14,
-    marginBottom: 12,
-    backgroundColor: '#f0f0f0',
-  },
-
-  titleTablet: {
-    fontSize: 17,
-    fontWeight: "800",
-    marginBottom: 12,
-    color: '#333',
-  },
-
-  iconRowTablet: {
-    flexDirection: "row",
-    gap: 14,
-  },
-
-  phoneIconTablet: {
-    backgroundColor: "#93210A",
-    padding: 10,
-    borderRadius: 12,
-  },
-
-  locationIconTablet: {
-    backgroundColor: "#2E8B57",
-    padding: 10,
-    borderRadius: 12,
-  },
-
-  whatsappIconTablet: {
-    backgroundColor: "#25D366",
-    padding: 10,
-    borderRadius: 12,
-  },
-
-  loaderTablet: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: '#fff',
-  },
-
-  loaderTextTablet: {
-    fontSize: 16,
-    marginTop: 12,
-    color: "#666",
+  headerSubtitle: {
+    color: "rgba(255,255,255,0.9)",
+    marginTop: 4,
+    textAlign: "center",
+    fontWeight: '500',
   },
 
   /* ================= ADVERTISEMENT STYLES ================= */
@@ -926,8 +1015,6 @@ const styles = StyleSheet.create({
     position: "relative",
     overflow: "hidden",
     backgroundColor: '#fff',
-    borderBottomWidth: 1,
-    borderBottomColor: '#e0e0e0',
   },
 
   adItemContainer: {
@@ -965,12 +1052,6 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   
-  videoSubtext: {
-    fontSize: 12,
-    color: '#666',
-    marginTop: 5,
-  },
-  
   adsLoadingContainer: {
     flex: 1,
     justifyContent: 'center',
@@ -981,20 +1062,17 @@ const styles = StyleSheet.create({
   adsLoadingText: {
     marginTop: 10,
     color: "#666",
-    fontSize: 14,
   },
 
   paginationContainer: {
     position: 'absolute',
-    bottom: 10,
+    bottom: 15,
     flexDirection: 'row',
     alignSelf: 'center',
     zIndex: 2,
   },
   
   paginationDot: {
-    height: 6,
-    borderRadius: 3,
     backgroundColor: 'rgba(147, 33, 10, 0.9)',
     marginHorizontal: 4,
   },
@@ -1004,47 +1082,172 @@ const styles = StyleSheet.create({
     position: 'relative',
   },
 
-  /* ================= DEBUG STYLES ================= */
-  debugInfo: {
-    position: 'absolute',
-    top: 10,
-    left: 10,
-    backgroundColor: 'rgba(0,0,0,0.5)',
-    padding: 5,
-    borderRadius: 5,
+  /* ================= SEARCH BAR STYLES ================= */
+  searchContainer: {
+    backgroundColor: '#fff',
   },
-  
-  debugText: {
-    color: 'white',
-    fontSize: 10,
+
+  searchBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#F0F2F5',
+    borderWidth: 1,
+    borderColor: '#E4E6EB',
+  },
+
+  searchIcon: {
+    marginRight: 10,
+  },
+
+  searchInput: {
+    flex: 1,
+    color: '#1C1E21',
+    paddingVertical: 0,
+  },
+
+  clearButton: {
+    padding: 4,
+  },
+
+  /* ================= RESULTS COUNT ================= */
+  resultsContainer: {
+    backgroundColor: '#FFF9F5',
+    borderBottomWidth: 1,
+    borderBottomColor: '#FFE5D9',
+  },
+
+  resultsCount: {
+    color: '#93210A',
+    fontWeight: '600',
+  },
+
+  /* ================= CONTENT AREA ================= */
+  content: {
+    flexGrow: 1,
+  },
+
+  /* ================= CARD DESIGN ================= */
+  cardsContainer: {
+    flexDirection: 'column',
+  },
+
+  card: {
+    backgroundColor: '#fff',
+    elevation: 4,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 6,
+    borderWidth: 1,
+    borderColor: '#EAECF0',
+  },
+
+  cardInner: {
+    flexDirection: 'row',
+    flex: 1,
+  },
+
+  cardImageContainer: {
+    position: 'relative',
+    overflow: 'hidden',
+  },
+
+  cardImage: {
+    width: '100%',
+    backgroundColor: '#f0f0f0',
+  },
+
+  cardImageOverlay: {
+    ...StyleSheet.absoluteFillObject,
+  },
+
+  cardContent: {
+    justifyContent: 'space-between',
+  },
+
+  cardTitle: {
+    fontWeight: '700',
+    color: '#1C1E21',
+  },
+
+  /* ================= CONTACT INFO ================= */
+  contactInfo: {
+    flexDirection: 'row',
+    gap: 10,
+  },
+
+  contactIconButton: {
+    backgroundColor: '#93210A',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+
+  locationButton: {
+    backgroundColor: '#2E8B57',
+  },
+
+  whatsappButton: {
+    backgroundColor: '#25D366',
+  },
+
+  contactText: {
+    color: '#4B5563',
+    fontWeight: '500',
+  },
+
+  /* ================= DETAILS BUTTON ================= */
+  detailsButton: {
+    backgroundColor: 'transparent',
+    borderWidth: 1.5,
+    borderColor: '#93210A',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+
+  detailsText: {
+    color: '#93210A',
+    fontWeight: '600',
   },
 
   /* ================= NO DATA STYLES ================= */
   noDataContainer: {
-    width: "100%",
     alignItems: "center",
     justifyContent: "center",
-    paddingVertical: 60,
-    paddingHorizontal: 20,
     backgroundColor: '#fff',
-    borderRadius: 16,
-    marginTop: 20,
+    borderWidth: 1,
+    borderColor: '#e0e0e0',
   },
 
   noDataText: {
-    fontSize: 18,
     fontWeight: "600",
-    color: "#666",
+    color: "#4B5563",
     textAlign: "center",
-    marginTop: 16,
   },
 
   noDataSubtext: {
-    fontSize: 14,
-    color: "#888",
+    color: "#6B7280",
     textAlign: "center",
-    marginTop: 8,
-    marginBottom: 24,
-    lineHeight: 20,
+  },
+
+  clearSearchButton: {
+    backgroundColor: '#93210A',
+  },
+
+  clearSearchText: {
+    color: '#fff',
+    fontWeight: '600',
+  },
+
+  /* ================= LOADER STYLES ================= */
+  loaderContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: '#fff',
+  },
+
+  loaderText: {
+    color: "#666",
   },
 });

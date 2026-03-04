@@ -36,7 +36,6 @@ export const fetchVideoReviews = async (videoId) => {
 export const postVideoReview = async (reviewData) => {
   try {
     const token = await AsyncStorage.getItem("token");
-     console.log('token', token)
     let reviewerName = "Anonymous";
 
     if (token) {

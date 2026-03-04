@@ -401,8 +401,7 @@ export default function ComplaintPage1({ navigation, route }) {
               item.title.toLowerCase().includes(districtName.toLowerCase())
           )
         : data;
-
-      setComplaints(filteredData || []);
+          setComplaints(filteredData || []);
     } catch (error) {
       console.error("Error loading complaints:", error);
     } finally {
@@ -484,7 +483,8 @@ export default function ComplaintPage1({ navigation, route }) {
       </View>
 
       {/* ---------- New Complaint ---------- */}
-      <View style={styles.buttonContainer}>
+      
+      {districtName ? <View style={styles.buttonContainer}>
         <TouchableOpacity
           style={styles.newComplaintBtn}
           onPress={() =>
@@ -494,7 +494,8 @@ export default function ComplaintPage1({ navigation, route }) {
           <Ionicons name="add" size={24} color="#93210A" />
           <Text style={styles.newComplaintText}>New Complaint</Text>
         </TouchableOpacity>
-      </View>
+      </View> : null}
+     
 
       {/* ---------- Stats ---------- */}
       <View style={styles.statsContainer}>

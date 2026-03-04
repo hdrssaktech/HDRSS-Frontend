@@ -35,15 +35,12 @@ useEffect(() => {
       // ✅ Fix: match 'Districts' or 'State' based on your data
       const filtered = data.filter(
         (m) =>
-          m.categoryType.toLowerCase() === categoryType?.toLowerCase() &&
-          m.district?.toLowerCase() === districtName?.toLowerCase()
+          m.categoryType.toLowerCase() === categoryType?.toLowerCase()
       );
 
       setMembers(filtered);
 
-      console.log("✅ Filtered Members:", filtered.length);
-      console.log("Category:", categoryType);
-      console.log("District:", districtName);
+
     } catch (error) {
       console.error("Error fetching members:", error);
     } finally {

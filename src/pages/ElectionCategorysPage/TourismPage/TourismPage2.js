@@ -1,116 +1,3 @@
-// import React, { useEffect, useState } from "react";
-// import {
-//   View,
-//   Text,
-//   Image,
-//   StyleSheet,
-//   FlatList,
-//   TouchableOpacity,
-//   ActivityIndicator,
-//   SafeAreaView,
-// } from "react-native";
-// import { Ionicons } from "@expo/vector-icons";
-// import { useNavigation, useRoute } from "@react-navigation/native";
-// import { fetchTourismByType } from "../../../Controller/TourismController/TourismController";
-
-// export default function TourismPage2() {
-//   const navigation = useNavigation();
-//   const route = useRoute();
-//   const { typeId, typeName } = route.params;
-
-//   const [places, setPlaces] = useState([]);
-//   const [loading, setLoading] = useState(true);
-
-//   useEffect(() => {
-//     const loadPlaces = async () => {
-//       try {
-//         const data = await fetchTourismByType(typeId);
-//         setPlaces(data);
-//       } catch (error) {
-//         console.error("Error loading tourism places:", error);
-//       } finally {
-//         setLoading(false);
-//       }
-//     };
-//     loadPlaces();
-//   }, [typeId]);
-
-//   if (loading)
-//     return (
-//       <View style={[styles.container, { justifyContent: "center" }]}>
-//         <ActivityIndicator size="large" color="#93210A" />
-//       </View>
-//     );
-
-//   return (
-//     <SafeAreaView style={styles.container}>
-//       {/* Header */}
-//       <View style={styles.header}>
-//         <TouchableOpacity onPress={() => navigation.goBack()}>
-//           <Ionicons name="chevron-back" size={26} color="#fff" />
-//         </TouchableOpacity>
-//         <Text style={styles.headerTitle}>{typeName}</Text>
-//       </View>
-
-//       {/* List */}
-//       <FlatList
-//         data={places}
-//         keyExtractor={(item) => item.id.toString()}
-//         renderItem={({ item }) => (
-//           <TouchableOpacity
-//             style={styles.card}
-//             onPress={() => navigation.navigate("TourismPage3", { id: item.id })}
-//           >
-//             <Image
-//               source={{
-//                 uri:
-//                   item.bannerImage ||
-//                   "https://cdn-icons-png.flaticon.com/512/2659/2659360.png",
-//               }}
-//               style={styles.image}
-//             />
-//             <View style={styles.info}>
-//               <Text style={styles.name}>{item.name}</Text>
-//               <Text style={styles.title}>{item.title}</Text>
-//               {item.phone && (
-//                 <Text style={styles.phone}>📞 {item.phone}</Text>
-//               )}
-//             </View>
-//           </TouchableOpacity>
-//         )}
-//         contentContainerStyle={{ padding: 15 }}
-//       />
-//     </SafeAreaView>
-//   );
-// }
-
-// const styles = StyleSheet.create({
-//   container: { flex: 1, backgroundColor: "#fff" },
-//   header: {
-//     flexDirection: "row",
-//     alignItems: "center",
-//     padding: 15,
-//     marginTop: 32,
-//     backgroundColor: "#93210A",
-//   },
-//   headerTitle: { color: "#fff", fontSize: 20, fontWeight: "bold", marginLeft: 10 },
-//   card: {
-//     backgroundColor: "#fff",
-//     borderRadius: 10,
-//     marginBottom: 15,
-//     elevation: 3,
-//     overflow: "hidden",
-//   },
-//   image: { width: "100%", height: 160 },
-//   info: { padding: 10 },
-//   name: { fontSize: 18, fontWeight: "bold", color: "#333" },
-//   title: { fontSize: 14, color: "#666", marginVertical: 4 },
-//   phone: { fontSize: 14, color: "#2E8B57", fontWeight: "bold" },
-// });
-
-
-
-
 import React, { useEffect, useState } from "react";
 import {
   View,
@@ -121,7 +8,9 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   SafeAreaView,
+  TextInput,
   useWindowDimensions,
+  Linking,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation, useRoute } from "@react-navigation/native";
@@ -136,21 +25,39 @@ export default function TourismPage2() {
   const isTablet = width >= 600;
 
   const [places, setPlaces] = useState([]);
+  const [filteredPlaces, setFilteredPlaces] = useState([]);
+  const [searchText, setSearchText] = useState("");
   const [loading, setLoading] = useState(true);
 
+  /* ===================== API ===================== */
   useEffect(() => {
     const loadPlaces = async () => {
       try {
         const data = await fetchTourismByType(typeId);
         setPlaces(data);
+        setFilteredPlaces(data);
       } catch (error) {
-        console.error("Error loading tourism places:", error);
+        console.error(error);
       } finally {
         setLoading(false);
       }
     };
     loadPlaces();
   }, [typeId]);
+
+  /* ===================== SEARCH ===================== */
+  const handleSearch = (text) => {
+    setSearchText(text);
+    if (text.trim() === "") {
+      setFilteredPlaces(places);
+      return;
+    }
+    setFilteredPlaces(
+      places.filter((item) =>
+        item.name.toLowerCase().includes(text.toLowerCase())
+      )
+    );
+  };
 
   if (loading) {
     return (
@@ -160,45 +67,42 @@ export default function TourismPage2() {
     );
   }
 
-  const numColumns = isTablet ? 2 : 1;
-
   return (
     <SafeAreaView style={styles.container}>
-      {/* 🔹 Header */}
-      <View style={[styles.header, isTablet && styles.headerTablet]}>
+      {/* ===================== HEADER ===================== */}
+      <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()}>
-          <Ionicons
-            name="chevron-back"
-            size={isTablet ? 32 : 26}
-            color="#fff"
-          />
+          <Ionicons name="chevron-back" size={26} color="#fff" />
         </TouchableOpacity>
-
-        <Text
-          style={[styles.headerTitle, isTablet && styles.headerTitleTablet]}
-          numberOfLines={1}
-        >
-          {typeName}
-        </Text>
+        <Text style={styles.headerTitle}>{typeName}</Text>
       </View>
 
-      {/* 🔹 Grid List */}
+      {/* ===================== SEARCH ===================== */}
+      <View style={styles.searchContainer}>
+        <Ionicons name="search" size={18} color="#777" />
+        <TextInput
+          placeholder="Search places..."
+          value={searchText}
+          onChangeText={handleSearch}
+          style={styles.searchInput}
+        />
+      </View>
+
+      {/* ===================== GRID ===================== */}
       <FlatList
-        data={places}
-        key={numColumns}
-        numColumns={numColumns}
+        data={filteredPlaces}
+        numColumns={2}
         keyExtractor={(item) => item.id.toString()}
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={[
-          styles.listContent,
-          isTablet && styles.listContentTablet,
-        ]}
+        contentContainerStyle={styles.list}
+        columnWrapperStyle={{ justifyContent: "space-between" }}
+        ListEmptyComponent={
+          <View style={styles.notFound}>
+            <Text style={styles.notFoundText}>No places found</Text>
+          </View>
+        }
         renderItem={({ item }) => (
           <TouchableOpacity
-            style={[
-              styles.card,
-              isTablet && styles.cardTablet,
-            ]}
+            style={styles.card}
             activeOpacity={0.85}
             onPress={() =>
               navigation.navigate("TourismPage3", { id: item.id })
@@ -210,34 +114,37 @@ export default function TourismPage2() {
                   item.bannerImage ||
                   "https://cdn-icons-png.flaticon.com/512/2659/2659360.png",
               }}
-              style={[
-                styles.image,
-                isTablet && styles.imageTablet,
-              ]}
+              style={styles.image}
             />
 
             <View style={styles.info}>
-              <Text
-                style={[styles.name, isTablet && styles.nameTablet]}
-                numberOfLines={1}
-              >
-                {item.name}
-              </Text>
+              <Text style={styles.name}>{item.name}</Text>
 
-              <Text
-                style={[styles.title, isTablet && styles.titleTablet]}
-                numberOfLines={2}
-              >
+              <Text style={styles.title} numberOfLines={2}>
                 {item.title}
               </Text>
 
-              {item.phone && (
-                <Text
-                  style={[styles.phone, isTablet && styles.phoneTablet]}
+              {/* ===================== BUTTONS ===================== */}
+              <View style={styles.buttonRow}>
+                <TouchableOpacity
+                  style={styles.visitButton}
+                  onPress={() =>
+                    navigation.navigate("TourismPlaces", { id: item.id })
+                  }
                 >
-                  📞 {item.phone}
-                </Text>
-              )}
+                  <Ionicons name="location-outline" size={16} color="#fff" />
+                  <Text style={styles.btnText}>Visit</Text>
+                </TouchableOpacity>
+
+                {item.phone && (
+                  <TouchableOpacity
+                    style={styles.callButton}
+                    onPress={() => Linking.openURL(`tel:${item.phone}`)}
+                  >
+                    <Ionicons name="call-outline" size={18} color="#fff" />
+                  </TouchableOpacity>
+                )}
+              </View>
             </View>
           </TouchableOpacity>
         )}
@@ -251,15 +158,13 @@ export default function TourismPage2() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#fff",
+    backgroundColor: "#F4F6F8",
   },
-
   centered: {
     justifyContent: "center",
     alignItems: "center",
   },
 
-  /* 🔹 Header */
   header: {
     flexDirection: "row",
     alignItems: "center",
@@ -267,94 +172,93 @@ const styles = StyleSheet.create({
     marginTop: 32,
     backgroundColor: "#93210A",
   },
-  headerTablet: {
-    paddingVertical: 35,
-    paddingHorizontal: 24,
-    marginTop: -3,
-  },
-
-   headerTitle: {
+  headerTitle: {
     color: "#fff",
+    fontSize:14,
     fontWeight: "700",
-    fontSize: 22, marginLeft: 65,
-    padding:8,
-   
-
+    marginLeft: 15,
   },
 
-  headerTitleTablet: {
-    fontSize: 28,
-    padding:8,
-    left:125,
-  },
-
-
-  /* 🔹 Grid */
-  listContent: {
-    padding: 15,
-    paddingBottom: 30,
-  },
-  listContentTablet: {
-    paddingHorizontal: 28,
-    paddingTop: 24,
-  },
-
-  /* 🔹 Card */
-  card: {
-    flex: 1,
+  searchContainer: {
+    flexDirection: "row",
+    alignItems: "center",
     backgroundColor: "#fff",
+    margin: 28,
     borderRadius: 10,
+    paddingHorizontal: 12,
+    elevation: 2,
+  },
+  searchInput: {
+    flex: 1,
+    padding: 10,
+    fontSize: 15,
+    marginLeft: 8,
+  },
+
+  list: {
+    paddingHorizontal: 10,
+    paddingBottom: 20,
+  },
+
+  card: {
+    backgroundColor: "#fff",
+    borderRadius: 15,
     marginBottom: 15,
-    marginHorizontal: 6,
-    elevation: 3,
+    marginVertical: 6,
+    width: "48%",
+    elevation: 4,
     overflow: "hidden",
   },
-  cardTablet: {
-    borderRadius: 16,
-    marginBottom: 24,
-  },
-
-  /* 🔹 Image */
   image: {
+    height: 120,
     width: "100%",
-    height: 160,
-  },
-  imageTablet: {
-    height: 240,
   },
 
-  /* 🔹 Info */
   info: {
-    padding: 12,
+    padding: 5,
   },
-
   name: {
-    fontSize: 18,
-    fontWeight: "bold",
-    color: "#333",
+    fontSize: 16,
+    fontWeight: "700",
+    color: "#222",
   },
-  nameTablet: {
-    fontSize: 22,
-  },
-
   title: {
-    fontSize: 14,
+    fontSize: 13,
     color: "#666",
-    marginVertical: 4,
-  },
-  titleTablet: {
-    fontSize: 16,
-    marginVertical: 6,
+    marginVertical: 2,
   },
 
-  phone: {
-    fontSize: 14,
-    color: "#2E8B57",
-    fontWeight: "bold",
-    marginTop: 4,
+  buttonRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginTop: 10,
   },
-  phoneTablet: {
+  visitButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#1E88E5",
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    borderRadius: 20,
+  },
+  callButton: {
+    backgroundColor: "#93210A",
+    padding: 8,
+    borderRadius: 50,
+  },
+  btnText: {
+    color: "#fff",
+    fontSize: 13,
+    marginLeft: 5,
+    fontWeight: "600",
+  },
+
+  notFound: {
+    alignItems: "center",
+    marginTop: 40,
+  },
+  notFoundText: {
+    color: "#999",
     fontSize: 16,
-    marginTop: 6,
   },
 });

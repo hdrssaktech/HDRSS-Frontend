@@ -69,10 +69,6 @@ export default function EventPage() {
             <Text style={styles.eventTitle}>
               {event.name ?? ""}
             </Text>
-
-            <Text style={styles.eventDate}>
-              {event.date ?? ""}
-            </Text>
           </TouchableOpacity>
         ))}
       </ScrollView>
@@ -92,28 +88,22 @@ const getStyles = (isTablet) =>
       color: "#93210A",
       fontWeight: "bold",
       margin: isTablet ? 20 : 15,
-      
-
-
     },
-
     eventCard: {
-      width: isTablet ? 360 : 300,
-      height: isTablet ? 300 : 250,
-      margin: isTablet ? 25 : 20,
-      backgroundColor: "#fff",
+      width: isTablet ? 260 : 200,
+      height: isTablet ? 300 :220,
+      margin: isTablet ? 20 : 10,
+      backgroundColor: "#e9e6e6f1",
       elevation: 3,
-      shadowColor: "#000",
-      padding: isTablet ? 52 : 48,
-      alignItems: "center",
+      shadowColor: "#7c0000",
+      padding: isTablet ? 42 :25,
+      alignItems: "center"
     },
-
     eventImage: {
-      width: "120%",
-      height: "100%",
-      borderRadius: 10,
+      width: "100%",
+      height: "85%",
+      borderRadius:5,
     },
-
     eventTitle: {
       fontSize: isTablet ? 18 : 14,
       fontWeight: "bold",
@@ -121,17 +111,6 @@ const getStyles = (isTablet) =>
       textAlign: "center",
       color: "#222",
     },
-
-    eventDate: {
-      fontSize: isTablet ? 16 : 13,
-      color: "#93210A",
-      marginTop: 4,
-      right: isTablet ? 5 : 2,
-       fontSize: 13,
-
-   
-    },
-
     centerContent: {
       flex: 1,
       justifyContent: "center",

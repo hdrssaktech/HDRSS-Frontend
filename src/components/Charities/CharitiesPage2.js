@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   View,
   Text,
@@ -18,6 +18,7 @@ export default function CharitiesPage2() {
   const navigation = useNavigation();
   const { charity } = useRoute().params;
   const { width } = useWindowDimensions();
+  const [show ,Setshow] = useState(false);
 
   const isTablet = width >= 600;
 
@@ -89,15 +90,25 @@ export default function CharitiesPage2() {
           </Text>
 
           {/* Description */}
+          <View>
+
+        
           <Text
             style={
               isTablet
                 ? styles.descriptionTablet
                 : styles.descriptionMobile
             }
+            numberOfLines={show ? undefined :7}
           >
             {charity?.description}
           </Text>
+             <TouchableOpacity onPress={()=>Setshow(!show)}>
+          <View>
+          <Text style={{color:'#93210A',fontSize:18,textAlign:'right'}} >{show ? 'Read Less...' : 'Read More...'}</Text>
+        </View>
+        </TouchableOpacity>
+          </View>
 
           {/* Gallery */}
           {charity?.galleryImages?.length > 0 && (
@@ -151,7 +162,7 @@ export default function CharitiesPage2() {
             <View style={styles.videoContainer}>
               {charity.videos.map((url, index) => {
                 const ytId = getYoutubeId(url);
-                console.log("Video URL:", url, "YouTube ID:", ytId);
+                
                 
                 if (ytId) {
                   return (

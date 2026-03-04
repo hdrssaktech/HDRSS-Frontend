@@ -75,11 +75,9 @@ import axios from "axios";
   export const fetchReviewsByComplaintId = async (complaintId) => {
     try {
       const token = await AsyncStorage.getItem("token");
-      console.log(token)
       const res = await axios.get(`${BASE_URL}/reviews/${complaintId}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      console.log("✅ Reviews Response:", res.data);
 
 
       return res.data; // Expecting array of reviews

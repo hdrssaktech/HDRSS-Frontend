@@ -189,10 +189,9 @@ const styles = StyleSheet.create({
   /* 📱 MOBILE */
    adContainer: {
     height: 200,
-    marginVertical: 30,
+    marginVertical:5,
   },
   adImage: {
-   
     height: 200,
   },
   loaderContainer: {
@@ -203,9 +202,8 @@ const styles = StyleSheet.create({
   /* 📲 TABLET */
   adContainerTablet: {
     height: 300,
-    marginVertical: 40,
+    marginVertical:20,
   },
-
   adImageTablet: {
     height: 350,
   },

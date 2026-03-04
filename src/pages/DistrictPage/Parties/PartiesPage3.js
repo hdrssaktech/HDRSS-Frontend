@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import {
   View,
   Text,
@@ -7,31 +7,47 @@ import {
   TouchableOpacity,
   Image,
   Platform,
-  Dimensions,
   SafeAreaView,
+  StatusBar,
   ActivityIndicator,
   Linking,
+  useWindowDimensions,
 } from "react-native";
 import { useRoute, useNavigation } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
-
-const { width, height } = Dimensions.get("window");
-const isTablet = width >= 768;
-const isSmallDevice = width < 375;
 
 const PartiesPage3 = () => {
   const route = useRoute();
   const navigation = useNavigation();
   const { partyTitle, partyId } = route.params;
-
+  
+  const { width, height } = useWindowDimensions();
+  
   const [list, setList] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  // ✅ Tablet check with proper dimensions
+  const isTablet = useMemo(() => {
+    return width >= 600 || (width > height && width >= 600);
+  }, [width, height]);
+
+  // ✅ Responsive square image size
+  const imageSize = useMemo(() => {
+    return isTablet ? 140 : 100;
+  }, [isTablet]);
+
+  // ✅ Responsive padding
+  const contentPadding = useMemo(() => {
+    return isTablet ? 24 : 16;
+  }, [isTablet]);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         setLoading(true);
+        setError(null);
+        
         const res = await fetch(
           `https://hdrss-backend.onrender.com/api/party/category/${partyId}`
         );
@@ -45,7 +61,6 @@ const PartiesPage3 = () => {
         // Filter by title
         const filtered = data.filter(item => item.title === partyTitle).sort((a,b)=>a.orderNo - b.orderNo);
         setList(filtered);
-        setError(null);
       } catch (err) {
         console.error("API error:", err);
         setError("Failed to load data. Please try again.");
@@ -70,147 +85,170 @@ const PartiesPage3 = () => {
     }
   };
 
-  if (loading) {
-    return (
-      <View style={styles.centerContainer}>
-        <ActivityIndicator size={isTablet ? "large" : "small"} color="#93210A" />
-        <Text style={styles.loadingText}>Loading details...</Text>
-      </View>
-    );
-  }
+  const renderHeader = () => (
+    <View style={[styles.header, isTablet && styles.headerTablet]}>
+      <TouchableOpacity
+        style={[styles.backButton, isTablet && styles.backButtonTablet]}
+        onPress={() => navigation.goBack()}
+        activeOpacity={0.8}
+      >
+        <Ionicons name="chevron-back" size={isTablet ? 30 : 26} color="#fff" />
+      </TouchableOpacity>
 
-  if (error) {
-    return (
-      <View style={styles.centerContainer}>
-        <Ionicons name="alert-circle-outline" size={60} color="#93210A" />
-        <Text style={styles.errorText}>{error}</Text>
-        <TouchableOpacity 
-          style={styles.retryButton}
-          onPress={() => setLoading(true)}
+      <View style={styles.headerTitleWrap}>
+        <Text 
+          style={[styles.headerTitle, isTablet && styles.headerTitleTablet]} 
+          numberOfLines={1}
         >
-          <Text style={styles.retryButtonText}>Retry</Text>
-        </TouchableOpacity>
+          {partyTitle}
+        </Text>
       </View>
-    );
-  }
+      
+      <View style={[styles.headerSpacer, isTablet && styles.headerSpacerTablet]} />
+    </View>
+  );
 
-  return (
-    <SafeAreaView style={styles.safeArea}>
-      <View style={styles.container}>
-        {/* Header */}
-        <View style={styles.header}>
-          <TouchableOpacity 
-            onPress={() => navigation.goBack()}
-            style={styles.backButton}
-            activeOpacity={0.7}
-          >
-            <Ionicons name="chevron-back" size={28} color="#fff" />
-          </TouchableOpacity>
-          <View style={styles.headerTitleContainer}>
-            <Text style={styles.headerTitle} numberOfLines={1}>
-              {partyTitle}
-            </Text>
-          </View>
-          <View style={{ width: 40 }} />
+  const renderContent = () => {
+    if (loading) {
+      return (
+        <View style={[styles.centerContainer, isTablet && styles.centerContainerTablet]}>
+          <ActivityIndicator size={isTablet ? "large" : "large"} color="#8B0000" />
+          <Text style={[styles.loadingText, isTablet && styles.loadingTextTablet]}>
+            Loading details...
+          </Text>
         </View>
+      );
+    }
 
-        {/* Content */}
-        <ScrollView 
-          style={styles.scrollView}
-          contentContainerStyle={styles.scrollViewContent}
-          showsVerticalScrollIndicator={false}
-        >
-          {list.length === 0 ? (
-            <View style={styles.emptyContainer}>
-              <Ionicons name="people-outline" size={80} color="#CCCCCC" />
-              <Text style={styles.emptyText}>No items found</Text>
-            </View>
-          ) : (
-            <View style={styles.listContainer}>
-              {list.map((item, index) => (
-                 <TouchableOpacity
-      key={index}
-      activeOpacity={0.8}
-      onPress={() =>
-        navigation.navigate("Partiespage4", { 'item':item })
-      }
-    >
-                <View
-                  key={index}
-                  style={[
-                    styles.card,
-                    isTablet && styles.cardTablet,
-                    isSmallDevice && styles.cardSmall,
-                    index === list.length - 1 && styles.lastCard,
-                  ]}
+    if (error) {
+      return (
+        <View style={[styles.centerContainer, isTablet && styles.centerContainerTablet]}>
+          <Ionicons 
+            name="alert-circle-outline" 
+            size={isTablet ? 60 : 50} 
+            color="#8B0000" 
+          />
+          <Text style={[styles.errorText, isTablet && styles.errorTextTablet]}>
+            {error}
+          </Text>
+          <TouchableOpacity 
+            style={[styles.retryButton, isTablet && styles.retryButtonTablet]}
+            onPress={() => setLoading(true)}
+          >
+            <Text style={[styles.retryButtonText, isTablet && styles.retryButtonTextTablet]}>
+              Retry
+            </Text>
+          </TouchableOpacity>
+        </View>
+      );
+    }
+
+    if (list.length === 0) {
+      return (
+        <View style={[styles.centerContainer, isTablet && styles.centerContainerTablet]}>
+          <Ionicons 
+            name="people-outline" 
+            size={isTablet ? 60 : 50} 
+            color="#bbb" 
+          />
+          <Text style={[styles.emptyText, isTablet && styles.emptyTextTablet]}>
+            No items found
+          </Text>
+        </View>
+      );
+    }
+
+    return (
+      <ScrollView 
+        style={styles.scrollView}
+        contentContainerStyle={[styles.scrollViewContent, isTablet && styles.scrollViewContentTablet]}
+        showsVerticalScrollIndicator={false}
+      >
+        <View style={[styles.listContainer, isTablet && styles.listContainerTablet]}>
+          {list.map((item, index) => (
+            <TouchableOpacity
+              key={index}
+              activeOpacity={0.85}
+              onPress={() => navigation.navigate("Partiespage4", { 'item': item })}
+              style={[styles.cardWrapper, isTablet && styles.cardWrapperTablet]}
+            >
+              <View style={[styles.card, isTablet && styles.cardTablet]}>
+                {/* Square Image Box */}
+                <View style={[styles.imageContainer, { width: imageSize, height: imageSize }]}>
+                  <Image
+                    source={{
+                      uri: item.image || "https://cdn-icons-png.flaticon.com/512/3135/3135715.png"
+                    }}
+                    style={styles.image}
+                    resizeMode="cover"
+                  />
+                </View>
+                
+                {/* Content Container */}
+                <View style={[styles.contentContainer, isTablet && styles.contentContainerTablet]}>
+                  {/* Name - with proper text wrapping */}
+                  <View style={styles.nameContainer}>
+                    <Text 
+                      style={[styles.name, isTablet && styles.nameTablet]} 
+                      numberOfLines={2}
+                      ellipsizeMode="tail"
+                    >
+                      {item.name || item.title || "Unnamed"}
+                    </Text>
+                  </View>
                   
-                  onPress={()=>{navigation.navigate('Partiespage4',{'item':item})}}
-                >
-                  <View style={styles.rectangleLayout}>
-                    
-                    {/* Left Side: Image (40%) */}
-                    <View style={styles.imageContainer}>
-                      <Image
-                        source={{
-                          uri: item.image || "https://cdn-icons-png.flaticon.com/512/3135/3135715.png"
+                  {/* Spacer to push buttons to bottom */}
+                  <View style={styles.spacer} />
+                  
+                  {/* Buttons Row */}
+                  <View style={[styles.buttonsRow, isTablet && styles.buttonsRowTablet]}>
+                    {item.phoneNumber && (
+                      <TouchableOpacity
+                        style={[styles.callButton, isTablet && styles.callButtonTablet]}
+                        activeOpacity={0.7}
+                        onPress={(e) => {
+                          e.stopPropagation(); // Prevent navigation when pressing call
+                          handleCall(item.phoneNumber);
                         }}
-                        style={styles.image}
-                        resizeMode="cover"
-                      />
-                    </View>
-                    <View style={styles.contentContainer}>
-                      
-    
-                      <View style={styles.nameContainer}>
-                        <Text style={styles.name} numberOfLines={2}>
-                          {item.name || item.title}
+                      >
+                        <Ionicons name="call" size={isTablet ? 18 : 16} color="#fff" />
+                        <Text style={[styles.callButtonText, isTablet && styles.callButtonTextTablet]}>
+                          Call
                         </Text>
-                      </View>
-                      {item.location && (
-                        <View style={styles.addressContainer}>
-                          <Ionicons 
-                            name="location-outline" 
-                            size={isTablet ? 18 : 14} 
-                            color="#666" 
-                            style={styles.addressIcon}
-                          />
-                          <Text style={styles.addressText} numberOfLines={2}>
-                            {item.location}
-                          </Text>
-                        </View>
-                      )}
+                      </TouchableOpacity>
+                    )}
                     
-                      <View style={styles.buttonsRow}>
-                        {item.phoneNumber && (
-                          <TouchableOpacity
-                            style={styles.callButton}
-                            activeOpacity={0.7}
-                            onPress={() => handleCall(item.phoneNumber)}
-                          >
-                            <Ionicons name="call" size={isTablet ? 20 : 16} color="#fff" />
-                            <Text style={styles.callButtonText}>Call</Text>
-                          </TouchableOpacity>
-                        )}
-                        
-                        {item.location && (
-                          <TouchableOpacity
-                            style={styles.directionsButton}
-                            activeOpacity={0.7}
-                            onPress={() => handleLocationPress(item.location)}
-                          >
-                            <Ionicons name="navigate" size={isTablet ? 20 : 16} color="#93210A" />
-                            <Text style={styles.directionsButtonText}>Directions</Text>
-                          </TouchableOpacity>
-                        )}
-                      </View>
-                    </View>
+                    {item.location && (
+                      <TouchableOpacity
+                        style={[styles.directionsButton, isTablet && styles.directionsButtonTablet]}
+                        activeOpacity={0.7}
+                        onPress={(e) => {
+                          e.stopPropagation(); // Prevent navigation when pressing directions
+                          handleLocationPress(item.location);
+                        }}
+                      >
+                        <Ionicons name="navigate" size={isTablet ? 18 : 16} color="#8B0000" />
+                        <Text style={[styles.directionsButtonText, isTablet && styles.directionsButtonTextTablet]}>
+                          Directions
+                        </Text>
+                      </TouchableOpacity>
+                    )}
                   </View>
                 </View>
-                </TouchableOpacity>
-              ))}
-            </View>
-          )}
-        </ScrollView>
+              </View>
+            </TouchableOpacity>
+          ))}
+        </View>
+      </ScrollView>
+    );
+  };
+
+  return (
+    <SafeAreaView style={styles.safe}>
+      <StatusBar backgroundColor="#8B0000" barStyle="light-content" />
+      <View style={styles.container}>
+        {renderHeader()}
+        {renderContent()}
       </View>
     </SafeAreaView>
   );
@@ -219,237 +257,297 @@ const PartiesPage3 = () => {
 export default PartiesPage3;
 
 const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-    backgroundColor: "#93210A",
+  safe: { 
+    flex: 1, 
+    backgroundColor: "#8B0000",
   },
   container: {
     flex: 1,
-    backgroundColor: "#F8F9FA",
+    backgroundColor: "#FFFFFF",
   },
+
+  // Header
+  header: {
+    backgroundColor: "#8B0000",
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 16,
+    paddingTop: Platform.OS === "ios" ? 10 : 40,
+    paddingBottom: 12,
+  },
+  headerTablet: {
+    paddingHorizontal: 32,
+    paddingTop: Platform.OS === "ios" ? 15 : 45,
+    paddingBottom: 15,
+  },
+  backButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: "rgba(255,255,255,0.15)",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  backButtonTablet: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+  },
+  headerTitleWrap: {
+    flex: 1,
+    alignItems: "center",
+    paddingHorizontal: 10,
+  },
+  headerTitle: {
+    color: "#fff",
+    fontSize: 18,
+    fontWeight: "900",
+    marginRight: 40,
+    textAlign: "center",
+  },
+  headerTitleTablet: {
+    fontSize: 24,
+  },
+  headerSpacer: {
+    width: 40,
+  },
+  headerSpacerTablet: {
+    width: 50,
+  },
+
+  // Center States
   centerContainer: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#F8F9FA",
     padding: 20,
+    backgroundColor: "#FFFFFF",
+  },
+  centerContainerTablet: {
+    padding: 40,
   },
   loadingText: {
-    marginTop: 20,
+    marginTop: 12,
+    color: "#8B0000",
     fontSize: 16,
-    color: "#666",
-    fontFamily: Platform.OS === "ios" ? "System" : "Roboto",
+    fontWeight: "700",
+  },
+  loadingTextTablet: {
+    fontSize: 18,
+    marginTop: 16,
   },
   errorText: {
-    marginTop: 20,
+    marginTop: 14,
+    color: "#8B0000",
     fontSize: 16,
-    color: "#93210A",
     textAlign: "center",
-    fontFamily: Platform.OS === "ios" ? "System" : "Roboto",
-    marginBottom: 20,
+    fontWeight: "700",
+    lineHeight: 22,
+    paddingHorizontal: 20,
+  },
+  errorTextTablet: {
+    fontSize: 18,
+    lineHeight: 26,
+    marginTop: 20,
+    maxWidth: 500,
+  },
+  emptyText: {
+    marginTop: 12,
+    color: "#777",
+    fontSize: 16,
+    fontWeight: "600",
+  },
+  emptyTextTablet: {
+    fontSize: 18,
+    marginTop: 16,
   },
   retryButton: {
-    backgroundColor: "#93210A",
-    paddingHorizontal: 30,
+    marginTop: 20,
+    backgroundColor: "#8B0000",
+    paddingHorizontal: 24,
     paddingVertical: 12,
-    borderRadius: 25,
-    marginTop: 10,
+    borderRadius: 8,
+    elevation: 3,
+  },
+  retryButtonTablet: {
+    paddingHorizontal: 32,
+    paddingVertical: 16,
+    borderRadius: 10,
+    marginTop: 24,
   },
   retryButtonText: {
     color: "#fff",
-    fontSize: 16,
-    fontWeight: "600",
-    fontFamily: Platform.OS === "ios" ? "System" : "Roboto",
-  },
-  header: {
-    backgroundColor: "#93210A",
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingHorizontal: 16,
-    paddingTop: Platform.OS === "ios" ? 10 : 35,
-    paddingBottom: 20,
-    ...Platform.select({
-      ios: {
-        shadowColor: "#000",
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.25,
-        shadowRadius: 3.84,
-      },
-      android: {
-        elevation: 5,
-      },
-    }),
-  },
-  backButton: {
-    padding: 8,
-    borderRadius: 20,
-    backgroundColor: "rgba(255, 255, 255, 0.2)",
-  },
-  headerTitleContainer: {
-    flex: 1,
-    alignItems: "center",
-  },
-  headerTitle: {
-    fontSize: isTablet ? 26 : 20,
     fontWeight: "800",
-    color: "#FFFFFF",
-    fontFamily: Platform.OS === "ios" ? "System" : "Roboto",
-    textAlign: "center",
+    fontSize: 15,
   },
+  retryButtonTextTablet: {
+    fontSize: 17,
+  },
+
+  // Scroll View
   scrollView: {
     flex: 1,
   },
   scrollViewContent: {
     flexGrow: 1,
+    paddingBottom: 20,
+  },
+  scrollViewContentTablet: {
     paddingBottom: 30,
   },
-  emptyContainer: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    minHeight: height * 0.6,
-  },
-  emptyText: {
-    fontSize: 18,
-    color: "#666",
-    marginTop: 20,
-    fontFamily: Platform.OS === "ios" ? "System" : "Roboto",
-  },
+
+  // List Container
   listContainer: {
-    padding: 16,
+    paddingHorizontal: 16,
+    paddingTop: 20,
   },
-  card: {
-    backgroundColor: "#FFFFFF",
-    borderRadius: 16,
+  listContainerTablet: {
+    paddingHorizontal: 32,
+    paddingTop: 30,
+  },
+
+  // Card Wrapper
+  cardWrapper: {
     marginBottom: 16,
-    overflow: "hidden",
-    minHeight: 140,
-    ...Platform.select({
-      ios: {
-        shadowColor: "#000",
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
-        shadowRadius: 8,
-      },
-      android: {
-        elevation: 4,
-      },
-    }),
+  },
+  cardWrapperTablet: {
+    marginBottom: 20,
+  },
+
+  // Card
+  card: {
+    backgroundColor: "#fff",
+    borderRadius: 16,
+    flexDirection: "row",
+    padding: 12,
+    elevation: 4,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.1,
+    shadowRadius: 6,
+    borderWidth: 1,
+    borderColor: "rgba(139, 0, 0, 0.1)",
   },
   cardTablet: {
-    borderRadius: 20,
-    marginBottom: 20,
-    minHeight: 180,
+    borderRadius: 18,
+    padding: 16,
+    elevation: 6,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
   },
-  cardSmall: {
-    marginHorizontal: 4,
-    minHeight: 120,
-  },
-  lastCard: {
-    marginBottom: 10,
-  },
-  // Rectangle Layout: 40% image, 60% content
-  rectangleLayout: {
-    flexDirection: "row",
-    height: isTablet ? 180 : 140,
-  },
-  // Left side: Image (40%)
+
+  // Square Image Box
   imageContainer: {
-    width: "40%",
-    height: "100%",
+    borderRadius: 12,
+    overflow: "hidden",
+    backgroundColor: "#f5f5f5",
+    marginRight: 12,
   },
   image: {
     width: "100%",
     height: "100%",
   },
-  // Right side: Content (60%)
+
+  // Content Container
   contentContainer: {
-    width: "60%",
-    padding: isTablet ? 20 : 16,
+    flex: 1,
     justifyContent: "space-between",
+    paddingVertical: 2,
   },
-  // Line 1: Name
+  contentContainerTablet: {
+    paddingVertical: 4,
+  },
+
+  // Name Container
   nameContainer: {
-    marginBottom: 8,
+    marginBottom: 6,
   },
   name: {
-    fontSize: isTablet ? 20 : 16,
-    fontWeight: "700",
-    color: "#1F2937",
-    fontFamily: Platform.OS === "ios" ? "System" : "Roboto",
-    lineHeight: isTablet ? 24 : 20,
+    fontSize: 15,
+    fontWeight: "800",
+    color: "#8B0000",
+    lineHeight: 20,
+     marginTop: 8,
+
   },
-  // Line 2: Buttons (Call & Directions)
+  nameTablet: {
+    fontSize: 23,
+    fontWeight: "900",
+    lineHeight: 22,
+    marginTop: 12,
+  },
+
+  // Spacer
+  spacer: {
+    flex: 1,
+  },
+
+  // Buttons Row
   buttonsRow: {
     flexDirection: "row",
-    marginBottom: 12,
     gap: 8,
+    marginTop: 'auto',
   },
+  buttonsRowTablet: {
+    gap: 12,
+  },
+
+  // Call Button
   callButton: {
     flex: 1,
     flexDirection: "row",
-    backgroundColor: "#93210A",
-    paddingVertical: isTablet ? 10 : 8,
+    backgroundColor: "#8B0000",
+    paddingVertical: 10,
+    paddingHorizontal: 12,
     borderRadius: 8,
     justifyContent: "center",
     alignItems: "center",
     gap: 6,
-    minHeight: isTablet ? 40 : 36,
+    minHeight: 35,
+  },
+  callButtonTablet: {
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    minHeight: 44,
+    borderRadius: 10,
   },
   callButtonText: {
     color: "#fff",
-    fontSize: isTablet ? 14 : 12,
-    fontWeight: "600",
-    fontFamily: Platform.OS === "ios" ? "System" : "Roboto",
+    fontSize: 12,
+    fontWeight: "800",
   },
+  callButtonTextTablet: {
+    fontSize: 16,
+  },
+
+  // Directions Button
   directionsButton: {
     flex: 1,
     flexDirection: "row",
-    backgroundColor: "#FFF5F2",
+    backgroundColor: "rgba(139, 0, 0, 0.05)",
     borderWidth: 1,
-    borderColor: "#93210A",
-    paddingVertical: isTablet ? 10 : 8,
+    borderColor: "#8B0000",
+    paddingVertical: 10,
+    paddingHorizontal: 12,
     borderRadius: 8,
     justifyContent: "center",
     alignItems: "center",
     gap: 6,
-    minHeight: isTablet ? 40 : 36,
+    minHeight: 35,
+  },
+  directionsButtonTablet: {
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    minHeight: 44,
+    borderRadius: 10,
   },
   directionsButtonText: {
-    color: "#93210A",
-    fontSize: isTablet ? 14 : 12,
-    fontWeight: "600",
-    fontFamily: Platform.OS === "ios" ? "System" : "Roboto",
+    color: "#8B0000",
+    fontSize: 12,
+    fontWeight: "800",
   },
-  // Line 3: Address/Location
-  addressContainer: {
-    flexDirection: "row",
-    alignItems: "flex-start",
-    marginBottom: 8,
-  },
-  addressIcon: {
-    marginTop: 2,
-    marginRight: 8,
-  },
-  addressText: {
-    flex: 1,
-    fontSize: isTablet ? 14 : 12,
-    color: "#4B5563",
-    fontFamily: Platform.OS === "ios" ? "System" : "Roboto",
-    lineHeight: isTablet ? 18 : 16,
-  },
-  // Phone Number (extra line if needed)
-  phoneContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  phoneIcon: {
-    marginRight: 8,
-  },
-  phoneText: {
-    fontSize: isTablet ? 14 : 12,
-    color: "#4B5563",
-    fontFamily: Platform.OS === "ios" ? "System" : "Roboto",
+  directionsButtonTextTablet: {
+    fontSize: 16,
   },
 });

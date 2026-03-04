@@ -62,7 +62,7 @@ export default function DistrictBusinessPage2({ route, navigation }) {
   const fetchAdvertisement = async () => {
     try {
       const url = `https://hdrss-backend.onrender.com/api/district-business-ads/filter?districtId=${districtId}&pageLevel=3&entityId=${businessId}`;
-      console.log("🔍 FETCHING DISTRICT ADVERTISEMENT for Page 2 =", url);
+
 
       const res = await axios.get(url);
 
@@ -74,21 +74,21 @@ export default function DistrictBusinessPage2({ route, navigation }) {
           
           if (validImages.length > 0) {
             setAdvertisementImages(validImages);
-            console.log("✅ District advertisement images loaded for Page 2:", validImages.length);
+            
           } else {
             // If no valid images, show 2 default images
             setAdvertisementImages(getDefaultAdImages());
-            console.log("⚠️ No valid advertisement images found, showing 2 default images");
+         
           }
         } else {
           // If no adImages array or empty array, show 2 default images
           setAdvertisementImages(getDefaultAdImages());
-          console.log("⚠️ No advertisement images array found, showing 2 default images");
+          
         }
       } else {
         // If no data or empty array in response, show 2 default images
         setAdvertisementImages(getDefaultAdImages());
-        console.log("⚠️ No advertisement data found for this entity on Page 2, showing 2 default images");
+    
       }
     } catch (err) {
       console.log("❌ Error fetching advertisement for Page 2:", err);
@@ -101,7 +101,7 @@ export default function DistrictBusinessPage2({ route, navigation }) {
 
   // Handle image load error
   const handleImageError = (index) => {
-    console.log(`❌ Image ${index} failed to load, switching to default`);
+  
     setImageErrors(prev => ({ ...prev, [index]: true }));
     
     // Replace the failed image with a default image
