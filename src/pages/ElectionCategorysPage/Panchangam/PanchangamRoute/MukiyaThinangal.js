@@ -15,6 +15,7 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import axios from "axios";
+import Loader from "../../../../components/Alert/Loader";
 
 const API_URL = "https://hdrss-backend.onrender.com/api/v1/panchangam/mukiyathinam";
 
@@ -289,15 +290,8 @@ export default function MukiyaThinangal({ navigation }) {
 
   if (loading) {
     return (
-      <SafeAreaView style={styles.safeArea}>
-        <StatusBar barStyle="light-content" backgroundColor={COLORS.headerBg} />
-        <View style={[styles.centerContainer, { backgroundColor: COLORS.lightBg }]}>
-          <ActivityIndicator size="large" color={COLORS.primary} />
-          <Text style={[styles.loadingText, { fontSize: 16 }]}>
-            முக்கிய தினங்கள் ஏற்றப்படுகிறது...
-          </Text>
-        </View>
-      </SafeAreaView>
+
+     <Loader/>
     );
   }
 
@@ -306,26 +300,15 @@ export default function MukiyaThinangal({ navigation }) {
       <StatusBar barStyle="light-content" backgroundColor={COLORS.headerBg} />
       
       {/* Header with Centered Title */}
-      <View style={[
-        styles.header,
-        {
-          paddingTop: responsive.headerPadding,
-          paddingHorizontal: responsive.contentPadding,
-          backgroundColor: COLORS.headerBg,
-        }
-      ]}>
-        <TouchableOpacity
-          onPress={() => navigation?.goBack()}
-          style={[styles.headerIconBtn, { width: responsive.iconBtnSize, height: responsive.iconBtnSize }]}
-        >
-          <Ionicons 
-            name="arrow-back" 
-            size={responsive.headerIconSize} 
-            color={COLORS.white} 
-          />
-        </TouchableOpacity>
+     <View style={[styles.header, isTablet && styles.headerTablet]}>
+       <TouchableOpacity
+        style={[styles.backButton, isTablet && styles.backButtonTablet]}
+        onPress={() => navigation.goBack()}
+      >
+        <Ionicons name="chevron-back" size={isTablet ? 30 : 26} color="#fff" />
+      </TouchableOpacity>
         
-        <Text style={[styles.headerTitle, { fontSize: responsive.headerTitleSize }]}>
+      <Text style={[styles.headerTitle, isTablet && styles.headerTitleTablet]}>
           முக்கிய தினங்கள்
         </Text>
         
@@ -532,17 +515,20 @@ const styles = StyleSheet.create({
   },
 
   // Header
-  header: {
+  header:{
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "space-between",
-    paddingBottom: 16,
-    
-    elevation: 6,
-    shadowColor: COLORS.shadow,
-    shadowOpacity: 0.12,
-    shadowRadius: 10,
-    shadowOffset: { width: 0, height: 4 },
+    backgroundColor: "#93210A",
+    paddingTop:40,
+    paddingBottom:30,
+    borderBottomLeftRadius: 20,
+    borderBottomRightRadius: 20,
+  },
+
+  headerTablet:{
+  paddingTop:45,
+    paddingBottom:28,
+    paddingHorizontal: 18,
   },
   headerIconBtn: {
     borderRadius: 22,
@@ -551,10 +537,30 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(255,255,255,0.2)",
   },
   headerTitle: {
-    color: COLORS.white,
-    fontWeight: "900",
-    letterSpacing: 0.5,
+    flex: 1,
     textAlign: "center",
+    color: "#fff",
+    fontSize: 19,
+    fontWeight: "800",
+    letterSpacing: 0.3,
+  },
+  headerTitleTablet: {
+    fontSize: 22,
+  },
+
+  backButton:{
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: "rgba(255,255,255,0.15)",
+    alignItems: "center",
+    justifyContent: "center",
+    marginLeft:15,
+  },
+  backButtonTablet:{
+    width: 50,
+    height: 50,
+    borderRadius: 25,
   },
 
   // Month Card

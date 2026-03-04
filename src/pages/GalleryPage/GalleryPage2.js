@@ -160,49 +160,50 @@ const styles = StyleSheet.create({
 
   // Header - Mobile
   header: {
-    backgroundColor: "#93210A",
-    paddingTop: Platform.OS === 'ios' ? 50 : 40,
-    paddingBottom: 20,
-    paddingHorizontal: 16,
-    flexDirection: "row",
+   flexDirection: "row",
     alignItems: "center",
-    justifyContent: "space-between",
-    elevation: 4,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
+    backgroundColor: "#93210A",
+    paddingTop:40,
+    paddingBottom:30,
+    borderBottomLeftRadius: 20,
+    borderBottomRightRadius: 20,
   },
   // Header - Tablet
-  headerTablet: {
-    paddingTop: Platform.OS === 'ios' ? 60 : 50,
-    paddingBottom: 25,
-    paddingHorizontal: 30,
+   headerTablet: {
+   paddingTop:45,
+    paddingBottom:28,
+    paddingHorizontal: 18
   },
 
   // Back Button - Mobile
-  backButton: {
-    padding: 8,
+  backButton:{
+    width: 40,
+    height: 40,
     borderRadius: 20,
-    backgroundColor: "rgba(255,255,255,0.2)",
+    backgroundColor: "rgba(255,255,255,0.15)",
+    alignItems: "center",
+    justifyContent: "center",
+    marginLeft:15,
   },
-  // Back Button - Tablet
-  backButtonTablet: {
-    padding: 10,
+  backButtonTablet:{
+    width: 50,
+    height: 50,
     borderRadius: 25,
   },
 
   // Title - Mobile
   title: {
-    flex: 1,
+     flex: 1,
     textAlign: "center",
-    fontSize: 22,
-    fontWeight: "bold",
-    color: "white",
+    color: "#fff",
+    fontSize: 20,
+    fontWeight: "800",
+    letterSpacing: 0.3,
+    marginRight:30,
   },
   // Title - Tablet
   titleTablet: {
-    fontSize: isLargeTablet ? 28 : 26,
+    fontSize: isLargeTablet ? 28 : 24,
   },
 
   // Section - Mobile
@@ -251,7 +252,7 @@ readMoreTextTablet: {
   // Main Image - Tablet
   mainImageTablet: {
     width: "95%",
-    height: isLargeTablet ? 280 : 260,
+    height: isLargeTablet ? 280 : 350,
     marginTop: 25,
     borderRadius: 16,
   },

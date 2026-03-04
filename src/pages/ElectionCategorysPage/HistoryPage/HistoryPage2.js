@@ -8,10 +8,13 @@ import {
   StyleSheet,
   ActivityIndicator,
   useWindowDimensions,
+  SafeAreaView,
+  StatusBar,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { fetchHistoryByTypeId } from "../../../Controller/HistoryController/HistoryController";
+import Loader from "../../../components/Alert/Loader";
 
 export default function HistoryPage2() {
   const navigation = useNavigation();
@@ -21,82 +24,97 @@ export default function HistoryPage2() {
   const { width } = useWindowDimensions();
   const isTablet = width >= 600;
 
+  // columns: mobile = 2, tablet = 3
   const numColumns = isTablet ? 3 : 2;
-  const cardWidth = (width - (numColumns + 1) * 16) / numColumns;
 
   const [historyItems, setHistoryItems] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const load = async () => {
-      const data = await fetchHistoryByTypeId(id);
-      setHistoryItems(data);
-      setLoading(false);
+      try {
+        const data = await fetchHistoryByTypeId(id);
+        setHistoryItems(Array.isArray(data) ? data : []);
+      } finally {
+        setLoading(false);
+      }
     };
     load();
   }, [id]);
 
   if (loading) {
     return (
-      <View style={styles.loader}>
-        <ActivityIndicator size="large" color="#93210A" />
-      </View>
+      <Loader/>
     );
   }
 
   const renderItem = ({ item }) => (
     <TouchableOpacity
-      style={[styles.card, { width: cardWidth }]}
+      activeOpacity={0.85}
+      style={[styles.card, isTablet && styles.cardTablet]}
       onPress={() => navigation.navigate("HistoryPage3", { data: item })}
     >
-      <Image source={{ uri: item.bannerImage }} style={styles.image} />
-      <Text style={[styles.title, isTablet && styles.titleTablet]}>
+      <View style={styles.imageWrap}>
+        <Image source={{ uri: item.bannerImage }} style={styles.image} />
+      </View>
+
+      <Text style={[styles.title, isTablet && styles.titleTablet]} numberOfLines={2}>
         {item.title}
       </Text>
-      <Text style={[styles.phone, isTablet && styles.phoneTablet]}>
-        {item.phone}
-      </Text>
+
+      {/* if you really want phone show, keep it. otherwise remove */}
+      {!!item.phone && (
+        <Text style={[styles.phone, isTablet && styles.phoneTablet]} numberOfLines={1}>
+          {item.phone}
+        </Text>
+      )}
+
+      <View style={styles.arrowCircle}>
+        <Ionicons name="chevron-forward" size={16} color="#fff" />
+      </View>
     </TouchableOpacity>
   );
 
   return (
-    <View style={styles.container}>
-      {/* 🔴 HEADER */}
-      <View style={[styles.header, isTablet && styles.headerTablet]}>
-        <TouchableOpacity
-          onPress={() => navigation.goBack()}
-          style={styles.backButton}
-        >
-          <Ionicons
-            name="chevron-back"
-            size={isTablet ? 30 : 26}
-            color="white"
-          />
-        </TouchableOpacity>
+    <SafeAreaView style={styles.safe}>
+      <StatusBar barStyle="light-content" backgroundColor="#93210A" />
 
-        <Text style={[styles.headerTitle, isTablet && styles.headerTitleTablet]}>
+      {/* HEADER (Back left, Title center) */}
+      <View style={[styles.header, isTablet && styles.headerTablet]}>
+       <TouchableOpacity
+        style={[styles.backButton, isTablet && styles.backButtonTablet]}
+        onPress={() => navigation.goBack()}
+      >
+        <Ionicons name="chevron-back" size={isTablet ? 30 : 26} color="#fff" />
+      </TouchableOpacity>
+
+        <Text style={[styles.headerTitle, isTablet && styles.headerTitleTablet]} numberOfLines={1}>
           {name}
         </Text>
+
+        {/* spacer to keep title centered */}
+        <View style={styles.headerSide} />
       </View>
 
-      {/* 🔹 LIST */}
+      {/* GRID LIST */}
       <FlatList
         data={historyItems}
         renderItem={renderItem}
-        keyExtractor={(item) => item.id.toString()}
+        keyExtractor={(item, idx) => String(item?.id ?? idx)}
         numColumns={numColumns}
-        key={numColumns} // 🔑 important when switching layout
+        key={numColumns}
         contentContainerStyle={styles.listContainer}
+        columnWrapperStyle={numColumns > 1 ? styles.row : null}
         showsVerticalScrollIndicator={false}
       />
-    </View>
+    </SafeAreaView>
   );
 }
 
 /* ================= STYLES ================= */
 
 const styles = StyleSheet.create({
-  container: {
+  safe: {
     flex: 1,
     backgroundColor: "#fff",
   },
@@ -105,87 +123,134 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
+    backgroundColor: "#fff",
   },
 
-  /* 🔴 HEADER */
+  /* HEADER */
   header: {
     flexDirection: "row",
     alignItems: "center",
     backgroundColor: "#93210A",
-    paddingVertical: 14,
-    paddingHorizontal: 15,
-    marginTop: 32,
+    paddingTop:40,
+    paddingBottom:30,
+    borderBottomLeftRadius: 20,
+    borderBottomRightRadius: 20,
   },
-
   headerTablet: {
-    paddingVertical: 35,
-    paddingHorizontal: 25,
-    marginTop:-3,
+    paddingTop:60,
+    paddingBottom:30,
+    paddingHorizontal: 18,
   },
-
-  backButton: {
-    marginRight: 10,
+  headerSide: {
+    width: 44,
+    justifyContent: "center",
+    alignItems: "flex-start",
   },
-
-   headerTitle: {
+  headerTitle: {
+    flex: 1,
+    textAlign: "center",
     color: "#fff",
-    fontWeight: "700",
-    fontSize: 20, marginLeft: 18,
-    padding:8,
-   
-
+    fontSize: 17,
+    fontWeight: "800",
+    letterSpacing: 0.3,
   },
-
   headerTitleTablet: {
-    fontSize: 28,
-    padding:8,
-    left:125,
+    fontSize: 22,
   },
 
-  /* 🔹 LIST */
+   backButton:{
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: "rgba(255,255,255,0.15)",
+    alignItems: "center",
+    justifyContent: "center",
+    marginLeft:15,
+  },
+  backButtonTablet:{
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+  },
+  /* LIST */
   listContainer: {
-    padding: 10,
+    padding: 12,
+    paddingBottom: 28,
   },
 
+  row: {
+    justifyContent: "space-between",
+  },
+
+  /* CARD */
   card: {
+    width: "48%",
     backgroundColor: "#fff",
-    borderRadius: 15,
-    margin: 8,
-    paddingBottom: 10,
+    borderRadius: 16,
+    padding: 10,
+    marginBottom: 14,
+    elevation: 4,
+
     shadowColor: "#000",
-    shadowOpacity: 0.2,
-    shadowRadius: 3,
-    elevation: 3,
+    shadowOpacity: 0.08,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 5 },
+    overflow: "hidden",
+  },
+
+  cardTablet: {
+    width: "31.5%",
+    padding: 12,
+    borderRadius: 18,
+  },
+
+  imageWrap: {
+    width: "100%",
+    aspectRatio: 1.15,
+    borderRadius: 14,
+    overflow: "hidden",
+    backgroundColor: "#f3f3f3",
   },
 
   image: {
     width: "100%",
-    height: 120,
-    borderTopLeftRadius: 15,
-    borderTopRightRadius: 15,
+    height: "100%",
   },
 
   title: {
-    fontSize: 15,
-    fontWeight: "bold",
-    color: "#333",
-    marginTop: 8,
-    textAlign: "center",
+    marginTop: 10,
+    fontSize: 13.5,
+    fontWeight: "800",
+    color: "#111",
+    lineHeight: 18,
+    paddingRight: 30,
   },
-
   titleTablet: {
-    fontSize:15,
-    bottom:-32,
+    fontSize: 16, 
+    lineHeight: 22,
   },
 
   phone: {
-    fontSize: 13,
-    color: "#555",
-    textAlign: "center",
-    marginTop: 2,
+    marginTop: 4,
+    fontSize: 12.5,
+    fontWeight: "600",
+    color: "#666",
+    paddingRight: 30,
+  },
+  phoneTablet: {
+    fontSize: 14,
   },
 
-  phoneTablet: {
-    fontSize: 15,
+  /* Arrow badge */
+  arrowCircle: {
+    position: "absolute",
+    right: 10,
+    bottom: 10,
+    width: 20,
+    height: 20,
+    borderRadius: 13,
+    backgroundColor: "#93210A",
+    alignItems: "center",
+    justifyContent: "center",
   },
 });

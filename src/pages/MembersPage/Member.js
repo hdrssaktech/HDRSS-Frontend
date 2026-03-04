@@ -13,6 +13,7 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { getMembers } from "../../api/api";
+import Loader from "../../components/Alert/Loader";
 
 
 const numColumns = 2;
@@ -61,7 +62,6 @@ useEffect(() => {
         style={styles.image}
       />
       <Text style={styles.name}>{item.name}</Text>
-      <Text style={styles.detail}>ID: {item.uniqueId}</Text>
       <Text style={styles.category}>{item.categoryType}</Text>
     </View>
   );
@@ -80,11 +80,7 @@ useEffect(() => {
 
       <ScrollView contentContainerStyle={{ paddingBottom: 30 }}>
         {loading ? (
-          <ActivityIndicator
-            size="large"
-            color="#93210A"
-            style={{ marginTop: 20 }}
-          />
+          <Loader/>
         ) : (
           <FlatList
             data={members}

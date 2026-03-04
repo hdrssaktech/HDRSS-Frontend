@@ -57,14 +57,14 @@ export default function NewsPage2({ navigation, route }) {
           {news.type || "News"}
         </Text>
 
-        <View style={styles.headerIcons}>
+        {/* <View style={styles.headerIcons}>
           <TouchableOpacity style={styles.iconBtn}>
             <Ionicons name="bookmark-outline" size={22} color="#fff" />
           </TouchableOpacity>
           <TouchableOpacity style={styles.iconBtn}>
             <Ionicons name="share-social-outline" size={22} color="#fff" />
           </TouchableOpacity>
-        </View>
+        </View> */}
       </View>
 
       {/* 🔹 Content */}
@@ -146,15 +146,18 @@ const getStyles = (isTablet, screenWidth) =>
       paddingTop: 40,
       backgroundColor: "#93210A",
       elevation: 4,
-      
+      borderBottomLeftRadius: 20,
+      borderBottomRightRadius: 20,
     },
 
     headerTitle: {
       color: "#fff",
       fontWeight: "bold",
-      fontSize: isTablet ? 26 : 20,
-      marginLeft: 20,
-     left: isTablet ? 200 : 55,
+      fontSize: isTablet ? 26 :18,
+      // textAlign:center,
+      margin:'auto'
+      // marginLeft: 10,
+      // left: isTablet ? 200 : 55,
     },
 
     headerIcons: {

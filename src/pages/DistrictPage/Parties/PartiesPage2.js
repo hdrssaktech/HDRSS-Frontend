@@ -6,20 +6,22 @@ import {
   Image,
   TouchableOpacity,
   FlatList,
-  Dimensions,
   Platform,
   SafeAreaView,
   StatusBar,
-  ActivityIndicator,
   useWindowDimensions,
 } from "react-native";
 import { useRoute, useNavigation } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
+import Loader from "../../../components/Alert/Loader";
+
+// Local Tamil Nadu image
+const tamilNaduImage = require("../../../../assets/Election/governmentlogo.jpeg"); // Update this path to your actual Tamil Nadu image
 
 const PartiesPage2 = () => {
   const route = useRoute();
   const navigation = useNavigation();
-  const { partyId, partyName } = route.params || {};
+  const { partyId, partyName } = route.params || {}; 
   
   const { width, height } = useWindowDimensions();
   
@@ -27,17 +29,17 @@ const PartiesPage2 = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // ✅ Tablet check with proper dimensions
+  // Tablet check with proper dimensions
   const isTablet = useMemo(() => {
     return width >= 600 || (width > height && width >= 600);
   }, [width, height]);
 
-  // ✅ Mobile: 1 column | Tablet: 2 columns
-  const numColumns = useMemo(() => (isTablet ? 2 : 1), [isTablet]);
+  // Mobile: 1 column | Tablet: 2 columns
+  const numColumns = useMemo(() => (isTablet ? 3 : 2), [isTablet]);
 
-  // ✅ Dynamic card width with better spacing
+  // Dynamic card width with better spacing
   const cardWidth = useMemo(() => {
-    if (numColumns === 1) return width - 32; // Mobile: full width minus padding
+    if (numColumns === 1) return width - 32;
     const horizontalPadding = isTablet ? 32 : 16;
     const spacing = isTablet ? 20 : 16;
     const totalSpacing = (numColumns - 1) * spacing;
@@ -121,31 +123,19 @@ const PartiesPage2 = () => {
         }
       >
         <View style={styles.cardContent}>
-          {/* Old Icon Design - Party/People Icon */}
-          <View style={[styles.oldIconContainer, isTablet && styles.oldIconContainerTablet]}>
-            <Ionicons 
-              name="people" 
-              size={isTablet ? 36 : 30} 
-              color="#8B0000" 
+          {/* Tamil Nadu Image at Top - Like your image */}
+          <View style={styles.imageSection}>
+            <Image
+              source={tamilNaduImage}
+              style={[styles.tnImage, isTablet && styles.tnImageTablet]}
+              resizeMode="cover"
             />
           </View>
           
-          <View style={styles.textContainer}>
-            <Text 
-              style={[styles.title, isTablet && styles.titleTablet]} 
-              numberOfLines={2}
-            >
-              {item.title}
-            </Text>
-            
-            <View style={styles.arrowContainer}>
-              <Ionicons 
-                name="chevron-forward" 
-                size={isTablet ? 20 : 18} 
-                color="#8B0000" 
-              />
-            </View>
-          </View>
+          {/* State President Name */}
+          <Text style={[styles.presidentName, isTablet && styles.presidentNameTablet]}>
+            {item.title || "State President"}
+          </Text>
         </View>
       </TouchableOpacity>
     );
@@ -153,14 +143,7 @@ const PartiesPage2 = () => {
 
   const renderContent = () => {
     if (loading) {
-      return (
-        <View style={[styles.centerContainer, isTablet && styles.centerContainerTablet]}>
-          <ActivityIndicator size={isTablet ? "large" : "large"} color="#8B0000" />
-          <Text style={[styles.loadingText, isTablet && styles.loadingTextTablet]}>
-            Loading categories...
-          </Text>
-        </View>
-      );
+      return <Loader />;
     }
 
     if (error) {
@@ -176,7 +159,10 @@ const PartiesPage2 = () => {
           </Text>
           <TouchableOpacity 
             style={[styles.retryButton, isTablet && styles.retryButtonTablet]}
-            onPress={() => setLoading(true)}
+            onPress={() => {
+              setError(null);
+              setLoading(true);
+            }}
           >
             <Text style={[styles.retryButtonText, isTablet && styles.retryButtonTextTablet]}>
               Retry
@@ -195,7 +181,7 @@ const PartiesPage2 = () => {
             color="#bbb" 
           />
           <Text style={[styles.emptyText, isTablet && styles.emptyTextTablet]}>
-            No categories found
+            No data found
           </Text>
         </View>
       );
@@ -247,13 +233,22 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     paddingHorizontal: 16,
-    paddingTop: Platform.OS === "ios" ? 10 : 40,
-    paddingBottom: 12,
+    paddingTop: Platform.OS === "ios" ? 50 : 40,
+    paddingBottom: 16,
+    borderBottomLeftRadius: 20,
+    borderBottomRightRadius: 20,
+    elevation: 4,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
   },
   headerTablet: {
     paddingHorizontal: 32,
-    paddingTop: Platform.OS === "ios" ? 15 : 45,
-    paddingBottom: 15,
+    paddingTop: Platform.OS === "ios" ? 60 : 50,
+    paddingBottom: 20,
+    borderBottomLeftRadius: 30,
+    borderBottomRightRadius: 30,
   },
   backButton: {
     width: 40,
@@ -275,12 +270,12 @@ const styles = StyleSheet.create({
   },
   headerTitle: {
     color: "#fff",
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: "900",
-    marginRight: 40,
+    textAlign: "center",
   },
   headerTitleTablet: {
-    fontSize: 24,
+    fontSize: 26,
   },
   headerSpacer: {
     width: 40,
@@ -299,16 +294,6 @@ const styles = StyleSheet.create({
   },
   centerContainerTablet: {
     padding: 40,
-  },
-  loadingText: {
-    marginTop: 12,
-    color: "#8B0000",
-    fontSize: 16,
-    fontWeight: "700",
-  },
-  loadingTextTablet: {
-    fontSize: 18,
-    marginTop: 16,
   },
   errorText: {
     marginTop: 14,
@@ -368,7 +353,7 @@ const styles = StyleSheet.create({
     paddingTop: 30,
   },
 
-  // Card
+  // Card - New design matching your image
   card: {
     backgroundColor: "#fff",
     borderRadius: 16,
@@ -392,49 +377,60 @@ const styles = StyleSheet.create({
   },
 
   cardContent: {
-    flexDirection: "row",
-    alignItems: "center",
     padding: 16,
+    alignItems: "center",
+    position: 'relative',
   },
 
-  // Old Icon Design (Party/People Icon)
-  oldIconContainer: {
-    width: 60,
-    height: 60,
-    borderRadius: 12,
+  // Image Section - Tamil Nadu image
+  imageSection: {
+    marginBottom: 12,
+  },
+
+  tnImage: {
+    width: 80,
+    height: 80,
+  },
+  tnImageTablet: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+  },
+
+  // State President Name
+  presidentName: {
+    fontSize: 15,
+    fontWeight: "bold",
+    color: "#8B0000",
+    marginBottom: 4,
+    textAlign: "center",
+  },
+  presidentNameTablet: {
+    fontSize: 16,
+    lineHeight:21,
+  },
+
+  // Designation
+  designation: {
+    fontSize: 14,
+    color: "#666",
+    textAlign: "center",
+    marginBottom: 8,
+  },
+  designationTablet: {
+    fontSize: 16,
+  },
+
+  // Arrow at bottom right
+  arrowContainer: {
+    position: 'absolute',
+    bottom: 12,
+    right: 16,
+    width: 30,
+    height: 30,
+    borderRadius: 15,
     backgroundColor: "rgba(139, 0, 0, 0.05)",
     justifyContent: "center",
     alignItems: "center",
-    marginRight: 16,
-  },
-  oldIconContainerTablet: {
-    width: 70,
-    height: 70,
-    borderRadius: 14,
-  },
-
-  textContainer: {
-    flex: 1,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-  },
-
-  title: {
-    flex: 1,
-    fontSize: 16,
-    fontWeight: "800",
-    color: "#8B0000",
-    lineHeight: 20,
-    paddingRight: 12,
-  },
-  titleTablet: {
-    fontSize: 17,
-    fontWeight: "900",
-    lineHeight: 22,
-  },
-
-  arrowContainer: {
-    paddingLeft: 4,
   },
 });

@@ -109,6 +109,8 @@ const getStyles = (isTablet) =>
       paddingHorizontal: 16,
       paddingTop: 40,
       backgroundColor: "#93210A",
+      borderBottomLeftRadius: 20,
+      borderBottomRightRadius: 20,
       elevation: 4,
     },
 

@@ -15,6 +15,7 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import axios from "axios";
+import Loader from "../../../components/Alert/Loader";
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get("window");
 const isTablet = screenWidth >= 600;
@@ -263,12 +264,7 @@ export default function DistrictBusinessPage0() {
 
   if (loading) {
     return (
-      <View style={styles.center}>
-        <ActivityIndicator size="large" color="#E37714" />
-        <Text style={[styles.loadingText, isTablet && styles.loadingTextTablet]}>
-          Loading Businesses...
-        </Text>
-      </View>
+    <Loader />
     );
   }
 

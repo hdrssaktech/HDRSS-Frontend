@@ -7,7 +7,6 @@ import {
   TouchableOpacity,
   Linking,
   useWindowDimensions,
-  Dimensions,
   StatusBar,
 } from "react-native";
 import React, { useState } from "react";
@@ -20,17 +19,25 @@ import {
 } from "@expo/vector-icons";
 import YoutubePlayer from "react-native-youtube-iframe";
 
-const { width, height } = Dimensions.get('window');
-const isTablet = width >= 608;
-
 export default function TourismPlaceDetails() {
   const route = useRoute();
   const navigation = useNavigation();
   const { place } = route.params;
-  const { width } = useWindowDimensions();
-  const isMobile = width < 768;
+  const { width, height } = useWindowDimensions();
+  
+  // Responsive breakpoints
+  const isMobile = width < 600;
+  const isTablet = width >= 600 && width < 1024;
+  const isLargeTablet = width >= 1024;
 
   const [showMore, setShowMore] = useState(false);
+
+  // Responsive size helper
+  const responsiveSize = (mobile, tablet, largeTablet) => {
+    if (isLargeTablet) return largeTablet || tablet;
+    if (isTablet) return tablet;
+    return mobile;
+  };
 
   const openPhone = (phone) => Linking.openURL(`tel:${phone}`);
   const openWhatsApp = (whatsapp) =>
@@ -63,30 +70,49 @@ export default function TourismPlaceDetails() {
       <ScrollView 
         style={styles.scrollView} 
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={styles.scrollContent}
+        contentContainerStyle={[
+          styles.scrollContent,
+          { paddingBottom: responsiveSize(30, 40, 50) }
+        ]}
       >
         {/* HEADER */}
-        <View style={styles.header}>
+        <View style={[
+          styles.header,
+          isTablet && styles.headerTablet,
+          isLargeTablet && styles.headerLargeTablet
+        ]}>
           <TouchableOpacity 
             onPress={() => navigation.goBack()} 
-            style={styles.backButton}
+            style={[
+              styles.backButton,
+              isTablet && styles.backButtonTablet
+            ]}
           >
             <Ionicons 
               name="chevron-back" 
-              size={isTablet ? 32 : 28} 
+              size={responsiveSize(24, 28, 32)} 
               color="#fff" 
             />
           </TouchableOpacity>
 
-          <Text style={styles.headerTitle} numberOfLines={1}>
+          <Text style={[
+            styles.headerTitle,
+            isTablet && styles.headerTitleTablet
+          ]} numberOfLines={1}>
             {place.title}
           </Text>
 
-          <View style={styles.headerRightPlaceholder} />
+          <View style={[
+            styles.headerRightPlaceholder,
+            isTablet && styles.headerRightPlaceholderTablet
+          ]} />
         </View>
 
         {/* HERO IMAGE */}
-        <View style={styles.imageContainer}>
+        <View style={[
+          styles.imageContainer,
+          { height: responsiveSize(250, 300, 350) }
+        ]}>
           <Image
             source={{
               uri: place.image
@@ -100,42 +126,116 @@ export default function TourismPlaceDetails() {
           <View style={styles.imageOverlay} />
 
           {place.category && (
-            <View style={styles.categoryBadge}>
-              <Text style={styles.categoryText}>{place.category}</Text>
+            <View style={[
+              styles.categoryBadge,
+              { 
+                top: responsiveSize(12, 15, 18),
+                right: responsiveSize(12, 15, 18),
+                paddingHorizontal: responsiveSize(10, 14, 18),
+                paddingVertical: responsiveSize(5, 7, 9),
+              }
+            ]}>
+              <Text style={[
+                styles.categoryText,
+                { fontSize: responsiveSize(11, 13, 15) }
+              ]}>
+                {place.category}
+              </Text>
             </View>
           )}
         </View>
 
         {/* CONTENT CARD */}
-        <View style={[styles.contentCard, isTablet && styles.contentCardTablet]}>
+        <View style={[
+          styles.contentCard,
+          { 
+            margin: responsiveSize(12, 18, 24),
+            marginTop: responsiveSize(-25, -35, -45),
+            padding: responsiveSize(16, 22, 28),
+            borderRadius: responsiveSize(18, 22, 26)
+          }
+        ]}>
           {/* TITLE */}
-          <Text style={[styles.placeTitle, isTablet && styles.placeTitleTablet]}>
+          <Text style={[
+            styles.placeTitle,
+            { 
+              fontSize: responsiveSize(22, 28, 32),
+              marginBottom: responsiveSize(18, 24, 30),
+              lineHeight: responsiveSize(28, 36, 42)
+            }
+          ]}>
             {place.title}
           </Text>
 
           {/* QUICK CONTACT ICONS */}
           {(hasPhone || hasWhatsApp || hasLocation) && (
-            <View style={styles.contactSection}>
-              <Text style={[styles.sectionTitle, isTablet && styles.sectionTitleTablet]}>
+            <View style={[
+              styles.contactSection,
+              { marginBottom: responsiveSize(22, 28, 34) }
+            ]}>
+              <Text style={[
+                styles.sectionTitle,
+                { 
+                  fontSize: responsiveSize(18, 21, 24),
+                  marginBottom: responsiveSize(12, 16, 20),
+                  paddingLeft: responsiveSize(8, 10, 12),
+                  borderLeftWidth: responsiveSize(3, 4, 5),
+                }
+              ]}>
                 Quick Contact
               </Text>
               
-              <View style={styles.contactRow}>
+              <View style={[
+                styles.contactRow,
+                { 
+                  gap: responsiveSize(12, 18, 24),
+                  marginTop: responsiveSize(8, 12, 16)
+                }
+              ]}>
                 {/* Phone */}
                 {hasPhone && (
                   <TouchableOpacity
-                    style={[styles.contactIconBox, isTablet && styles.contactIconBoxTablet]}
+                    style={[
+                      styles.contactIconBox,
+                      { 
+                        borderRadius: responsiveSize(12, 14, 16),
+                        padding: responsiveSize(8, 12, 16),
+                        minWidth: responsiveSize(80, 110, 140)
+                      }
+                    ]}
                     onPress={() => openPhone(place.phone)}
                     activeOpacity={0.7}
                   >
-                    <View style={[styles.iconCircle, styles.phoneIconBg]}>
-                      <FontAwesome name="phone" size={isTablet ? 24 : 20} color="#fff" />
+                    <View style={[
+                      styles.iconCircle, 
+                      styles.phoneIconBg,
+                      { 
+                        width: responsiveSize(45, 55, 65),
+                        height: responsiveSize(45, 55, 65),
+                        borderRadius: responsiveSize(22, 27, 32),
+                        marginBottom: responsiveSize(6, 8, 10)
+                      }
+                    ]}>
+                      <FontAwesome 
+                        name="phone" 
+                        size={responsiveSize(18, 22, 26)} 
+                        color="#fff" 
+                      />
                     </View>
-                    <Text style={[styles.contactLabel, isTablet && styles.contactLabelTablet]}>
+                    <Text style={[
+                      styles.contactLabel,
+                      { fontSize: responsiveSize(12, 14, 16) }
+                    ]}>
                       Call
                     </Text>
                     {place.phone && (
-                      <Text style={[styles.contactValue, isTablet && styles.contactValueTablet]}>
+                      <Text style={[
+                        styles.contactValue,
+                        { 
+                          fontSize: responsiveSize(10, 11, 12),
+                          marginTop: responsiveSize(2, 3, 4)
+                        }
+                      ]} numberOfLines={1}>
                         {place.phone}
                       </Text>
                     )}
@@ -145,22 +245,47 @@ export default function TourismPlaceDetails() {
                 {/* Location */}
                 {hasLocation && (
                   <TouchableOpacity
-                    style={[styles.contactIconBox, isTablet && styles.contactIconBoxTablet]}
+                    style={[
+                      styles.contactIconBox,
+                      { 
+                        borderRadius: responsiveSize(12, 14, 16),
+                        padding: responsiveSize(8, 12, 16),
+                        minWidth: responsiveSize(80, 110, 140)
+                      }
+                    ]}
                     onPress={() => openLocation(place.location)}
                     activeOpacity={0.7}
                   >
-                    <View style={[styles.iconCircle, styles.locationIconBg]}>
+                    <View style={[
+                      styles.iconCircle, 
+                      styles.locationIconBg,
+                      { 
+                        width: responsiveSize(45, 55, 65),
+                        height: responsiveSize(45, 55, 65),
+                        borderRadius: responsiveSize(22, 27, 32),
+                        marginBottom: responsiveSize(6, 8, 10)
+                      }
+                    ]}>
                       <FontAwesome5
                         name="map-marker-alt"
-                        size={isTablet ? 24 : 20}
+                        size={responsiveSize(18, 22, 26)}
                         color="#fff"
                       />
                     </View>
-                    <Text style={[styles.contactLabel, isTablet && styles.contactLabelTablet]}>
+                    <Text style={[
+                      styles.contactLabel,
+                      { fontSize: responsiveSize(12, 14, 16) }
+                    ]}>
                       Map
                     </Text>
                     <Text 
-                      style={[styles.contactValue, isTablet && styles.contactValueTablet]}
+                      style={[
+                        styles.contactValue,
+                        { 
+                          fontSize: responsiveSize(10, 11, 12),
+                          marginTop: responsiveSize(2, 3, 4)
+                        }
+                      ]}
                       numberOfLines={1}
                     >
                       View Map
@@ -171,18 +296,47 @@ export default function TourismPlaceDetails() {
                 {/* WhatsApp */}
                 {hasWhatsApp && (
                   <TouchableOpacity
-                    style={[styles.contactIconBox, isTablet && styles.contactIconBoxTablet]}
+                    style={[
+                      styles.contactIconBox,
+                      { 
+                        borderRadius: responsiveSize(12, 14, 16),
+                        padding: responsiveSize(8, 12, 16),
+                        minWidth: responsiveSize(80, 110, 140)
+                      }
+                    ]}
                     onPress={() => openWhatsApp(place.whatsapp)}
                     activeOpacity={0.7}
                   >
-                    <View style={[styles.iconCircle, styles.whatsappIconBg]}>
-                      <FontAwesome name="whatsapp" size={isTablet ? 24 : 20} color="#fff" />
+                    <View style={[
+                      styles.iconCircle, 
+                      styles.whatsappIconBg,
+                      { 
+                        width: responsiveSize(45, 55, 65),
+                        height: responsiveSize(45, 55, 65),
+                        borderRadius: responsiveSize(22, 27, 32),
+                        marginBottom: responsiveSize(6, 8, 10)
+                      }
+                    ]}>
+                      <FontAwesome 
+                        name="whatsapp" 
+                        size={responsiveSize(18, 22, 26)} 
+                        color="#fff" 
+                      />
                     </View>
-                    <Text style={[styles.contactLabel, isTablet && styles.contactLabelTablet]}>
+                    <Text style={[
+                      styles.contactLabel,
+                      { fontSize: responsiveSize(12, 14, 16) }
+                    ]}>
                       WhatsApp
                     </Text>
                     {place.whatsapp && (
-                      <Text style={[styles.contactValue, isTablet && styles.contactValueTablet]}>
+                      <Text style={[
+                        styles.contactValue,
+                        { 
+                          fontSize: responsiveSize(10, 11, 12),
+                          marginTop: responsiveSize(2, 3, 4)
+                        }
+                      ]} numberOfLines={1}>
                         {place.whatsapp}
                       </Text>
                     )}
@@ -194,28 +348,60 @@ export default function TourismPlaceDetails() {
 
           {/* DESCRIPTION */}
           {place.about && (
-            <View style={styles.section}>
-              <Text style={[styles.sectionTitle, isTablet && styles.sectionTitleTablet]}>
+            <View style={[
+              styles.section,
+              { marginBottom: responsiveSize(22, 28, 34) }
+            ]}>
+              <Text style={[
+                styles.sectionTitle,
+                { 
+                  fontSize: responsiveSize(18, 21, 24),
+                  marginBottom: responsiveSize(12, 16, 20),
+                  paddingLeft: responsiveSize(8, 10, 12),
+                  borderLeftWidth: responsiveSize(3, 4, 5),
+                }
+              ]}>
                 About
               </Text>
-              <View style={styles.descriptionCard}>
+              <View style={[
+                styles.descriptionCard,
+                { 
+                  borderRadius: responsiveSize(10, 12, 14),
+                  padding: responsiveSize(14, 18, 22)
+                }
+              ]}>
                 <Text
-                  style={[styles.description, isTablet && styles.descriptionTablet]}
+                  style={[
+                    styles.description,
+                    { 
+                      fontSize: responsiveSize(15, 17, 19),
+                      lineHeight: responsiveSize(22, 26, 30)
+                    }
+                  ]}
                   numberOfLines={showMore ? undefined : 6}
                 >
                   {place.about}
                 </Text>
 
                 <TouchableOpacity
-                  style={styles.readMoreBtn}
+                  style={[
+                    styles.readMoreBtn,
+                    { marginTop: responsiveSize(8, 10, 12) }
+                  ]}
                   onPress={() => setShowMore(!showMore)}
                 >
-                  <Text style={[styles.readMoreText, isTablet && styles.readMoreTextTablet]}>
+                  <Text style={[
+                    styles.readMoreText,
+                    { 
+                      fontSize: responsiveSize(13, 15, 17),
+                      marginRight: responsiveSize(4, 6, 8)
+                    }
+                  ]}>
                     {showMore ? "Read Less" : "Read More"}
                   </Text>
                   <Ionicons 
                     name={showMore ? "chevron-up" : "chevron-down"} 
-                    size={isTablet ? 18 : 16} 
+                    size={responsiveSize(14, 16, 18)} 
                     color="#93210A" 
                   />
                 </TouchableOpacity>
@@ -225,24 +411,62 @@ export default function TourismPlaceDetails() {
 
           {/* GALLERY */}
           {place.gallery && place.gallery.length > 0 && (
-            <View style={styles.section}>
-              <Text style={[styles.sectionTitle, isTablet && styles.sectionTitleTablet]}>
+            <View style={[
+              styles.section,
+              { marginBottom: responsiveSize(22, 28, 34) }
+            ]}>
+              <Text style={[
+                styles.sectionTitle,
+                { 
+                  fontSize: responsiveSize(18, 21, 24),
+                  marginBottom: responsiveSize(12, 16, 20),
+                  paddingLeft: responsiveSize(8, 10, 12),
+                  borderLeftWidth: responsiveSize(3, 4, 5),
+                }
+              ]}>
                 Gallery ({place.gallery.length})
               </Text>
               <ScrollView 
                 horizontal 
                 showsHorizontalScrollIndicator={false}
-                contentContainerStyle={styles.galleryContainer}
+                contentContainerStyle={[
+                  styles.galleryContainer,
+                  { paddingRight: responsiveSize(8, 12, 16) }
+                ]}
               >
                 {place.gallery.map((img, index) => (
-                  <View key={index} style={styles.galleryImageWrapper}>
+                  <View key={index} style={[
+                    styles.galleryImageWrapper,
+                    { marginRight: responsiveSize(10, 14, 18) }
+                  ]}>
                     <Image
                       source={{ uri: img }}
-                      style={[styles.galleryImage, isTablet && styles.galleryImageTablet]}
+                      style={[
+                        styles.galleryImage,
+                        { 
+                          width: responsiveSize(140, 180, 220),
+                          height: responsiveSize(100, 140, 180),
+                          borderRadius: responsiveSize(8, 10, 12)
+                        }
+                      ]}
                       resizeMode="cover"
                     />
-                    <View style={styles.imageNumberBadge}>
-                      <Text style={styles.imageNumberText}>{index + 1}</Text>
+                    <View style={[
+                      styles.imageNumberBadge,
+                      {
+                        top: responsiveSize(6, 8, 10),
+                        left: responsiveSize(6, 8, 10),
+                        width: responsiveSize(20, 22, 24),
+                        height: responsiveSize(20, 22, 24),
+                        borderRadius: responsiveSize(8, 10, 12),
+                      }
+                    ]}>
+                      <Text style={[
+                        styles.imageNumberText,
+                        { fontSize: responsiveSize(10, 11, 12) }
+                      ]}>
+                        {index + 1}
+                      </Text>
                     </View>
                   </View>
                 ))}
@@ -252,21 +476,51 @@ export default function TourismPlaceDetails() {
 
           {/* VIDEO */}
           {place.video && videoId && (
-            <View style={styles.section}>
-              <Text style={[styles.sectionTitle, isTablet && styles.sectionTitleTablet]}>
+            <View style={[
+              styles.section,
+              { marginBottom: responsiveSize(22, 28, 34) }
+            ]}>
+              <Text style={[
+                styles.sectionTitle,
+                { 
+                  fontSize: responsiveSize(18, 21, 24),
+                  marginBottom: responsiveSize(12, 16, 20),
+                  paddingLeft: responsiveSize(8, 10, 12),
+                  borderLeftWidth: responsiveSize(3, 4, 5),
+                }
+              ]}>
                 Video
               </Text>
-              <View style={[styles.videoContainer, isTablet && styles.videoContainerTablet]}>
+              <View style={[
+                styles.videoContainer,
+                { 
+                  borderRadius: responsiveSize(10, 12, 14),
+                  marginBottom: responsiveSize(8, 12, 16)
+                }
+              ]}>
                 <YoutubePlayer
-                  height={isTablet ? 340 : 220}
+                  height={responsiveSize(200, 280, 340)}
                   play={false}
                   videoId={videoId}
                 />
-                <View style={styles.videoInfo}>
-                  <Text style={[styles.videoNote, isTablet && styles.videoNoteTablet]}>
+                <View style={[
+                  styles.videoInfo,
+                  { padding: responsiveSize(6, 8, 10) }
+                ]}>
+                  <Text style={[
+                    styles.videoNote,
+                    { 
+                      fontSize: responsiveSize(11, 13, 15),
+                      marginRight: responsiveSize(4, 6, 8)
+                    }
+                  ]}>
                     Tap to play video
                   </Text>
-                  <Ionicons name="play-circle-outline" size={isTablet ? 20 : 16} color="#666" />
+                  <Ionicons 
+                    name="play-circle-outline" 
+                    size={responsiveSize(14, 16, 18)} 
+                    color="#666" 
+                  />
                 </View>
               </View>
             </View>
@@ -286,48 +540,78 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scrollContent: {
-    paddingBottom: 40,
+    flexGrow: 1,
   },
+  
   // Header Styles
   header: {
     backgroundColor: "#93210A",
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    paddingTop: StatusBar.currentHeight + (isTablet ? 15 : 10),
-    paddingBottom: isTablet ? 20 : 15,
-    paddingHorizontal: isTablet ? 25 : 20,
+    paddingTop: StatusBar.currentHeight + 10,
+    paddingBottom: 15,
+    paddingHorizontal: 16,
     elevation: 4,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.2,
     shadowRadius: 4,
-    zIndex: 100,
+    borderBottomLeftRadius: 20,
+    borderBottomRightRadius: 20,
+  },
+  headerTablet: {
+    paddingTop: StatusBar.currentHeight + 20,
+    paddingBottom: 20,
+    paddingHorizontal: 24,
+    borderBottomLeftRadius: 30,
+    borderBottomRightRadius: 30,
+  },
+  headerLargeTablet: {
+    paddingTop: StatusBar.currentHeight + 25,
+    paddingBottom: 24,
+    paddingHorizontal: 32,
   },
   backButton: {
-    padding: isTablet ? 8 : 5,
+    width: 34,
+    height: 34,
+    borderRadius: 17,
+    backgroundColor: "rgba(255,255,255,0.2)",
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  backButtonTablet: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
   },
   headerTitle: {
     color: "white",
-    fontSize: isTablet ? 22 : 18,
     fontWeight: "bold",
     flex: 1,
     textAlign: "center",
     marginHorizontal: 10,
     letterSpacing: 0.5,
   },
-  headerRightPlaceholder: {
-    width: isTablet ? 40 : 34,
+  headerTitleTablet: {
+    fontSize: 24,
   },
+  headerRightPlaceholder: {
+    width: 34,
+  },
+  headerRightPlaceholderTablet: {
+    width: 44,
+  },
+  
   // Image Container
   imageContainer: {
     position: 'relative',
-    height: isTablet ? 350 : 280,
+    width: "100%",
+    backgroundColor: "#f0f0f0",
   },
   mainImage: {
     width: "100%",
     height: "100%",
-    backgroundColor: "#f0f0f0",
   },
   imageOverlay: {
     ...StyleSheet.absoluteFillObject,
@@ -335,11 +619,7 @@ const styles = StyleSheet.create({
   },
   categoryBadge: {
     position: 'absolute',
-    top: 15,
-    right: 15,
     backgroundColor: "rgba(147, 33, 10, 0.9)",
-    paddingHorizontal: isTablet ? 16 : 12,
-    paddingVertical: isTablet ? 8 : 6,
     borderRadius: 20,
     elevation: 3,
     shadowColor: "#000",
@@ -349,72 +629,48 @@ const styles = StyleSheet.create({
   },
   categoryText: {
     color: "#fff",
-    fontSize: isTablet ? 14 : 12,
     fontWeight: "700",
     textTransform: "uppercase",
     letterSpacing: 0.5,
   },
+  
   // Content Card
   contentCard: {
     backgroundColor: "#fff",
-    borderRadius: isTablet ? 25 : 20,
-    margin: isTablet ? 20 : 15,
-    marginTop: isTablet ? -40 : -30,
-    padding: isTablet ? 25 : 20,
     elevation: 4,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 3 },
     shadowOpacity: 0.15,
     shadowRadius: 8,
   },
-  contentCardTablet: {
-    paddingHorizontal: isTablet ? 30 : 20,
-  },
   placeTitle: {
-    fontSize: isTablet ? 28 : 22,
     fontWeight: "bold",
     color: "#333",
-    marginBottom: isTablet ? 25 : 20,
     textAlign: "center",
-    lineHeight: isTablet ? 36 : 28,
     letterSpacing: 0.3,
   },
-  placeTitleTablet: {
-    fontSize: 32,
-  },
+  
   // Section Title
   sectionTitle: {
-    fontSize: isTablet ? 20 : 18,
     fontWeight: "bold",
     color: "#93210A",
-    marginBottom: isTablet ? 16 : 12,
-    paddingLeft: isTablet ? 12 : 10,
-    borderLeftWidth: isTablet ? 5 : 4,
     borderLeftColor: "#93210A",
   },
-  sectionTitleTablet: {
-    fontSize: 22,
-    marginBottom: 20,
-  },
+  
   // Contact Section
   contactSection: {
-    marginBottom: isTablet ? 30 : 25,
+    width: '100%',
   },
   contactRow: {
     flexDirection: 'row',
-    justifyContent: 'space-around',
-    alignItems: 'center',
-    flexWrap: isTablet ? 'nowrap' : 'nowrap',
-    gap: isTablet ? 20 : 15,
-    marginTop: isTablet ? 15 : 10,
+    justifyContent: 'center',
+    alignItems: 'stretch',
+    flexWrap: 'wrap',
   },
   contactIconBox: {
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: '#fff',
-    borderRadius: isTablet ? 16 : 14,
-    padding: isTablet ? 18 :10,
-    minWidth: isTablet ? 140 :70,
     elevation: 3,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
@@ -422,18 +678,11 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     borderWidth: 1,
     borderColor: "#f0f0f0",
-  },
-  contactIconBoxTablet: {
-    minWidth: 160,
-    padding: 20,
+    flex: 1,
   },
   iconCircle: {
-    width: isTablet ? 60 : 50,
-    height: isTablet ? 60 : 50,
-    borderRadius: isTablet ? 30 : 25,
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: isTablet ? 12 : 10,
     elevation: 3,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 3 },
@@ -450,173 +699,82 @@ const styles = StyleSheet.create({
     backgroundColor: "#2346a5",
   },
   contactLabel: {
-    fontSize: isTablet ? 16 : 14,
     fontWeight: "700",
     color: "#333",
-    marginBottom: isTablet ? 4 : 2,
     textAlign: 'center',
-  },
-  contactLabelTablet: {
-    fontSize: 17,
   },
   contactValue: {
-    fontSize: isTablet ? 13 : 12,
     color: "#666",
     textAlign: 'center',
-    marginTop: isTablet ? 4 : 2,
     fontStyle: 'italic',
   },
-  contactValueTablet: {
-    fontSize: 14,
-  },
+  
   // Description Section
   section: {
-    marginBottom: isTablet ? 30 : 25,
+    width: '100%',
   },
   descriptionCard: {
     backgroundColor: "#f9f9f9",
-    borderRadius: isTablet ? 12 : 10,
-    padding: isTablet ? 20 : 15,
     borderLeftWidth: 3,
     borderLeftColor: "#93210A",
   },
   description: {
-    fontSize: isTablet ? 17 : 16,
-    lineHeight: isTablet ? 28 : 24,
     color: "#555",
     textAlign: "justify",
     letterSpacing: 0.2,
-  },
-  descriptionTablet: {
-    fontSize: 18,
-    lineHeight: 30,
   },
   readMoreBtn: {
     flexDirection: 'row',
     alignItems: 'center',
     alignSelf: 'flex-end',
-    marginTop: isTablet ? 12 : 10,
     paddingVertical: 4,
     paddingHorizontal: 8,
   },
   readMoreText: {
     color: "#93210A",
     fontWeight: "700",
-    fontSize: isTablet ? 16 : 14,
-    marginRight: 6,
   },
-  readMoreTextTablet: {
-    fontSize: 17,
-  },
+  
   // Gallery Section
   galleryContainer: {
     paddingRight: 10,
   },
   galleryImageWrapper: {
     position: 'relative',
-    marginRight: isTablet ? 16 : 12,
   },
   galleryImage: {
-    width: isTablet ? 200 : 160,
-    height: isTablet ? 150 : 120,
-    borderRadius: isTablet ? 12 : 10,
     backgroundColor: "#eee",
-  },
-  galleryImageTablet: {
-    width: 220,
-    height: 170,
   },
   imageNumberBadge: {
     position: 'absolute',
-    top: 8,
-    left: 8,
     backgroundColor: 'rgba(147, 33, 10, 0.9)',
-    borderRadius: 12,
-    width: 24,
-    height: 24,
     alignItems: 'center',
     justifyContent: 'center',
   },
   imageNumberText: {
     color: 'white',
-    fontSize: 12,
     fontWeight: 'bold',
   },
+  
   // Video Section
   videoContainer: {
-    borderRadius: isTablet ? 12 : 10,
     overflow: "hidden",
     backgroundColor: "#000",
-    marginBottom: isTablet ? 15 : 10,
     elevation: 3,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 3 },
     shadowOpacity: 0.3,
     shadowRadius: 5,
   },
-  videoContainerTablet: {
-    borderRadius: 15,
-  },
   videoInfo: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    padding: isTablet ? 12 : 8,
     backgroundColor: '#f8f8f8',
   },
   videoNote: {
-    fontSize: isTablet ? 14 : 12,
     color: "#666",
     textAlign: "center",
     fontStyle: "italic",
-    marginRight: 8,
-  },
-  videoNoteTablet: {
-    fontSize: 15,
-  },
-  // Additional Info Section
-  additionalInfoSection: {
-    marginTop: isTablet ? 25 : 20,
-    paddingTop: isTablet ? 25 : 20,
-    borderTopWidth: 1,
-    borderTopColor: "#eee",
-  },
-  infoGrid: {
-    gap: isTablet ? 18 : 15,
-  },
-  infoCard: {
-    backgroundColor: "#f9f9f9",
-    borderRadius: isTablet ? 12 : 10,
-    padding: isTablet ? 18 : 15,
-    borderLeftWidth: isTablet ? 4 : 3,
-    borderLeftColor: "#93210A",
-    elevation: 1,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
-  },
-  infoCardTablet: {
-    padding: 20,
-  },
-  infoTitle: {
-    fontSize: isTablet ? 18 : 16,
-    fontWeight: "600",
-    color: "#93210A",
-    marginBottom: isTablet ? 8 : 6,
-    letterSpacing: 0.3,
-  },
-  infoTitleTablet: {
-    fontSize: 19,
-  },
-  infoText: {
-    fontSize: isTablet ? 16 : 15,
-    lineHeight: isTablet ? 26 : 22,
-    color: "#555",
-    letterSpacing: 0.2,
-  },
-  infoTextTablet: {
-    fontSize: 17,
-    lineHeight: 28,
   },
 });

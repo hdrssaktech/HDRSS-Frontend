@@ -1,7 +1,3 @@
-
-
-
-
 import React, { useEffect, useState, useRef, useContext } from "react";
 import {
   View,
@@ -21,15 +17,18 @@ import { Ionicons } from "@expo/vector-icons";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { getTownsByDistrict } from "../../../Controller/TownController/TownPageController";
 import { LocationContext } from "../../../context/LocationContext";
+import Loader from "../../../components/Alert/Loader";
 
 const { width: screenWidth } = Dimensions.get("window");
 const isTablet = screenWidth >= 600;
 const isLargeTablet = screenWidth >= 1024;
 
-export default function TownPage1() {
+export default function TownPage1(props) {
   const route = useRoute();
   const navigation = useNavigation();
-  const { districtId, districtName } = route.params || {};
+  const { districtId} = route.params || {};
+  const districtName = props.districtName || route.params?.districtName;
+
 
   const [towns, setTowns] = useState([]);
   const [searchText, setSearchText] = useState("");
@@ -83,12 +82,7 @@ export default function TownPage1() {
 
   if (loading) {
     return (
-      <View style={styles.centerContent}>
-        <ActivityIndicator size="large" color="#93210A" />
-        <Text style={[styles.loadingText, isTablet && styles.loadingTextTablet]}>
-          Loading towns...
-        </Text>
-      </View>
+     <Loader/>
     );
   }
 
@@ -168,10 +162,10 @@ export default function TownPage1() {
           <View style={[styles.selectedTownCard, isTablet && styles.selectedTownCardTablet]}>
             <TouchableOpacity
               onPress={() =>
-                navigation.navigate("TownPage2", { 
+                navigation.navigate("TownPage2", {
                   town: selectedTown, 
-                  DistrictId: districtId, 
-                  DistrictName: districtName 
+                  districtId: districtId, 
+                  districtName: districtName
                 })
               }
             >
@@ -216,7 +210,9 @@ export default function TownPage1() {
                 style={[styles.card, isTablet && styles.cardTablet]}
                 onPress={() => navigation.navigate("TownPage2", { 
                   town: item, 
-                  townId: item.id 
+                  townId: item.id,
+                  districtId: districtId,
+                  districtName: districtName
                 })}
               >
                 <Image

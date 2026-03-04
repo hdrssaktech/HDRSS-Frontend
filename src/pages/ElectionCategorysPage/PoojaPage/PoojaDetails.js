@@ -17,6 +17,7 @@ import YoutubePlayer from "react-native-youtube-iframe";
 
 const { width, height } = Dimensions.get("window");
 const isTablet = width >= 608;
+const isLargeTablet = width >= 1024;
 
 export default function PoojaDetails() {
   const route = useRoute();
@@ -70,25 +71,40 @@ export default function PoojaDetails() {
   const hasWhatsApp = poojaItem.whatshapp && poojaItem.whatshapp.trim() !== "";
   const hasLocation = poojaItem.location && poojaItem.location.trim() !== "";
 
+  // Responsive size helper
+  const responsiveSize = (mobile, tablet, largeTablet) => {
+    if (isLargeTablet) return largeTablet || tablet;
+    return isTablet ? tablet : mobile;
+  };
+
   return (
     <View style={styles.container}>
       {/* Status Bar */}
       <StatusBar backgroundColor="#93210A" barStyle="light-content" />
       
       {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-          <Icon name="arrow-back" size={isTablet ? 28 : 24} color="#fff" />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle} numberOfLines={1}>
+      <View style={[styles.header, isTablet && styles.headerTablet, isLargeTablet && styles.headerLargeTablet]}>
+        <TouchableOpacity
+        style={[styles.backButton, isTablet && styles.backButtonTablet]}
+        onPress={() => navigation.goBack()}
+      >
+        <Ionicons name="chevron-back" size={isTablet ? 30 : 26} color="#fff" />
+      </TouchableOpacity>
+        
+        <Text style={[styles.headerTitle, isTablet && styles.headerTitleTablet]} numberOfLines={1}>
           Pooja Details
         </Text>
-        <View style={styles.headerRight} />
+        
+        <View style={[styles.headerRight, isTablet && styles.headerRightTablet]} />
       </View>
 
       <ScrollView
         style={styles.scrollView}
-        contentContainerStyle={styles.scrollContent}
+        contentContainerStyle={[
+          styles.scrollContent,
+          isTablet && styles.scrollContentTablet,
+          isLargeTablet && styles.scrollContentLargeTablet
+        ]}
         showsVerticalScrollIndicator={false}
       >
         {/* Banner Image */}
@@ -96,7 +112,11 @@ export default function PoojaDetails() {
           <View style={styles.bannerContainer}>
             <Image 
               source={{ uri: poojaItem.bannerimg }} 
-              style={styles.bannerImage}
+              style={[
+                styles.bannerImage,
+                isTablet && styles.bannerImageTablet,
+                isLargeTablet && styles.bannerImageLargeTablet
+              ]}
               resizeMode="cover"
             />
             <View style={styles.bannerOverlay} />
@@ -105,27 +125,51 @@ export default function PoojaDetails() {
 
         <View style={[
           styles.contentCard,
-          isTablet && styles.contentCardTablet
+          isTablet && styles.contentCardTablet,
+          isLargeTablet && styles.contentCardLargeTablet
         ]}>
           {/* Title */}
-          <Text style={[styles.title, isTablet && styles.titleTablet]}>{poojaItem.title}</Text>
+          <Text style={[
+            styles.title, 
+            isTablet && styles.titleTablet,
+            isLargeTablet && styles.titleLargeTablet
+          ]}>
+            {poojaItem.title}
+          </Text>
 
           {/* Contact Information - Horizontal Icon Row */}
           {(hasPhone || hasWhatsApp || hasLocation) && (
-            <View style={styles.contactSection}>
+            <View style={[
+              styles.contactSection,
+              isTablet && styles.contactSectionTablet
+            ]}>
               
-              <View style={styles.contactRow}>
+              <View style={[
+                styles.contactRow,
+                isTablet && styles.contactRowTablet,
+                isLargeTablet && styles.contactRowLargeTablet
+              ]}>
                 {/* Phone Icon */}
                 {hasPhone && (
                   <TouchableOpacity
-                    style={styles.contactIconWrapper}
+                    style={[
+                      styles.contactIconWrapper,
+                      isTablet && styles.contactIconWrapperTablet
+                    ]}
                     onPress={() => handlePhoneCall(poojaItem.Phone)}
                     activeOpacity={0.7}
                   >
-                    <View style={[styles.iconCircle, styles.phoneIconBg]}>
-                      <Icon name="phone" size={isTablet ? 26 : 22} color="#fff" />
+                    <View style={[
+                      styles.iconCircle, 
+                      styles.phoneIconBg,
+                      isTablet && styles.iconCircleTablet
+                    ]}>
+                      <Icon name="phone" size={responsiveSize(22, 26, 30)} color="#fff" />
                     </View>
-                    <Text style={[styles.iconLabel, isTablet && styles.iconLabelTablet]}>
+                    <Text style={[
+                      styles.iconLabel, 
+                      isTablet && styles.iconLabelTablet
+                    ]}>
                       Call
                     </Text>
                   </TouchableOpacity>
@@ -134,14 +178,24 @@ export default function PoojaDetails() {
                 {/* WhatsApp Icon */}
                 {hasWhatsApp && (
                   <TouchableOpacity
-                    style={styles.contactIconWrapper}
+                    style={[
+                      styles.contactIconWrapper,
+                      isTablet && styles.contactIconWrapperTablet
+                    ]}
                     onPress={() => handleWhatsApp(poojaItem.whatshapp)}
                     activeOpacity={0.7}
                   >
-                    <View style={[styles.iconCircle, styles.whatsappIconBg]}>
-                      <Ionicons name="logo-whatsapp" size={isTablet ? 26 : 22} color="#fff" />
+                    <View style={[
+                      styles.iconCircle, 
+                      styles.whatsappIconBg,
+                      isTablet && styles.iconCircleTablet
+                    ]}>
+                      <Ionicons name="logo-whatsapp" size={responsiveSize(22, 26, 30)} color="#fff" />
                     </View>
-                    <Text style={[styles.iconLabel, isTablet && styles.iconLabelTablet]}>
+                    <Text style={[
+                      styles.iconLabel, 
+                      isTablet && styles.iconLabelTablet
+                    ]}>
                       WhatsApp
                     </Text>
                   </TouchableOpacity>
@@ -150,14 +204,24 @@ export default function PoojaDetails() {
                 {/* Location Icon */}
                 {hasLocation && (
                   <TouchableOpacity
-                    style={styles.contactIconWrapper}
+                    style={[
+                      styles.contactIconWrapper,
+                      isTablet && styles.contactIconWrapperTablet
+                    ]}
                     onPress={() => handleLocation(poojaItem.location)}
                     activeOpacity={0.7}
                   >
-                    <View style={[styles.iconCircle, styles.locationIconBg]}>
-                      <Icon name="location-on" size={isTablet ? 26 : 22} color="#fff" />
+                    <View style={[
+                      styles.iconCircle, 
+                      styles.locationIconBg,
+                      isTablet && styles.iconCircleTablet
+                    ]}>
+                      <Icon name="location-on" size={responsiveSize(22, 26, 30)} color="#fff" />
                     </View>
-                    <Text style={[styles.iconLabel, isTablet && styles.iconLabelTablet]}>
+                    <Text style={[
+                      styles.iconLabel, 
+                      isTablet && styles.iconLabelTablet
+                    ]}>
                       Location
                     </Text>
                   </TouchableOpacity>
@@ -168,19 +232,36 @@ export default function PoojaDetails() {
 
           {/* About Section */}
           {poojaItem.about && (
-            <View style={styles.section}>
-              <Text style={[styles.sectionTitle, isTablet && styles.sectionTitleTablet]}>
+            <View style={[
+              styles.section,
+              isTablet && styles.sectionTablet
+            ]}>
+              <Text style={[
+                styles.sectionTitle, 
+                isTablet && styles.sectionTitleTablet,
+                isLargeTablet && styles.sectionTitleLargeTablet
+              ]}>
                 About
               </Text>
-              <View style={styles.aboutCard}>
+              <View style={[
+                styles.aboutCard,
+                isTablet && styles.aboutCardTablet
+              ]}>
                 <Text 
-                  style={[styles.aboutText, isTablet && styles.aboutTextTablet]} 
+                  style={[
+                    styles.aboutText, 
+                    isTablet && styles.aboutTextTablet,
+                    isLargeTablet && styles.aboutTextLargeTablet
+                  ]} 
                   numberOfLines={showItem ? undefined : 5}
                 >
                   {poojaItem.about}
                 </Text>
                 <TouchableOpacity onPress={() => setShowitem(!showItem)}>
-                  <Text style={[styles.readMoreText, isTablet && styles.readMoreTextTablet]}>
+                  <Text style={[
+                    styles.readMoreText, 
+                    isTablet && styles.readMoreTextTablet
+                  ]}>
                     {showItem ? 'Read Less...' : 'Read More...'}
                   </Text>
                 </TouchableOpacity>
@@ -190,25 +271,39 @@ export default function PoojaDetails() {
 
           {/* Video Section */}
           {firstYoutubeVideo && (
-            <View style={styles.videoSection}>
-              <Text style={[styles.sectionTitle, isTablet && styles.sectionTitleTablet]}>
+            <View style={[
+              styles.videoSection,
+              isTablet && styles.videoSectionTablet
+            ]}>
+              <Text style={[
+                styles.sectionTitle, 
+                isTablet && styles.sectionTitleTablet,
+                isLargeTablet && styles.sectionTitleLargeTablet
+              ]}>
                 Video
               </Text>
               <View style={[
                 styles.videoContainer,
-                isTablet && styles.videoContainerTablet
+                isTablet && styles.videoContainerTablet,
+                isLargeTablet && styles.videoContainerLargeTablet
               ]}>
                 <YoutubePlayer
-                  height={isTablet ? 350 : 220}
+                  height={responsiveSize(220, 280, 350)}
                   videoId={firstYoutubeVideo.id}
                   play={false}
                   webViewStyle={styles.youtubePlayer}
                 />
-                <View style={styles.videoInfo}>
-                  <Text style={[styles.videoNote, isTablet && styles.videoNoteTablet]}>
+                <View style={[
+                  styles.videoInfo,
+                  isTablet && styles.videoInfoTablet
+                ]}>
+                  <Text style={[
+                    styles.videoNote, 
+                    isTablet && styles.videoNoteTablet
+                  ]}>
                     Tap to play video
                   </Text>
-                  <Icon name="play-circle-outline" size={isTablet ? 20 : 16} color="#666" />
+                  <Icon name="play-circle-outline" size={responsiveSize(16, 20, 24)} color="#666" />
                 </View>
               </View>
             </View>
@@ -216,14 +311,24 @@ export default function PoojaDetails() {
 
           {/* Additional Videos */}
           {hasVideos && poojaItem.videos.length > 1 && (
-            <View style={styles.multipleVideosSection}>
-              <Text style={[styles.sectionTitle, isTablet && styles.sectionTitleTablet]}>
+            <View style={[
+              styles.multipleVideosSection,
+              isTablet && styles.multipleVideosSectionTablet
+            ]}>
+              <Text style={[
+                styles.sectionTitle, 
+                isTablet && styles.sectionTitleTablet,
+                isLargeTablet && styles.sectionTitleLargeTablet
+              ]}>
                 More Videos
               </Text>
               <ScrollView 
                 horizontal 
                 showsHorizontalScrollIndicator={false}
-                contentContainerStyle={styles.videosContainer}
+                contentContainerStyle={[
+                  styles.videosContainer,
+                  isTablet && styles.videosContainerTablet
+                ]}
               >
                 {poojaItem.videos.slice(1).map((video, index) => {
                   const videoId = getYouTubeId(video);
@@ -237,19 +342,27 @@ export default function PoojaDetails() {
                         isTablet && styles.videoThumbnailContainerTablet
                       ]}
                     >
-                      <View style={styles.videoThumbnailWrapper}>
+                      <View style={[
+                        styles.videoThumbnailWrapper,
+                        isTablet && styles.videoThumbnailWrapperTablet
+                      ]}>
                         <YoutubePlayer
-                          height={isTablet ? 150 : 120}
-                          width={isTablet ? 240 : 180}
+                          height={responsiveSize(120, 150, 180)}
+                          width={responsiveSize(180, 220, 260)}
                           videoId={videoId}
                           play={false}
                           webViewStyle={styles.videoThumbnail}
                         />
                         <View style={styles.playIconOverlay}>
-                          <Icon name="play-circle-filled" size={isTablet ? 40 : 32} color="rgba(255,255,255,0.9)" />
+                          <Icon name="play-circle-filled" size={responsiveSize(32, 40, 48)} color="rgba(255,255,255,0.9)" />
                         </View>
                       </View>
-                      <Text style={styles.videoThumbnailText}>Video {index + 2}</Text>
+                      <Text style={[
+                        styles.videoThumbnailText,
+                        isTablet && styles.videoThumbnailTextTablet
+                      ]}>
+                        Video {index + 2}
+                      </Text>
                     </View>
                   );
                 })}
@@ -259,14 +372,24 @@ export default function PoojaDetails() {
 
           {/* Gallery */}
           {poojaItem.gallery && Array.isArray(poojaItem.gallery) && poojaItem.gallery.length > 0 && (
-            <View style={styles.gallerySection}>
-              <Text style={[styles.sectionTitle, isTablet && styles.sectionTitleTablet]}>
+            <View style={[
+              styles.gallerySection,
+              isTablet && styles.gallerySectionTablet
+            ]}>
+              <Text style={[
+                styles.sectionTitle, 
+                isTablet && styles.sectionTitleTablet,
+                isLargeTablet && styles.sectionTitleLargeTablet
+              ]}>
                 Gallery
               </Text>
               <ScrollView 
                 horizontal 
                 showsHorizontalScrollIndicator={false}
-                contentContainerStyle={styles.galleryContainer}
+                contentContainerStyle={[
+                  styles.galleryContainer,
+                  isTablet && styles.galleryContainerTablet
+                ]}
               >
                 {poojaItem.gallery.map((img, index) => (
                   <View 
@@ -280,7 +403,8 @@ export default function PoojaDetails() {
                       source={{ uri: img }}
                       style={[
                         styles.galleryImage,
-                        isTablet && styles.galleryImageTablet
+                        isTablet && styles.galleryImageTablet,
+                        isLargeTablet && styles.galleryImageLargeTablet
                       ]}
                       resizeMode="cover"
                     />
@@ -303,64 +427,100 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#f8f9fa",
   },
+  
   // Header Styles
   header: {
-    backgroundColor: "#93210A",
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "space-between",
-    paddingTop: StatusBar.currentHeight + (isTablet ? 15 : 10),
-    paddingBottom: isTablet ? 20 : 15,
-    paddingHorizontal: isTablet ? 25 : 20,
-    elevation: 4,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
-    zIndex: 100,
+    backgroundColor: "#93210A",
+    paddingTop:40,
+    paddingBottom:30,
+    borderBottomLeftRadius: 20,
+    borderBottomRightRadius: 20,
   },
-  backButton: {
-    padding: isTablet ? 8 : 5,
+  headerTablet: {
+    paddingTop:45,
+    paddingBottom:28,
+    paddingHorizontal: 18,
+  },
+  headerLargeTablet: {
+    paddingTop: StatusBar.currentHeight + 25,
+    paddingBottom: 25,
+    paddingHorizontal: 32,
+  },
+  backButton:{
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: "rgba(255,255,255,0.15)",
+    alignItems: "center",
+    justifyContent: "center",
+    marginLeft:15,
+  },
+  backButtonTablet:{
+    width: 50,
+    height: 50,
+    borderRadius: 25,
   },
   headerTitle: {
-    color: "white",
-    fontSize: isTablet ? 22 : 18,
-    fontWeight: "bold",
     flex: 1,
     textAlign: "center",
-    marginHorizontal: 10,
-    letterSpacing: 0.5,
+    color: "#fff",
+    fontSize: 20,
+    fontWeight: "800",
+    letterSpacing: 0.3,
+  },
+  headerTitleTablet: {
+    fontSize: 24,
   },
   headerRight: {
-    width: isTablet ? 40 : 34,
+    width: 34,
   },
+  headerRightTablet: {
+    width: 44,
+  },
+  
   // ScrollView
   scrollView: {
     flex: 1,
   },
   scrollContent: {
-    paddingBottom: isTablet ? 40 : 30,
+    paddingBottom: 30,
   },
+  scrollContentTablet: {
+    paddingBottom: 40,
+  },
+  scrollContentLargeTablet: {
+    paddingBottom: 50,
+  },
+  
   // Banner
   bannerContainer: {
     position: 'relative',
   },
   bannerImage: {
     width: "100%",
-    height: isTablet ? 300 : 220,
+    height: 200,
     backgroundColor: "#f0f0f0",
+  },
+  bannerImageTablet: {
+    height: 280,
+  },
+  bannerImageLargeTablet: {
+    height: 350,
   },
   bannerOverlay: {
     ...StyleSheet.absoluteFillObject,
     backgroundColor: 'rgba(0,0,0,0.1)',
   },
+  
   // Content Card
   contentCard: {
     backgroundColor: "white",
-    borderRadius: isTablet ? 20 : 15,
-    margin: isTablet ? 20 : 15,
-    marginTop: isTablet ? -40 : -30,
-    padding: isTablet ? 25 : 20,
+    borderRadius: 15,
+    margin: 15,
+    marginTop: -30,
+    padding: 18,
     elevation: 4,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 3 },
@@ -368,74 +528,126 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
   },
   contentCardTablet: {
-    paddingHorizontal: isTablet ? 30 : 20,
+    borderRadius: 20,
+    margin: 20,
+    marginTop: -40,
+    padding: 25,
+    paddingHorizontal: 30,
   },
+  contentCardLargeTablet: {
+    maxWidth: 1000,
+    alignSelf: 'center',
+    width: '100%',
+  },
+  
   // Title
   title: {
-    fontSize: isTablet ? 28 : 22,
+    fontSize: 22,
     fontWeight: "bold",
     color: "#333",
-    marginBottom: isTablet ? 25 : 20,
+    marginBottom: 20,
     textAlign: "center",
-    lineHeight: isTablet ? 36 : 28,
+    lineHeight: 28,
     letterSpacing: 0.3,
   },
   titleTablet: {
-    fontSize: 32,
+    fontSize: 28,
+    marginBottom: 25,
+    lineHeight: 36,
   },
+  titleLargeTablet: {
+    fontSize: 32,
+    marginBottom: 30,
+  },
+  
   // Section Title
   sectionTitle: {
-    fontSize: isTablet ? 20 : 18,
+    fontSize: 18,
     fontWeight: "bold",
     color: "#93210A",
-    marginBottom: isTablet ? 16 : 12,
-    paddingLeft: isTablet ? 12 : 10,
-    borderLeftWidth: isTablet ? 5 : 4,
+    marginBottom: 12,
+    paddingLeft: 10,
+    borderLeftWidth: 4,
     borderLeftColor: "#93210A",
   },
   sectionTitleTablet: {
     fontSize: 22,
+    marginBottom: 16,
+    paddingLeft: 15,
+    borderLeftWidth: 5,
+  },
+  sectionTitleLargeTablet: {
+    fontSize: 24,
     marginBottom: 20,
   },
+  section: {
+    marginBottom: 25,
+  },
+  sectionTablet: {
+    marginBottom: 30,
+  },
+  
   // Contact Section - Horizontal Icons
   contactSection: {
-    marginBottom: isTablet ? 30 : 25,
+    marginBottom: 25,
     alignItems: 'center',
+  },
+  contactSectionTablet: {
+    marginBottom: 30,
   },
   contactRow: {
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
     width: '100%',
-    gap: isTablet ? 40 : 30,
-    marginTop: isTablet ? 10 : 8,
+    gap: 20,
+    marginTop: 8,
+  },
+  contactRowTablet: {
+    gap: 30,
+    marginTop: 10,
+  },
+  contactRowLargeTablet: {
+    gap: 40,
   },
   contactIconWrapper: {
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: isTablet ? 10 : 8,
-    paddingHorizontal: isTablet ? 15 : 10,
-    borderRadius: isTablet ? 12 : 10,
+    paddingVertical: 8,
+    paddingHorizontal: 8,
+    borderRadius: 10,
     backgroundColor: '#f9f9f9',
-    minWidth: isTablet ? 100 : 80,
+    minWidth: 70,
     elevation: 2,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 3,
   },
+  contactIconWrapperTablet: {
+    minWidth: 90,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    borderRadius: 12,
+  },
   iconCircle: {
-    width: isTablet ? 60 : 50,
-    height: isTablet ? 60 : 50,
-    borderRadius: isTablet ? 30 : 25,
+    width: 50,
+    height: 50,
+    borderRadius: 25,
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: isTablet ? 10 : 8,
+    marginBottom: 6,
     elevation: 3,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 3 },
     shadowOpacity: 0.2,
     shadowRadius: 4,
+  },
+  iconCircleTablet: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    marginBottom: 8,
   },
   phoneIconBg: {
     backgroundColor: "#93210A",
@@ -447,73 +659,66 @@ const styles = StyleSheet.create({
     backgroundColor: "#93210A",
   },
   iconLabel: {
-    fontSize: isTablet ? 14 : 12,
+    fontSize: 12,
     color: "#333",
     fontWeight: '600',
     textAlign: 'center',
-    marginTop: isTablet ? 4 : 2,
   },
   iconLabelTablet: {
-    fontSize: 15,
+    fontSize: 14,
   },
-  contactInfoRow: {
-    marginTop: isTablet ? 15 : 10,
-    alignItems: 'center',
-  },
-  contactInfoText: {
-    fontSize: isTablet ? 15 : 13,
-    color: "#666",
-    textAlign: 'center',
-    marginBottom: isTablet ? 6 : 4,
-    backgroundColor: '#f0f0f0',
-    paddingHorizontal: isTablet ? 15 : 10,
-    paddingVertical: isTablet ? 6 : 4,
-    borderRadius: 8,
-  },
-  contactInfoTextTablet: {
-    fontSize: 16,
-  },
+  
   // About Section
-  section: {
-    marginBottom: isTablet ? 30 : 25,
-  },
   aboutCard: {
     backgroundColor: "#f9f9f9",
-    borderRadius: isTablet ? 12 : 10,
-    padding: isTablet ? 20 : 15,
+    borderRadius: 10,
+    padding: 15,
     borderLeftWidth: 3,
     borderLeftColor: "#93210A",
   },
+  aboutCardTablet: {
+    borderRadius: 12,
+    padding: 20,
+  },
   aboutText: {
-    fontSize: isTablet ? 17 : 16,
-    lineHeight: isTablet ? 28 : 24,
+    fontSize: 15,
+    lineHeight: 22,
     color: "#555",
     textAlign: "justify",
     letterSpacing: 0.2,
   },
   aboutTextTablet: {
+    fontSize: 17,
+    lineHeight: 26,
+  },
+  aboutTextLargeTablet: {
     fontSize: 18,
-    lineHeight: 30,
+    lineHeight: 28,
   },
   readMoreText: {
     color: '#93210A',
-    marginTop: isTablet ? 12 : 10,
+    marginTop: 10,
     fontWeight: 'bold',
-    fontSize: isTablet ? 16 : 14,
+    fontSize: 14,
     alignSelf: 'flex-end',
   },
   readMoreTextTablet: {
-    fontSize: 17,
+    fontSize: 16,
+    marginTop: 12,
   },
+  
   // Video Section
   videoSection: {
-    marginBottom: isTablet ? 30 : 25,
+    marginBottom: 25,
+  },
+  videoSectionTablet: {
+    marginBottom: 30,
   },
   videoContainer: {
-    borderRadius: isTablet ? 12 : 10,
+    borderRadius: 10,
     overflow: "hidden",
     backgroundColor: "#000",
-    marginBottom: isTablet ? 15 : 10,
+    marginBottom: 10,
     elevation: 3,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 3 },
@@ -522,43 +727,57 @@ const styles = StyleSheet.create({
   },
   videoContainerTablet: {
     borderRadius: 15,
+    marginBottom: 15,
+  },
+  videoContainerLargeTablet: {
+    borderRadius: 18,
   },
   youtubePlayer: {
-    borderRadius: isTablet ? 12 : 10,
+    borderRadius: 10,
   },
   videoInfo: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    padding: isTablet ? 12 : 8,
+    padding: 8,
     backgroundColor: '#f8f8f8',
   },
+  videoInfoTablet: {
+    padding: 12,
+  },
   videoNote: {
-    fontSize: isTablet ? 14 : 12,
+    fontSize: 12,
     color: "#666",
     textAlign: "center",
     fontStyle: "italic",
     marginRight: 8,
   },
   videoNoteTablet: {
-    fontSize: 15,
+    fontSize: 14,
   },
+  
   // Multiple Videos
   multipleVideosSection: {
-    marginBottom: isTablet ? 30 : 25,
+    marginBottom: 25,
+  },
+  multipleVideosSectionTablet: {
+    marginBottom: 30,
   },
   videosContainer: {
     paddingRight: 10,
   },
+  videosContainerTablet: {
+    paddingRight: 15,
+  },
   videoThumbnailContainer: {
-    marginRight: isTablet ? 16 : 12,
+    marginRight: 12,
   },
   videoThumbnailContainerTablet: {
-    marginRight: 20,
+    marginRight: 16,
   },
   videoThumbnailWrapper: {
     position: 'relative',
-    borderRadius: isTablet ? 12 : 10,
+    borderRadius: 10,
     overflow: 'hidden',
     backgroundColor: '#000',
     elevation: 2,
@@ -567,8 +786,11 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.2,
     shadowRadius: 4,
   },
+  videoThumbnailWrapperTablet: {
+    borderRadius: 12,
+  },
   videoThumbnail: {
-    borderRadius: isTablet ? 12 : 10,
+    borderRadius: 10,
   },
   playIconOverlay: {
     ...StyleSheet.absoluteFillObject,
@@ -577,50 +799,67 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   videoThumbnailText: {
-    fontSize: isTablet ? 13 : 11,
+    fontSize: 11,
     color: '#666',
     textAlign: 'center',
-    marginTop: 6,
+    marginTop: 4,
     fontWeight: '500',
   },
+  videoThumbnailTextTablet: {
+    fontSize: 13,
+    marginTop: 6,
+  },
+  
   // Gallery
   gallerySection: {
-    marginBottom: isTablet ? 30 : 25,
+    marginBottom: 25,
+  },
+  gallerySectionTablet: {
+    marginBottom: 30,
   },
   galleryContainer: {
     paddingRight: 10,
   },
+  galleryContainerTablet: {
+    paddingRight: 15,
+  },
   galleryImageContainer: {
     position: 'relative',
-    marginRight: isTablet ? 16 : 12,
+    marginRight: 12,
   },
   galleryImageContainerTablet: {
-    marginRight: 20,
+    marginRight: 16,
   },
   galleryImage: {
-    width: isTablet ? 220 : 180,
-    height: isTablet ? 160 : 140,
-    borderRadius: isTablet ? 12 : 10,
+    width: 150,
+    height: 120,
+    borderRadius: 10,
     backgroundColor: "#f0f0f0",
   },
   galleryImageTablet: {
+    width: 200,
+    height: 160,
+    borderRadius: 12,
+  },
+  galleryImageLargeTablet: {
     width: 240,
     height: 180,
+    borderRadius: 15,
   },
   imageNumberBadge: {
     position: 'absolute',
-    top: 8,
-    left: 8,
+    top: 6,
+    left: 6,
     backgroundColor: 'rgba(147, 33, 10, 0.9)',
-    borderRadius: 12,
-    width: 24,
-    height: 24,
+    borderRadius: 10,
+    width: 20,
+    height: 20,
     alignItems: 'center',
     justifyContent: 'center',
   },
   imageNumberText: {
     color: 'white',
-    fontSize: 12,
+    fontSize: 11,
     fontWeight: 'bold',
   },
 });

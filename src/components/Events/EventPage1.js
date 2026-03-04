@@ -11,6 +11,7 @@ import {
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { getEvents } from "../../Controller/EventController/EventController";
+import { LinearGradient } from 'expo-linear-gradient';
 
 export default function EventPage() {
   const navigation = useNavigation();
@@ -24,8 +25,13 @@ export default function EventPage() {
 
   useEffect(() => {
     const loadEvents = async () => {
-      const data = await getEvents();
-      setEvents(data);
+    const data = await getEvents();
+      const sortedData = data.sort((a, b) => {
+        const orderA = a.orderNo ?? Infinity;
+        const orderB = b.orderNo ?? Infinity;
+        return orderA - orderB;
+      });
+      setEvents(sortedData);
       setLoading(false);
     };
     loadEvents();
@@ -34,8 +40,8 @@ export default function EventPage() {
   if (loading) {
     return (
       <View style={styles.centerContent}>
-        <ActivityIndicator size="large" color="#93210A" />
-        <Text>Loading events...</Text>
+        {/* <ActivityIndicator size="large" color="#93210A" /> */}
+        {/* <Text>Loading events...</Text> */}
       </View>
     );
   }
@@ -63,14 +69,21 @@ export default function EventPage() {
             key={event.id}
             style={styles.eventCard}
             onPress={() => navigation.navigate("EventPage2", { event })}
+            activeOpacity={0.85}
           >
-            <Image source={{ uri: event.image }} style={styles.eventImage} />
+            <LinearGradient
+              colors={['#FFF5E1', '#ffd391']} // change gradient here
+              style={styles.gradientCard}
+            >
+              <Image source={{ uri: event.image }} style={styles.eventImage} />
 
-            <Text style={styles.eventTitle}>
-              {event.name ?? ""}
-            </Text>
+              <Text style={styles.eventTitle}>
+                {event.name ?? ""}
+              </Text>
+            </LinearGradient>
           </TouchableOpacity>
         ))}
+
       </ScrollView>
     </View>
   );
@@ -88,17 +101,26 @@ const getStyles = (isTablet) =>
       color: "#93210A",
       fontWeight: "bold",
       margin: isTablet ? 20 : 15,
+      borderBottomLeftRadius: 20,
+      borderBottomRightRadius: 20,
     },
-    eventCard: {
-      width: isTablet ? 260 : 200,
-      height: isTablet ? 300 :220,
-      margin: isTablet ? 20 : 10,
-      backgroundColor: "#e9e6e6f1",
-      elevation: 3,
-      shadowColor: "#7c0000",
-      padding: isTablet ? 42 :25,
-      alignItems: "center"
-    },
+   eventCard: {
+    width: isTablet ? 260 : 200,
+    height: isTablet ? 300 : 220,
+    margin: isTablet ? 20 : 10,
+    elevation: 3,
+    shadowColor: "#7c0000",
+    borderRadius: 15,
+    overflow: "hidden"
+  },
+
+  gradientCard: {
+    flex: 1,
+    padding: isTablet ? 42 : 25,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+
     eventImage: {
       width: "100%",
       height: "85%",

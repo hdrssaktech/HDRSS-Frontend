@@ -70,7 +70,7 @@ export default function DistrictPage1() {
   if (loading) {
     return (
       <View style={styles.center}>
-        <ActivityIndicator size="large" color="#93210A" />
+       
       </View>
     );
   }

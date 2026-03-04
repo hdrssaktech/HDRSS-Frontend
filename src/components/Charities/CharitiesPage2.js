@@ -247,6 +247,9 @@ const styles = StyleSheet.create({
     paddingTop: 45,
     paddingBottom: 15,
     paddingHorizontal: 15,
+    borderBottomLeftRadius: 20,
+    borderBottomRightRadius: 20,
+    textAlign: "center",
   },
 
   headerTablet: {
@@ -254,15 +257,17 @@ const styles = StyleSheet.create({
     alignItems: "center",
     backgroundColor: "#93210A",
     paddingTop: 55,
-    paddingBottom: 20,
+    paddingBottom: 30,
     paddingHorizontal: 25,
+    borderBottomLeftRadius: 20,
+    borderBottomRightRadius: 20,
   },
 
   headerTextMobile: {
     color: "#fff",
     fontSize: 20,
     fontWeight: "bold",
-    marginLeft: 12,
+    margin:"auto",
     flexShrink: 1,
   },
 
@@ -279,6 +284,7 @@ const styles = StyleSheet.create({
   bannerMobile: {
     width: "100%",
     height: 200,
+    
   },
 
   bannerTablet: {

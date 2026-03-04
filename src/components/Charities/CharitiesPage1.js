@@ -1,141 +1,3 @@
-// import React, { useEffect, useState } from "react";
-// import {
-//   View,
-//   Text,
-//   StyleSheet,
-//   Image,
-//   TouchableOpacity,
-//   ScrollView,
-//   ActivityIndicator,
-// } from "react-native";
-// import { Ionicons } from "@expo/vector-icons";
-// import { useNavigation } from "@react-navigation/native";
-// import { getCharities } from "../../Controller/CharityController/CharityController";
-
-// export default function CharityPage1() {
-//   const navigation = useNavigation();
-//   const [data, setData] = useState([]);
-//   const [loading, setLoading] = useState(true);
-
-//   useEffect(() => {
-//     const loadCharities = async () => {
-//       try {
-//         const result = await getCharities();
-//         setData(result);
-//       } catch (err) {
-//         console.error("❌ Error loading charities:", err);
-//       } finally {
-//         setLoading(false);
-//       }
-//     };
-//     loadCharities();
-//   }, []);
-
-//   if (loading) {
-//     return (
-//       <View style={styles.center}>
-//         <ActivityIndicator size="large" color="#93210A" />
-//       </View>
-//     );
-//   }
-
-//   return (
-//     <View style={styles.container}>
-//       {/* Header */}
-//       <View style={styles.header}>
-//         <Ionicons
-//           name="chevron-back"
-//           size={26}
-//           color="#fff"
-//           onPress={() => navigation.goBack()}
-//         />
-//         <Text style={styles.headerText}>Charities</Text>
-//       </View>
-
-//       {/* List */}
-//       <ScrollView style={styles.scrollContainer}>
-//         {data.length === 0 ? (
-//           <Text style={styles.noData}>No charities available.</Text>
-//         ) : (
-//           data.map((item, index) => (
-//             <View key={index} style={styles.card}>
-//               <View style={styles.textContainer}>
-//                 <Text style={styles.title}>{item.name}</Text>
-//                 <Text style={styles.heading}>"{item.heading}"</Text>
-
-//                 <TouchableOpacity
-//                   style={styles.button}
-//                   onPress={() =>
-//                     navigation.navigate("CharitiesPage2", { charity: item })
-//                   }
-//                 >
-//                   <Text style={styles.buttonText}>View More</Text>
-//                 </TouchableOpacity>
-//               </View>
-
-//               {item.bannerImage ? (
-//                 <Image source={{ uri: item.bannerImage }} style={styles.image} />
-//               ) : null}
-//             </View>
-//           ))
-//         )}
-//       </ScrollView>
-//     </View>
-//   );
-// }
-
-// const styles = StyleSheet.create({
-//   container: { flex: 1, backgroundColor: "#fff" },
-//   header: {
-//     flexDirection: "row",
-//     alignItems: "center",
-//     padding: 15,
-//     marginTop: 32,
-//     backgroundColor: "#93210A",
-//   },
-//   headerText: {
-//     color: "white",
-//     fontWeight: "bold",
-//     fontSize: 20,
-//     marginLeft: 10,
-//   },
-//   scrollContainer: { padding: 15 },
-//   center: { flex: 1, justifyContent: "center", alignItems: "center" },
-//   card: {
-//     flexDirection: "row",
-//     borderWidth: 1,
-//     borderColor: "#ccc",
-//     borderRadius: 10,
-//     padding: 15,
-//     marginBottom: 15,
-//     alignItems: "center",
-//     backgroundColor: "#fff",
-//   },
-//   textContainer: { flex: 1, paddingRight: 10 },
-//   title: { fontSize: 16, fontWeight: "bold", color: "#000" },
-//   heading: { fontSize: 13, color: "#555", marginBottom: 10 },
-//   button: {
-//     backgroundColor: "#971A01",
-//     paddingHorizontal: 14,
-//     paddingVertical: 6,
-//     borderRadius: 8,
-//     alignSelf: "flex-start",
-//   },
-//   buttonText: { color: "#fff", fontSize: 13, fontWeight: "600" },
-//   image: { width: 70, height: 70, borderRadius: 35 },
-//   noData: { textAlign: "center", marginTop: 50, color: "#777", fontSize: 16 },
-// });
-
-
-
-
-
-
-
-
-
-
-
 import React, { useEffect, useState } from "react";
 import {
   View,
@@ -151,6 +13,7 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import { getCharities } from "../../Controller/CharityController/CharityController";
+import Loader from "../Alert/Loader";
 
 /* ===================== RESPONSIVE HELPER ===================== */
 const useResponsive = () => {
@@ -187,9 +50,7 @@ export default function CharityPage1() {
   /* ===================== LOADING ===================== */
   if (loading) {
     return (
-      <View style={styles.center}>
-        <ActivityIndicator size="large" color="#93210A" />
-      </View>
+     <Loader/>
     );
   }
 
@@ -203,13 +64,12 @@ export default function CharityPage1() {
           isLargeTablet && styles.headerLargeTablet,
         ]}
       >
-        <TouchableOpacity onPress={() => navigation.goBack()}>
-          <Ionicons
-            name="chevron-back"
-            size={isMobile ? 26 : 32}
-            color="#fff"
-          />
-        </TouchableOpacity>
+        <TouchableOpacity
+        style={[styles.backButton, isTablet && styles.backButtonTablet]}
+        onPress={() => navigation.goBack()}
+      >
+        <Ionicons name="chevron-back" size={isTablet ? 30 : 26} color="#fff" />
+      </TouchableOpacity>
 
         <Text
           style={[
@@ -308,27 +168,46 @@ const styles = StyleSheet.create({
   header: {
    flexDirection: "row",
     alignItems: "center",
-    padding: 15,
-    marginTop: 32,
     backgroundColor: "#93210A",
+    paddingTop:40,
+    paddingBottom:30,
+    borderBottomLeftRadius: 20,
+    borderBottomRightRadius: 20,
   },
   headerTablet: {
-    paddingHorizontal: 30,
-    paddingTop: 55,
-    paddingVertical:35,
-    marginTop:-3,
+    paddingTop:45,
+    paddingBottom:28,
+    paddingHorizontal: 18,
   },
   headerLargeTablet: {
     paddingHorizontal: 60,
   },
   headerText: {
+    flex: 1,
+    textAlign: "center",
     color: "#fff",
-    fontWeight: "bold",
     fontSize: 20,
-    marginLeft: 12,
+    fontWeight: "800",
+    letterSpacing: 0.3,
+    marginRight:55,
   },
   headerTextTablet: {
     fontSize: 26,
+  },
+
+  backButton:{
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: "rgba(255,255,255,0.15)",
+    alignItems: "center",
+    justifyContent: "center",
+    marginLeft:15,
+  },
+  backButtonTablet:{
+    width: 50,
+    height: 50,
+    borderRadius: 25,
   },
 
   /* SCROLL */

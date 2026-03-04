@@ -14,6 +14,7 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import axios from "axios";
 import { useNavigation } from "@react-navigation/native";
+import Loader from "../../../../components/Alert/Loader";
 
 const HinduNoolgal1 = () => {
   const navigation = useNavigation();
@@ -35,9 +36,9 @@ const HinduNoolgal1 = () => {
 
   // Check for tablet
   useEffect(() => {
-    const isTabletSize = width >= 768 || (width > height && width >= 600);
+    const isTabletSize = width >= 600;
     setIsTablet(isTabletSize);
-  }, [width, height]);
+  }, [width]);
 
   useEffect(() => {
     fetchCategories();
@@ -59,35 +60,31 @@ const HinduNoolgal1 = () => {
     }
   };
 
-  // ✅ Responsive columns: Mobile 2-3, Tablet 3-4
+  // Responsive columns: Mobile 2 columns, Tablet 3 columns
   const numColumns = useMemo(() => {
-    if (width >= 1024) return 4; // Large tablets and desktops
-    if (width >= 600) return 4;  // Tablets
-    if (width >= 480) return 3;  // Medium phones
-    return 2;                    // Small phones
-  }, [width]);
+    return isTablet ? 3 : 2;
+  }, [isTablet]);
 
   // Responsive spacing
   const H_PADDING = useMemo(() => {
-    if (width >= 1024) return 32;
-    if (width >= 600) return 24;
-    if (width >= 480) return 20;
-    return 16;
-  }, [width]);
+    return isTablet ? 24 : 16;
+  }, [isTablet]);
 
   const GAP = useMemo(() => {
-    if (width >= 1024) return 24;
-    if (width >= 600) return 20;
-    if (width >= 480) return 16;
-    return 12;
-  }, [width]);
+    return isTablet ? 20 : 12;
+  }, [isTablet]);
 
-  // Calculate card width
+  // Calculate card width for perfect grid
   const cardWidth = useMemo(() => {
     const totalGap = GAP * (numColumns - 1);
     const availableWidth = width - (H_PADDING * 2);
     return (availableWidth - totalGap) / numColumns;
   }, [width, numColumns, H_PADDING, GAP]);
+
+  // Card height based on width (maintaining aspect ratio)
+  const cardHeight = useMemo(() => {
+    return cardWidth * 1.2; // Slightly taller than wide for better text area
+  }, [cardWidth]);
 
   const renderHeader = () => (
     <View style={[styles.header, isTablet && styles.headerTablet]}>
@@ -111,72 +108,73 @@ const HinduNoolgal1 = () => {
     </View>
   );
 
-  const CategoryCard = ({ item }) => (
-    <TouchableOpacity
-      activeOpacity={0.9}
-      onPress={() =>
-        navigation.navigate("HinduNoolgal2", {
-          categoryId: item.id,
-          categoryName: item.name,
-        })
-      }
-      style={[
-        styles.card, 
-        isTablet && styles.cardTablet,
-        // { 
-        //   width: cardWidth,
-        //   marginBottom: GAP 
-        // }
-      ]}
-    >
-      <View style={[
-        styles.imageBox, 
-        isTablet && styles.imageBoxTablet,
-      ]}>
-        <Image 
-          source={{ uri: item.image }} 
-          style={styles.image} 
-          resizeMode="cover"
-        />
-      </View>
+  const CategoryCard = ({ item, index }) => {
+    // Calculate margin based on position in grid
+    const isFirstInRow = index % numColumns === 0;
+    const isLastInRow = index % numColumns === numColumns - 1;
 
-      <View style={styles.textContainer}>
-        <Text 
-          style={[
-            styles.cardTitle, 
-            isTablet && styles.cardTitleTablet
-          ]} 
-          numberOfLines={2}
-          adjustsFontSizeToFit={true}
-          minimumFontScale={0.8}
-        >
-          {item.name}
-        </Text>
-        
-        <View style={styles.arrowContainer}>
-          <Ionicons 
-            name="arrow-forward" 
-            size={isTablet ? 18 : 16} 
-            color="#8B0000" 
+    return (
+      <TouchableOpacity
+        activeOpacity={0.9}
+        onPress={() =>
+          navigation.navigate("HinduNoolgal2", {
+            categoryId: item.id,
+            categoryName: item.name,
+          })
+        }
+        style={[
+          styles.card,
+          isTablet && styles.cardTablet,
+          { 
+            width: cardWidth,
+            height: cardHeight,
+            marginRight: !isLastInRow ? GAP : 0,
+            marginBottom: GAP,
+          }
+        ]}
+      >
+        <View style={[
+          styles.imageBox,
+          { height: cardHeight * 0.7 } // Image takes 70% of card height
+        ]}>
+          <Image 
+            source={{ uri: item.image }} 
+            style={styles.image} 
+            resizeMode="cover"
           />
         </View>
-      </View>
-    </TouchableOpacity>
-  );
+
+        <View style={[
+          styles.textContainer,
+          { height: cardHeight * 0.3 } // Text area takes 30% of card height
+        ]}>
+          <Text 
+            style={[
+              styles.cardTitle, 
+              isTablet && styles.cardTitleTablet
+            ]} 
+            numberOfLines={2}
+            adjustsFontSizeToFit={true}
+            minimumFontScale={0.8}
+          >
+            {item.name}
+          </Text>
+          
+          <View style={styles.arrowContainer}>
+            <Ionicons 
+              name="arrow-forward" 
+              size={isTablet ? 18 : 16} 
+              color="#8B0000" 
+            />
+          </View>
+        </View>
+      </TouchableOpacity>
+    );
+  };
 
   const renderContent = () => {
     if (loading) {
-      return (
-        <View style={[styles.centerContainer, isTablet && styles.centerContainerTablet]}>
-          <ActivityIndicator 
-            size={isTablet ? "large" : "large"} 
-            color="#8B0000" 
-          />
-          <Text style={[styles.loadingText, isTablet && styles.loadingTextTablet]}>
-            ஏற்றுகிறது...
-          </Text>
-        </View>
-      );
+      return <Loader />;
     }
 
     if (error) {
@@ -230,7 +228,8 @@ const HinduNoolgal1 = () => {
           paddingTop: isTablet ? 24 : 16,
           paddingBottom: isTablet ? 40 : 30,
         }}
-        renderItem={({ item }) => <CategoryCard item={item} />}
+        renderItem={({ item, index }) => <CategoryCard item={item} index={index} />}
+        ListFooterComponent={<View style={{ height: 20 }} />}
       />
     );
   };
@@ -261,47 +260,50 @@ const styles = StyleSheet.create({
 
   // Header
   header: {
-    backgroundColor: "#8B0000",
-    padding: 32,
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "space-between",
+    backgroundColor: "#93210A",
+    paddingTop:40,
+    paddingBottom:30,
+    borderBottomLeftRadius: 20,
+    borderBottomRightRadius: 20,
   },
-    
   headerTablet: {
-    paddingHorizontal: 32,
-    paddingTop: 20,
-    paddingBottom: 20,
+   paddingTop:45,
+    paddingBottom:28,
+    paddingHorizontal: 18,
   },
   backButton: {
-    width: 40,
+   width: 40,
     height: 40,
-    padding: 4,
-    right:13,
-    top:10,
+    borderRadius: 20,
+    backgroundColor: "rgba(255,255,255,0.15)",
+    alignItems: "center",
+    justifyContent: "center",
+    marginLeft:15,
   },
   backButtonTablet: {
     width: 50,
     height: 50,
+    borderRadius: 25,
   },
   headerTitle: {
-    color: "#fff",
-    fontSize: 17,
-    fontWeight: "800",
-    textAlign: "center",
     flex: 1,
-    paddingHorizontal: 10,
-    top:10,
+    textAlign: "center",
+    color: "#fff",
+    fontSize: 18,
+    fontWeight: "800",
+    letterSpacing: 0.3,
   },
   headerTitleTablet: {
     fontSize: 22,
-    letterSpacing: 0.5,
+   
   },
   headerSpacer: {
-    width: 40,
+    width: 36,
   },
   headerSpacerTablet: {
-    width: 50,
+    width: 44,
   },
 
   // States
@@ -314,16 +316,6 @@ const styles = StyleSheet.create({
   },
   centerContainerTablet: {
     padding: 40,
-  },
-  loadingText: {
-    marginTop: 12,
-    color: "#8B0000",
-    fontSize: 16,
-    fontWeight: "700",
-  },
-  loadingTextTablet: {
-    fontSize: 18,
-    marginTop: 16,
   },
   errorText: {
     marginTop: 14,
@@ -379,66 +371,58 @@ const styles = StyleSheet.create({
 
   // Card
   card: {
-   backgroundColor: "#FFFFFF",
-  borderRadius: 16,
-  overflow: "hidden",
-
-  width: 150,      // 👈 card width
-  height: 185,     // 👈 card height
-
-  elevation: 3,
-  shadowColor: "#000",
-  shadowOffset: { width: 0, height: 4 },
-  shadowOpacity: 0.1,
-  shadowRadius: 6,
-
-  borderWidth: 1,
-  borderColor: "rgba(255, 255, 255, 0.9)",
-  marginHorizontal: 0,
+    backgroundColor: "#FFFFFF",
+    borderRadius: 12,
+    overflow: "hidden",
+    elevation: 3,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    borderWidth: 1,
+    borderColor: "#f0f0f0",
   },
   cardTablet: {
-    borderRadius: 20,
+    borderRadius: 16,
     elevation: 5,
-    shadowOffset: { width: 0, height: 6 },
+    shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.15,
-    shadowRadius: 10,
+    shadowRadius: 8,
   },
   imageBox: {
     width: "100%",
-    aspectRatio: 1,
-    overflow: "hidden",
     backgroundColor: "#f5f5f5",
-  },
-  imageBoxTablet: {
-    aspectRatio: 1,
   },
   image: {
     width: "100%",
     height: "100%",
   },
   textContainer: {
-    padding: 12,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
     backgroundColor: "#FFFFFF",
+    paddingHorizontal: 10,
+    paddingVertical: 8,
   },
   cardTitle: {
     flex: 1,
     fontSize: 13,
-    fontWeight: "800",
-    color: "#8B0000",
+    fontWeight: "700",
+    color: "#333",
     lineHeight: 18,
-    paddingRight: 8,
+    paddingRight: 4,
     includeFontPadding: false,
     textAlignVertical: "center",
   },
   cardTitleTablet: {
     fontSize: 15,
+    fontWeight: "800",
     lineHeight: 20,
-    fontWeight: "900",
   },
   arrowContainer: {
-    paddingLeft: 2,
+    width: 20,
+    alignItems: "center",
+    justifyContent: "center",
   },
 });

@@ -14,7 +14,9 @@ import {
 } from "react-native";
 import { useNavigation,useRoute } from "@react-navigation/native";
 import Icon from "react-native-vector-icons/Ionicons";
+import { Ionicons } from "@expo/vector-icons";
 import { fetchGalleryList } from "../../Controller/GalleryController/GalleryController";
+import Loader from "../../components/Alert/Loader";
 
 const { width, height } = Dimensions.get("window");
 const isTablet = width >= 600;
@@ -40,12 +42,7 @@ export default function GalleryFull() {
 
   if (loading) {
     return (
-      <View style={styles.loader}>
-        <ActivityIndicator size="large" color="#93210A" />
-        <Text style={[styles.loadingText, isTablet && styles.loadingTextTablet]}>
-          Loading Gallery...
-        </Text>
-      </View>
+     <Loader/>
     );
   }
 
@@ -55,16 +52,12 @@ export default function GalleryFull() {
       
       {/* Header */}
       <View style={[styles.header, isTablet && styles.headerTablet]}>
-        <TouchableOpacity
-          onPress={() => navigation.goBack()}
-          style={[styles.backBtn, isTablet && styles.backBtnTablet]}
-        >
-          <Icon 
-            name="chevron-back" 
-            size={isTablet ? 32 : 28} 
-            color="#fff" 
-          />
-        </TouchableOpacity>
+       <TouchableOpacity
+        style={[styles.backButton, isTablet && styles.backButtonTablet]}
+        onPress={() => navigation.goBack()}
+      >
+        <Ionicons name="chevron-back" size={isTablet ? 30 : 26} color="#fff" />
+      </TouchableOpacity>
 
         <Text style={[styles.headerTitle, isTablet && styles.headerTitleTablet]}>
           Gallery
@@ -180,35 +173,34 @@ const styles = StyleSheet.create({
 
   // Header - Mobile (1 column)
   header: {
-    backgroundColor: "#93210A",
-    paddingTop: Platform.OS === 'ios' ? 50 : 40,
-    paddingBottom: 20,
-    paddingHorizontal: 16,
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "space-between",
-    elevation: 4,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
+    backgroundColor: "#93210A",
+    paddingTop:40,
+    paddingBottom:30,
+    borderBottomLeftRadius: 20,
+    borderBottomRightRadius: 20,
   },
   // Header - Tablet (2 columns)
   headerTablet: {
-    paddingTop: Platform.OS === 'ios' ? 60 : 50,
-    paddingBottom: 25,
-    paddingHorizontal: 30,
+   paddingTop:45,
+    paddingBottom:28,
+    paddingHorizontal: 18,
   },
 
   // Back Button - Mobile
-  backBtn: {
-    padding: 8,
+   backButton:{
+    width: 40,
+    height: 40,
     borderRadius: 20,
-    backgroundColor: "rgba(255,255,255,0.2)",
+    backgroundColor: "rgba(255,255,255,0.15)",
+    alignItems: "center",
+    justifyContent: "center",
+    marginLeft:15,
   },
-  // Back Button - Tablet
-  backBtnTablet: {
-    padding: 10,
+  backButtonTablet:{
+    width: 50,
+    height: 50,
     borderRadius: 25,
   },
 
@@ -216,14 +208,15 @@ const styles = StyleSheet.create({
   headerTitle: {
     flex: 1,
     textAlign: "center",
-    fontSize: 22,
-    fontWeight: "bold",
     color: "#fff",
-    letterSpacing: 1,
+    fontSize: 20,
+    fontWeight: "800",
+    letterSpacing: 0.3,
+    marginRight:30,
   },
   // Header Title - Tablet
   headerTitleTablet: {
-    fontSize: 26,
+    fontSize: 24,
     letterSpacing: 1.2,
   },
 
@@ -294,7 +287,7 @@ const styles = StyleSheet.create({
 
   // Title - Mobile
   title: {
-    fontSize: 18,
+    fontSize: 15,
     fontWeight: "700",
     color: "#fff",
     marginBottom: 4,
@@ -304,7 +297,7 @@ const styles = StyleSheet.create({
   },
   // Title - Tablet
   titleTablet: {
-    fontSize: 20,
+    fontSize: 18,
     marginBottom: 6,
   },
 

@@ -15,6 +15,7 @@ import {
 } from "react-native";
 import axios from "axios";
 import Icon from "react-native-vector-icons/Ionicons";
+import Loader from "../../../components/Alert/Loader";
 
 const { width: screenWidth } = Dimensions.get("window");
 
@@ -144,9 +145,7 @@ export default function DistrictBusinessPage3({ route, navigation }) {
 
   if (loading) {
     return (
-      <View style={styles.center}>
-        <ActivityIndicator size="large" color="#E37714" />
-      </View>
+      <Loader/>
     );
   }
 

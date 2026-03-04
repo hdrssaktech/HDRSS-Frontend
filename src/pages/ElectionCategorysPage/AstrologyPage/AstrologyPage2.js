@@ -11,10 +11,12 @@ import {
   Animated,
   Platform,
 } from "react-native";
-import Icon from "react-native-vector-icons/MaterialIcons";
+import { Ionicons } from "@expo/vector-icons";
+
 import { useNavigation } from "@react-navigation/native";
 import { fetchAstrologyByType } from "../../../Controller/AstrologyController/AstrologyController";
 import YoutubePlayer from "react-native-youtube-iframe";
+import Loader from "../../../components/Alert/Loader";
 
 export default function AstrologyPage2({ route }) {
   const navigation = useNavigation();
@@ -126,7 +128,6 @@ export default function AstrologyPage2({ route }) {
           { 
             width: width,
             height: getAdHeight(),
-            marginTop: responsiveSize(8, 10, 12)
           }
         ]}
         resizeMode="cover"
@@ -242,7 +243,8 @@ export default function AstrologyPage2({ route }) {
         styles.sectionTitle,
         { 
           fontSize: responsiveSize(18, 22, 26),
-          marginBottom: responsiveSize(20, 24, 28)
+          marginBottom: responsiveSize(20, 24, 28),
+          marginTop: responsiveSize(5, 8, 10)
         }
       ]}>
         {astrologyType.name}
@@ -305,57 +307,42 @@ export default function AstrologyPage2({ route }) {
     </>
   );
 
+  // Header component
+  const Header = () => (
+    <View style={[
+      styles.header,
+      isTablet && styles.headerTablet,
+      isLargeTablet && styles.headerLargeTablet
+    ]}>
+      <TouchableOpacity
+        style={[styles.backButton, isTablet && styles.backButtonTablet]}
+        onPress={() => navigation.goBack()}
+      >
+        <Ionicons name="chevron-back" size={isTablet ? 30 : 26} color="#fff" />
+      </TouchableOpacity>
+      
+      <Text style={[
+        styles.headerTitle,
+        isTablet && styles.headerTitleTablet
+      ]}>
+        Astrology
+      </Text>
+      
+      <View style={[
+        styles.headerSpacer,
+        isTablet && styles.headerSpacerTablet
+      ]} />
+    </View>
+  );
+
   return (
     <View style={styles.container}>
       {/* 🔴 HEADER */}
-      <View style={[
-        styles.header,
-        { 
-          padding: responsiveSize(15, 20, 25),
-          marginTop: Platform.OS === "ios" ? responsiveSize(32, 40, 48) : responsiveSize(28, 36, 44)
-        }
-      ]}>
-        <TouchableOpacity 
-          onPress={() => navigation.goBack()}
-          style={[
-            styles.backButton,
-            { 
-              padding: responsiveSize(8, 10, 12),
-              borderRadius: responsiveSize(20, 24, 28)
-            }
-          ]}
-        >
-          <Icon 
-            name="arrow-back" 
-            size={responsiveSize(22, 26, 30)} 
-            color="#fff" 
-          />
-        </TouchableOpacity>
-        
-        <Text style={[
-          styles.headerTitle,
-          { fontSize: responsiveSize(20, 24, 28) }
-        ]}>
-          Astrology
-        </Text>
-        
-        <View style={{ width: responsiveSize(40, 50, 60) }} />
-      </View>
+      <Header />
 
       {/* 🔹 CONTENT */}
       {loading ? (
-        <View style={styles.loaderContainer}>
-          <ActivityIndicator
-            size={responsiveSize("large", 50, 60)}
-            color="#93210A"
-          />
-          <Text style={[
-            styles.loaderText,
-            { fontSize: responsiveSize(14, 16, 18) }
-          ]}>
-            Loading astrology details...
-          </Text>
-        </View>
+        <Loader/>
       ) : data.length === 0 ? (
         <View style={styles.emptyContainer}>
           <Icon name="error-outline" size={responsiveSize(60, 80, 100)} color="#93210A" />
@@ -409,23 +396,57 @@ const styles = StyleSheet.create({
 
   /* 🔴 HEADER */
   header: {
-    flexDirection: "row",
+   flexDirection: "row",
     alignItems: "center",
-    justifyContent: "space-between",
     backgroundColor: "#93210A",
+    paddingTop:40,
+    paddingBottom:30,
+    borderBottomLeftRadius: 20,
+    borderBottomRightRadius: 20,
+  },
+  headerTablet: {
+   paddingTop:45,
+    paddingBottom:28,
+    paddingHorizontal: 18,
+  },
+  headerLargeTablet: {
+    paddingTop: Platform.OS === "ios" ? 70 : 60,
+    paddingBottom: 32,
+    paddingHorizontal: 32,
   },
   
   backButton: {
-    backgroundColor: "rgba(255,255,255,0.2)",
-    alignItems: 'center',
-    justifyContent: 'center',
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: "rgba(255,255,255,0.15)",
+    alignItems: "center",
+    justifyContent: "center",
+    marginLeft:15,
+  },
+  backButtonTablet: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
   },
   
   headerTitle: {
+   flex: 1,
+    textAlign: "center",
     color: "#fff",
-    fontWeight: "700",
-    textAlign: 'center',
-    flex: 1,
+    fontSize: 20,
+    fontWeight: "800",
+    letterSpacing: 0.3,
+  },
+  headerTitleTablet: {
+    fontSize: 22,
+  },
+
+  headerSpacer: {
+    width: 40,
+  },
+  headerSpacerTablet: {
+    width: 50,
   },
 
   /* 📜 LIST CONTENT */
@@ -449,6 +470,12 @@ const styles = StyleSheet.create({
   topAdContainer: {
     position: 'relative',
     overflow: 'hidden',
+    borderRadius: 12,
+    elevation: 3,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
   },
   
   topAdImage: {
@@ -535,6 +562,7 @@ const styles = StyleSheet.create({
   /* 🎥 VIDEO ADVERTISEMENT */
   videoAdContainer: {
     alignItems: 'center',
+    width: '100%',
   },
   
   videoTitle: {
@@ -546,5 +574,6 @@ const styles = StyleSheet.create({
   videoWrapper: {
     overflow: "hidden",
     backgroundColor: '#000',
+    width: '100%',
   },
 });

@@ -18,6 +18,7 @@ import { useRoute, useNavigation } from "@react-navigation/native";
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from "@expo/vector-icons";
 import YoutubePlayer from 'react-native-youtube-iframe';
+import Loader from "../../../../components/Alert/Loader";
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
 const isTablet = screenWidth >= 600;
@@ -214,9 +215,7 @@ export default function TownBusinessPage() {
           }
         ]}>
           {adsLoading ? (
-            <View style={styles.adsLoadingContainer}>
-              <ActivityIndicator size="large" color="#fff" />
-            </View>
+            <Loader/>
           ) : adsData.length > 0 ? (
             <>
               <Animated.FlatList
@@ -311,18 +310,7 @@ export default function TownBusinessPage() {
           ]}
         >
           {loading ? (
-            <View style={[
-              styles.loadingContainer,
-              isTablet && styles.loadingContainerTablet
-            ]}>
-              <ActivityIndicator size={isTablet ? "large" : "large"} color="#93210A" />
-              <Text style={[
-                styles.loadingText,
-                isTablet && styles.loadingTextTablet
-              ]}>
-                Loading categories...
-              </Text>
-            </View>
+           <Loader/>
           ) : data.length > 0 ? (
             <View style={styles.categoriesContainer}>
               {/* Enhanced Header */}

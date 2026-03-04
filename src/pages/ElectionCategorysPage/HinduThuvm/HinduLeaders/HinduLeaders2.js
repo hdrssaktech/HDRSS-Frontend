@@ -13,6 +13,7 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import axios from "axios";
+import Loader from "../../../../components/Alert/Loader";
 
 export default function HinduLeadersDetailsList({ route, navigation }) {
   const { categoryId, categoryName } = route.params;
@@ -146,10 +147,7 @@ export default function HinduLeadersDetailsList({ route, navigation }) {
 
       {/* Body */}
       {loading ? (
-        <View style={styles.center}>
-          <ActivityIndicator size="large" />
-          <Text style={{ marginTop: 10 }}>Loading...</Text>
-        </View>
+        <Loader/>
       ) : error ? (
         <View style={styles.center}>
           <Text style={{ color: "red", textAlign: "center" }}>{error}</Text>

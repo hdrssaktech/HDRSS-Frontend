@@ -15,6 +15,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import axios from "axios";
 import { useNavigation, useRoute } from "@react-navigation/native";
+import Loader from "../../../../components/Alert/Loader";
 
 const API_URL =
   "https://hdrss-backend.onrender.com/api/v1/panchangam/naalkaati/range";
@@ -166,10 +167,7 @@ export default function NaalKaatiPanchangam() {
 
   if (loading) {
     return (
-      <View style={[styles.screen, styles.center]}>
-        <ActivityIndicator size="large" color="#ff3b63" />
-        <Text style={styles.loadingText}>நாள்காட்டியை ஏற்றுகிறது...</Text>
-      </View>
+      <Loader visible={true} message="தரவு ஏற்றப்படுகிறது..." />
     );
   }
 
@@ -204,24 +202,19 @@ export default function NaalKaatiPanchangam() {
   return (
     <View style={styles.container}>
       {/* Header with Back Arrow */}
-      <View style={[styles.headerGradient, { backgroundColor: "#8B0000" }]}>
-        <View style={styles.headerContent}>
-          <TouchableOpacity
-            style={styles.backButton}
-            onPress={goBack}
-            activeOpacity={0.7}
-          >
-            <Ionicons 
-              name="chevron-back" 
-              size={24} 
-              color="#fff" 
-            />
-          </TouchableOpacity>
-          <Text style={styles.headerTitle}>
+     
+        <View style={[styles.header, isTablet && styles.headerTablet]}>
+        <TouchableOpacity
+        style={[styles.backButton, isTablet && styles.backButtonTablet]}
+        onPress={() => navigation.goBack()}
+      >
+        <Ionicons name="chevron-back" size={isTablet ? 30 : 26} color="#fff" />
+      </TouchableOpacity>
+         <Text style={[styles.headerTitle, isTablet && styles.headerTitleTablet]}>
             நாள் காட்டி
           </Text>
           <View style={styles.headerRightPlaceholder} />
-        </View>
+      
       </View>
 
       <ScrollView 
@@ -513,42 +506,47 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     flex: 1,
   },
-
-  // Header Styles
-  headerGradient: {
-    paddingTop: Platform.OS === 'ios' ? 50 : 40,
-    paddingBottom: 14,
-    paddingHorizontal: 12,
-    borderBottomLeftRadius: 20,
-    borderBottomRightRadius: 20,
-    elevation: 6,
-    shadowColor: "#000",
-    shadowOpacity: 0.12,
-    shadowRadius: 10,
-    shadowOffset: { width: 0, height: 4 },
-  },
-  
-  headerContent: {
+ 
+  header: {
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "space-between",
-    width: "100%",
+    backgroundColor: "#93210A",
+    paddingTop:40,
+    paddingBottom:30,
+    borderBottomLeftRadius: 20,
+    borderBottomRightRadius: 20,
   },
-  
-  backButton: {
+
+   headerTablet: {
+    paddingTop:50,
+    paddingBottom:28,
+    paddingHorizontal: 18,
+  },
+ backButton:{
     width: 40,
     height: 40,
     borderRadius: 20,
+    backgroundColor: "rgba(255,255,255,0.15)",
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "rgba(255,255,255,0.15)",
+    marginLeft:15,
+  },
+  backButtonTablet:{
+    width: 50,
+    height: 50,
+    borderRadius: 25,
   },
   
-  headerTitle: {
+   headerTitle: {
+    flex: 1,
+    textAlign: "center",
     color: "#fff",
     fontSize: 20,
-    fontWeight: "900",
-    letterSpacing: 0.5,
+    fontWeight: "800",
+    letterSpacing: 0.3,
+  },
+  headerTitleTablet: {
+    fontSize: 22,
   },
   
   headerRightPlaceholder: {

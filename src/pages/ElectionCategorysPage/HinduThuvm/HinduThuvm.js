@@ -13,13 +13,12 @@ import { LinearGradient } from "expo-linear-gradient";
 import { Ionicons } from "@expo/vector-icons";
 
 export default function DetailsScreen({ navigation }) {
-  const [active, setActive] = useState(1); // middle button default highlight
+  const [active, setActive] = useState(0); // First button active by default
   const [isTablet, setIsTablet] = useState(false);
   const [orientation, setOrientation] = useState("portrait");
 
   const buttons = [
-    { label: "இந்துத் தலைவர்கள்", route: "HinduLeaders1" },
-    { label: "இந்து சமயங்கள்", route: "HinduSamayam1" },
+    { label: "இந்து அமைப்புகள்", route: "HinduSamayam1" },
     { label: "இந்து நூல்கள்", route: "HinduNoolgal1" },
   ];
 
@@ -94,7 +93,7 @@ export default function DetailsScreen({ navigation }) {
               isTablet && styles.descriptionTablet,
               orientation === "landscape" && styles.descriptionLandscape
             ]}>
-              இந்துத் தலைவர்கள், சமயம் மற்றும் நூல்களை ஆராயுங்கள்.
+              இந்து அமைப்புகள் மற்றும் நூல்களை ஆராயுங்கள்.
             </Text>
           </View>
 
@@ -143,7 +142,6 @@ export default function DetailsScreen({ navigation }) {
                             name="arrow-forward"
                             size={orientation === "landscape" ? 28 : 24}
                             color={isActive ? "#FFFFFF" : "#93210A"}
-                            marginBottom={56}
                           />
                         </View>
                       </View>
@@ -213,7 +211,7 @@ export default function DetailsScreen({ navigation }) {
   );
 }
 
-const { width, height } = Dimensions.get("window");
+const { width } = Dimensions.get("window");
 
 const styles = StyleSheet.create({
   container: { 
@@ -243,7 +241,7 @@ const styles = StyleSheet.create({
   contentContainerLandscape: {
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "space-between",
+    justifyContent: "center",
     paddingHorizontal: 40,
     paddingVertical: 0,
   },
@@ -293,7 +291,7 @@ const styles = StyleSheet.create({
   },
   topTextWrapTablet: {
     marginTop: 100,
-    marginBottom: 50,
+    marginBottom: 30,
     paddingHorizontal: 20,
     alignItems: "center",
   },
@@ -303,6 +301,7 @@ const styles = StyleSheet.create({
     marginBottom: 0,
     paddingRight: 40,
     alignItems: "flex-start",
+    maxWidth: 400,
   },
   heading: {
     fontSize: 19,
@@ -349,6 +348,7 @@ const styles = StyleSheet.create({
   buttonMobile: {
     height: 64,
     width: "100%",
+    marginBottom: 16,
   },
 
   /* Tablet Buttons */
@@ -366,12 +366,12 @@ const styles = StyleSheet.create({
   tabletButtonGrid: {
     flexDirection: "row",
     justifyContent: "center",
+    alignItems: "center",
     flexWrap: "wrap",
-    gap: 25,
-   
+    gap: 30,
   },
   tabletButtonGridLandscape: {
-    gap: 20,
+    gap: 25,
     justifyContent: "flex-start",
   },
   
@@ -379,7 +379,6 @@ const styles = StyleSheet.create({
   buttonBase: {
     borderRadius: 40,
     paddingHorizontal: 22,
-    marginBottom: 21,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
@@ -400,6 +399,7 @@ const styles = StyleSheet.create({
   buttonContentTablet: {
     flex: 1,
     justifyContent: "space-between",
+    height: "100%",
   },
   buttonContentTabletActive: {
     // Additional styles for active tablet button
@@ -412,6 +412,7 @@ const styles = StyleSheet.create({
   
   iconContainer: {
     alignSelf: "flex-end",
+    marginTop: 10,
   },
 
   /* Active Button */

@@ -13,6 +13,7 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import axios from "axios";
+import Loader from "../../../../components/Alert/Loader";
 
 export default function HinduSamayam2({ route, navigation }) {
   const { categoryId, categoryName } = route.params;
@@ -155,12 +156,23 @@ export default function HinduSamayam2({ route, navigation }) {
         <View style={{ width: isTablet ? 50 : 40 }} />
       </View>
 
+      {/* BANNER */}
+              <View style={[styles.bannerWrap, isTablet && styles.bannerWrapTablet]}>
+                <Image source={{ uri: bannerUri }} style={styles.banner} resizeMode="cover" />
+                <View style={styles.bannerOverlay} />
+                
+                {/* {categoryName && (
+                  <View style={[styles.categoryChip, isTablet && styles.categoryChipTablet]}>
+                    <Text style={[styles.categoryChipText, isTablet && styles.categoryChipTextTablet]}>
+                      {categoryName}
+                    </Text>
+                  </View>
+                )} */}
+              </View>
+
       {/* Body */}
       {loading ? (
-        <View style={styles.center}>
-          <ActivityIndicator size="large" color="#8B0000" />
-          <Text style={{ marginTop: 10, color: "#8B0000" }}>Loading...</Text>
-        </View>
+        <Loader/>
       ) : error ? (
         <View style={styles.center}>
           <Text style={{ color: "#8B0000", textAlign: "center", fontWeight: "700" }}>
@@ -191,42 +203,45 @@ const styles = StyleSheet.create({
 
   // Header (mobile)
   header: {
-    backgroundColor: "#8B0000",
-    paddingHorizontal: 16,
-    paddingVertical: 20,
-    flexDirection: "row",
+   flexDirection: "row",
     alignItems: "center",
+    backgroundColor: "#93210A",
+    paddingTop:40,
+    paddingBottom:30,
+    borderBottomLeftRadius: 20,
+    borderBottomRightRadius: 20,
   },
   headerTablet: {
-    paddingHorizontal: 24,
-    paddingaddingVertical: 26,
+    paddingTop:45,
+    paddingBottom:28,
+    paddingHorizontal: 18,
   },
 
   backBtn: {
-    width: 40,
+     width: 40,
     height: 40,
-    justifyContent: "center",
+    borderRadius: 20,
+    backgroundColor: "rgba(255,255,255,0.15)",
     alignItems: "center",
-    marginTop: 20,
+    justifyContent: "center",
+    marginLeft:15,
   },
   backBtnTablet: {
     width: 50,
     height: 50,
-    marginTop: 2,
+    borderRadius: 25,
   },
 
   headerTitle: {
-    flex: 1,
+      flex: 1,
+    textAlign: "center",
     color: "#fff",
     fontSize: 17,
     fontWeight: "800",
-    textAlign: "center",
-    paddingHorizontal: 10,
-    marginTop: 20,
+    letterSpacing: 0.3,
   },
   headerTitleTablet: {
-    fontSize: 22,
-    letterSpacing: 0.4,
+     fontSize: 22,
   },
 
   center: { 

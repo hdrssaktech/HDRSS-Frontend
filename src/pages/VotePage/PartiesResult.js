@@ -20,6 +20,7 @@ import {
 } from '../../api/api.js';
 import axios from 'axios';
 import Ionicons from "react-native-vector-icons/Ionicons";
+import Loader from '../../components/Alert/Loader.js';
 
 const { width } = Dimensions.get('window');
 
@@ -457,10 +458,7 @@ export default function PartiesResult({ navigation }) {
 
   if (loading && results.length === 0) {
     return (
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#1A237E" />
-        <Text style={styles.loadingText}>Loading results...</Text>
-      </View>
+      <Loader/>
     );
   }
 

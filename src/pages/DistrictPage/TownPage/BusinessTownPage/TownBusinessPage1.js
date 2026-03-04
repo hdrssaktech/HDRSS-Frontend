@@ -18,6 +18,7 @@ import { useRoute, useNavigation } from "@react-navigation/native";
 import { LinearGradient } from "expo-linear-gradient";
 import { Ionicons } from "@expo/vector-icons";
 import YoutubePlayer from 'react-native-youtube-iframe';
+import Loader from "../../../../components/Alert/Loader";
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get("window");
 const isTablet = screenWidth >= 600;
@@ -222,10 +223,7 @@ export default function TownBusinessPage1() {
   // ================= LOADER =================
   if (loading) {
     return (
-      <View style={styles.loader}>
-        <ActivityIndicator size="large" color="#93210A" />
-        <Text style={styles.loaderText}>Loading businesses...</Text>
-      </View>
+      <Loader/>
     );
   }
 

@@ -3,17 +3,17 @@ import {
   View,
   Text,
   FlatList,
-  ActivityIndicator,
   StyleSheet,
   Image,
   TouchableOpacity,
-  useWindowDimensions,
+  useWindowDimensions,    
   SafeAreaView,
   StatusBar,
   Platform,
 } from "react-native";
 import { useRoute, useNavigation } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
+import Loader from "../../../components/Alert/Loader";
 
 const PartiesPage1 = () => {
   const route = useRoute();
@@ -26,31 +26,19 @@ const PartiesPage1 = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // ✅ Tablet check with proper dimensions
+  // Tablet check with proper dimensions
   const isTablet = useMemo(() => {
     return width >= 600 || (width > height && width >= 600);
   }, [width, height]);
 
-  // ✅ Mobile: 2 columns | Tablet: 3 columns
+  // Mobile: 2 columns | Tablet: 3 columns
   const numColumns = useMemo(() => (isTablet ? 3 : 2), [isTablet]);
 
-  // ✅ Dynamic card width with better spacing
-  const itemWidth = useMemo(() => {
-    const horizontalPadding = isTablet ? 32 : 16;
-    const spacing = isTablet ? 20 : 12;
-    const totalSpacing = (numColumns - 1) * spacing;
-    return (width - horizontalPadding * 2 - totalSpacing) / numColumns;
-  }, [numColumns, width, isTablet]);
-
-  // ✅ Responsive image height
-  const imageHeight = useMemo(() => {
-    return isTablet ? 160 : 140;
-  }, [isTablet]);
-
-  // ✅ Responsive title font size
-  const titleFontSize = useMemo(() => {
-    return isTablet ? 15 : 14;
-  }, [isTablet]);
+  // Calculate card width for consistent sizing (like model code)
+  const gap = 16;
+  const horizontalPadding = 32; // 16 * 2
+  const totalGap = (numColumns - 1) * gap;
+  const cardWidth = (width - horizontalPadding - totalGap) / numColumns;
 
   useEffect(() => {
     const fetchParties = async () => {
@@ -71,7 +59,6 @@ const PartiesPage1 = () => {
         if (Array.isArray(data)) {
           setParties(data);
         } else if (data && typeof data === "object") {
-          // Handle single object or object with array property
           if (Array.isArray(data.data)) {
             setParties(data.data);
           } else if (Array.isArray(data.categories)) {
@@ -96,61 +83,140 @@ const PartiesPage1 = () => {
     fetchParties();
   }, [districtId]);
 
-  const renderPartyCard = ({ item, index }) => (
-    <TouchableOpacity
-      style={[
-        styles.card,
-        isTablet && styles.cardTablet,
-        { 
-          width: itemWidth,
-          marginBottom: isTablet ? 20 : 15,
-          marginRight: (index % numColumns !== numColumns - 1) ? (isTablet ? 20 : 12) : 0
-        },
-      ]}
-      activeOpacity={0.85}
-      onPress={() => navigation.navigate("Partiespage2", { 
-        partyId: item.id,
-        partyName: item.name 
-      })}
-    >
-      <View style={styles.imageContainer}>
-        <Image
-          source={{
-            uri:
-              item.image ||
-              "https://via.placeholder.com/400x250/f0f0f0/8B0000?text=Party",
-          }}
-          style={[
-            styles.image, 
-            { height: imageHeight },
-            isTablet && styles.imageTablet
-          ]}
-          resizeMode="cover"
-        />
-      </View>
+  // Create a special item for Elected Representatives
+  const electedRepsItem = useMemo(() => ({
+    id: 'elected-reps-special',
+    name: 'Elected Representatives',
+    type: 'elected-reps',
+    image: require('../../../../assets/Election/governmentlogo.jpeg'),
+    districtName: districtName
+  }), [districtName]);
 
-      <View style={[styles.textContainer, isTablet && styles.textContainerTablet]}>
-        <Text
+  // Combine the special item with parties data
+  const allItems = useMemo(() => {
+    return [electedRepsItem, ...parties];
+  }, [electedRepsItem, parties]);
+
+  const renderCard = ({ item, index }) => {
+    // Check if it's the last item in the row
+    const isLastInRow = (index + 1) % numColumns === 0;
+    
+    // If it's the Elected Representatives card
+    if (item.type === 'elected-reps') {
+      return (
+        <TouchableOpacity
           style={[
-            styles.title, 
-            { fontSize: titleFontSize },
-            isTablet && styles.titleTablet
+            styles.card,
+            isTablet && styles.cardTablet,
+            { 
+              width: cardWidth,
+              marginRight: !isLastInRow ? gap : 0,
+              marginBottom: gap,
+            },
           ]}
-          numberOfLines={2}
+          activeOpacity={0.85}
+          onPress={() => navigation.navigate("DistrictAssembly3", { 
+            districtId: districtId,
+            districtName: districtName
+          })}
         >
-          {item.name || "Unnamed Party"}
-        </Text>
-        
-        <View style={styles.arrowContainer}>
-          <Ionicons 
-            name="arrow-forward" 
-            size={isTablet ? 18 : 16} 
-            color="#8B0000" 
+          <View style={[styles.imageContainer, isTablet && styles.imageContainerTablet]}>
+            <Image
+              source={item.image}
+              style={[
+                styles.cardImage,
+                isTablet && styles.cardImageTablet,
+              ]}
+              resizeMode="cover"
+            />
+          </View>
+
+          <View style={[styles.textContainer, isTablet && styles.textContainerTablet]}>
+            <View style={styles.cardTextWrap}>
+              <Text
+                style={[
+                  styles.title,
+                  isTablet && styles.titleTablet,
+                ]}
+                numberOfLines={1}
+              >
+                {item.name}
+              </Text>
+              
+              {item.districtName && (
+                <Text style={[styles.cardSubText, isTablet && styles.cardSubTextTablet]}>
+                  {item.districtName}
+                </Text>
+              )}
+            </View>
+            
+            <View style={styles.arrowCircle}>
+              <Ionicons 
+                name="arrow-forward" 
+                size={isTablet ? 18 : 16} 
+                color="#8B0000" 
+              />
+            </View>
+          </View>
+        </TouchableOpacity>
+      );
+    }
+    
+    // Regular party card
+    return (
+      <TouchableOpacity
+        style={[
+          styles.card,
+          isTablet && styles.cardTablet,
+          { 
+            width: cardWidth,
+            marginRight: !isLastInRow ? gap : 0,
+            marginBottom: gap,
+          },
+        ]}
+        activeOpacity={0.85}
+        onPress={() => navigation.navigate("Partiespage2", { 
+          partyId: item.id,
+          partyName: item.name 
+        })}
+      >
+        <View style={[styles.imageContainer, isTablet && styles.imageContainerTablet]}>
+          <Image
+            source={{
+              uri:
+                item.image ||
+                "https://via.placeholder.com/400x250/f0f0f0/8B0000?text=Party",
+            }}
+            style={[
+              styles.cardImage,
+              isTablet && styles.cardImageTablet,
+            ]}
+            resizeMode="cover"
           />
         </View>
-      </View>
-    </TouchableOpacity>
-  );
+
+        <View style={[styles.textContainer, isTablet && styles.textContainerTablet]}>
+          <Text
+            style={[
+              styles.title,
+              isTablet && styles.titleTablet,
+            ]}
+            numberOfLines={2}
+          >
+            {item.name || "Unnamed Party"}
+          </Text>
+          
+          <View style={styles.arrowCircle}>
+            <Ionicons 
+              name="arrow-forward" 
+              size={isTablet ? 18 : 16} 
+              color="#8B0000" 
+            />
+          </View>
+        </View>
+      </TouchableOpacity>
+    );
+  };
 
   const renderHeader = () => (
     <View style={[styles.header, isTablet && styles.headerTablet]}>
@@ -178,14 +244,7 @@ const PartiesPage1 = () => {
 
   const renderContent = () => {
     if (loading) {
-      return (
-        <View style={[styles.centerContainer, isTablet && styles.centerContainerTablet]}>
-          <ActivityIndicator size="large" color="#8B0000" />
-          <Text style={[styles.loadingText, isTablet && styles.loadingTextTablet]}>
-            Loading parties...
-          </Text>
-        </View>
-      );
+      return <Loader />;
     }
 
     if (error) {
@@ -197,7 +256,10 @@ const PartiesPage1 = () => {
           </Text>
           <TouchableOpacity 
             style={[styles.retryButton, isTablet && styles.retryButtonTablet]}
-            onPress={() => setLoading(true)}
+            onPress={() => {
+              setError(null);
+              setLoading(true);
+            }}
           >
             <Text style={[styles.retryButtonText, isTablet && styles.retryButtonTextTablet]}>
               Retry
@@ -207,25 +269,14 @@ const PartiesPage1 = () => {
       );
     }
 
-    if (parties.length === 0) {
-      return (
-        <View style={[styles.centerContainer, isTablet && styles.centerContainerTablet]}>
-          <Ionicons name="people-outline" size={isTablet ? 60 : 50} color="#bbb" />
-          <Text style={[styles.emptyText, isTablet && styles.emptyTextTablet]}>
-            No parties available
-          </Text>
-        </View>
-      );
-    }
-
     return (
       <FlatList
-        data={parties}
+        data={allItems}
         key={`${numColumns}_${width}`}
         numColumns={numColumns}
         showsVerticalScrollIndicator={false}
-        keyExtractor={(item, index) => item.id?.toString() || `party-${index}`}
-        renderItem={renderPartyCard}
+        keyExtractor={(item, index) => item.id?.toString() || `item-${index}`}
+        renderItem={renderCard}
         contentContainerStyle={[
           styles.listContainer,
           isTablet && styles.listContainerTablet,
@@ -246,8 +297,6 @@ const PartiesPage1 = () => {
   );
 };
 
-export default PartiesPage1;
-
 const styles = StyleSheet.create({
   safe: { 
     flex: 1, 
@@ -264,13 +313,22 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     paddingHorizontal: 16,
-    paddingTop: Platform.OS === "ios" ? 10 : 40,
-    paddingBottom: 12,
+    paddingTop: Platform.OS === "ios" ? 50 : 40,
+    paddingBottom: 16,
+    borderBottomLeftRadius: 20,
+    borderBottomRightRadius: 20,
+    elevation: 4,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
   },
   headerTablet: {
     paddingHorizontal: 32,
-    paddingTop: Platform.OS === "ios" ? 15 : 45,
-    paddingBottom: 15,
+    paddingTop: Platform.OS === "ios" ? 60 : 50,
+    paddingBottom: 20,
+    borderBottomLeftRadius: 30,
+    borderBottomRightRadius: 30,
   },
   backButton: {
     width: 40,
@@ -292,21 +350,23 @@ const styles = StyleSheet.create({
   },
   headerTitle: {
     color: "#fff",
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: "900",
-    marginRight: 40,
+    textAlign: "center",
   },
   headerTitleTablet: {
-    fontSize: 24,
+    fontSize: 26,
   },
   subTitle: {
     color: "rgba(255,255,255,0.9)",
     fontSize: 12,
     fontWeight: "600",
-    marginTop: 2,
+    marginTop: 4,
+    textAlign: "center",
   },
   subTitleTablet: {
     fontSize: 14,
+    marginTop: 6,
   },
   headerSpacer: {
     width: 40,
@@ -325,16 +385,6 @@ const styles = StyleSheet.create({
   },
   centerContainerTablet: {
     padding: 40,
-  },
-  loadingText: {
-    marginTop: 12,
-    color: "#8B0000",
-    fontSize: 16,
-    fontWeight: "700",
-  },
-  loadingTextTablet: {
-    fontSize: 18,
-    marginTop: 16,
   },
   errorText: {
     marginTop: 14,
@@ -387,11 +437,11 @@ const styles = StyleSheet.create({
   // List Container
   listContainer: {
     paddingHorizontal: 16,
-    paddingTop: 20,
+    paddingTop: 16,
   },
   listContainerTablet: {
     paddingHorizontal: 32,
-    paddingTop: 30,
+    paddingTop: 20,
   },
 
   // Card
@@ -399,32 +449,35 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
     borderRadius: 16,
     overflow: "hidden",
-    elevation: 4,
     shadowColor: "#000",
-    shadowOffset: { width: 0, height: 3 },
+    shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
-    shadowRadius: 6,
+    shadowRadius: 4,
+    elevation: 3,
     borderWidth: 1,
     borderColor: "rgba(139, 0, 0, 0.1)",
   },
   cardTablet: {
     borderRadius: 18,
-    elevation: 6,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.15,
     shadowRadius: 8,
+    elevation: 5,
   },
 
   imageContainer: {
     width: "100%",
+    height: 140,
     overflow: "hidden",
     backgroundColor: "#f5f5f5",
   },
-  image: {
-    width: "100%",
+  imageContainerTablet: {
+    height: 160,
   },
-  imageTablet: {
-    // Additional tablet image styles
+  
+  cardImage: {
+    width: "100%",
+    height: "100%",
   },
 
   textContainer: {
@@ -436,21 +489,44 @@ const styles = StyleSheet.create({
     backgroundColor: "#FFFFFF",
   },
   textContainerTablet: {
-    padding: 14,
+    padding: 16,
     minHeight: 70,
+  },
+  cardTextWrap: {
+    flex: 1,
+    paddingRight: 8,
   },
   title: {
     flex: 1,
     fontWeight: "800",
     color: "#8B0000",
-    lineHeight: 18,
-    paddingRight: 8,
+    lineHeight: 20,
+    fontSize: 14,
   },
   titleTablet: {
+    fontSize: 16,
     fontWeight: "900",
-    lineHeight: 20,
+    lineHeight: 22,
   },
-  arrowContainer: {
-    paddingLeft: 4,
+  cardSubText: {
+    fontSize: 11,
+    color: "#666",
+    fontWeight: "500",
+    marginTop: 2,
+  },
+  cardSubTextTablet: {
+    fontSize: 13,
+    marginTop: 4,
+  },
+  arrowCircle: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: "rgba(139, 0, 0, 0.1)",
+    alignItems: "center",
+    justifyContent: "center",
+    marginLeft: 8,
   },
 });
+
+export default PartiesPage1;

@@ -27,6 +27,7 @@ export default function Header({ toggleSidebar }) {
     })();
   }, []);
 
+
   // Rotation animation
   useEffect(() => {
     Animated.loop(
@@ -121,7 +122,7 @@ export default function Header({ toggleSidebar }) {
             ]}
           >
             {/* REGD.NO: 152/2021 */}
-            காவி
+               REGD.NO: 152/2021
           </Text>
 
           <Image
@@ -131,6 +132,15 @@ export default function Header({ toggleSidebar }) {
               isTablet && styles.sunCenterTablet,
             ]}
           />
+           {/* Registration Number Below Sun Logo */}
+          <Text
+            style={[
+              styles.regNo1,
+              isTablet && styles.regNoTablet1,
+            ]}
+          >
+            காவி
+          </Text>
 
           <View
             style={[
@@ -268,15 +278,15 @@ const styles = StyleSheet.create({
   regNo: {
     position: "absolute",
     top: 10,
-    right:28,
-    fontSize:10,
+    right:9,
+    fontSize:9,
     fontWeight: "bold",
     color: "#000",
   },
   regNoTablet: {
-    fontSize: 18,
+    fontSize:12,
     top: -40,
-    right: 40,
+    right: 15,
   },
   /* SUN */
   sunWrapper: {
@@ -311,6 +321,27 @@ const styles = StyleSheet.create({
     width: 260,
     height: 98,
     bottom:55,
+  },
+
+    regNo1: {
+    position: "absolute",
+    bottom: 12, // Position below the sun logo
+    fontSize: 9,
+    fontWeight: "bold",
+    color: "#000",
+    // backgroundColor: "rgba(255,255,255,0.8)",
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 4,
+    overflow: "hidden",
+  },
+  
+  regNoTablet1: {
+    bottom: 13,
+    fontSize: 12,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 6,
   },
 
   /* WHITE LINE */

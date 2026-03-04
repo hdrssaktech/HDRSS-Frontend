@@ -18,6 +18,7 @@ import {
 import { useRoute, useNavigation } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
+import Loader from "../../../../components/Alert/Loader";
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get("window");
 const isTablet = screenWidth >=600;
@@ -75,7 +76,8 @@ export default function TownBusinessPage3() {
   
   // Get all parameters from route
   const { subcategoryItemId, entityId, townId, categoryName } = route.params;
-  const [businesses, setBusinesses] = useState([]);
+
+
   const [searchQuery, setSearchQuery] = useState('');
   const [filteredData, setFilteredData] = useState([]);
 
@@ -83,7 +85,7 @@ export default function TownBusinessPage3() {
   const [adsData, setAdsData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [adsLoading, setAdsLoading] = useState(true);
-  const [playing, setPlaying] = useState(false);
+
   
   // Advertisement carousel refs
   const flatListRef = useRef(null);
@@ -140,7 +142,7 @@ export default function TownBusinessPage3() {
     const fetchAds = async () => {
       try {
         const testResponse = await fetch(
-          `https://hdrss-backend.onrender.com/api/town-business-ads/filter?townId=${townId}&pageLevel=3&entityId=${entityId}}`
+          `https://hdrss-backend.onrender.com/api/town-business-ads/filter?townId=${townId}&pageLevel=3&entityId=${subcategoryItemId}}`
         );
         
         const json = await testResponse.json();
@@ -501,15 +503,7 @@ export default function TownBusinessPage3() {
   /* ================= LOADER ================= */
   if (loading) {
     return (
-      <View style={styles.loaderContainer}>
-        <ActivityIndicator size={responsiveSize("large", 60, 70)} color="#93210A" />
-        <Text style={[
-          styles.loaderText,
-          { fontSize: responsiveSize(14, 18, 20) }
-        ]}>
-          Loading businesses...
-        </Text>
-      </View>
+     <Loader/>
     );
   }
 

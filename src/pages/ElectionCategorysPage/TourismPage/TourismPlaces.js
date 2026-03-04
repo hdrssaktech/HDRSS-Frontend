@@ -10,6 +10,7 @@ import {
   TextInput,
   Modal,
   FlatList,
+  StatusBar,
 } from "react-native";
 import React, { useEffect, useState } from "react";
 import { useRoute, useNavigation } from "@react-navigation/native";
@@ -19,6 +20,7 @@ import {
   FontAwesome5,
   Ionicons,
 } from "@expo/vector-icons";
+import Loader from "../../../components/Alert/Loader";
 
 const IMAGE_BASE_URL = "https://hdrss-backend.onrender.com/";
 
@@ -26,8 +28,10 @@ export default function TourismPlacesList() {
   const route = useRoute();
   const navigation = useNavigation();
   const { id } = route.params;
-  const { width } = useWindowDimensions();
-  const isMobile = width < 768;
+  const { width, height } = useWindowDimensions();
+  const isMobile = width < 600;
+  const isTablet = width >= 600 && width < 1024;
+  const isLargeTablet = width >= 1024;
 
   const [data, setData] = useState([]);
   const [filteredData, setFilteredData] = useState([]);
@@ -35,6 +39,25 @@ export default function TourismPlacesList() {
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [searchQuery, setSearchQuery] = useState("");
   const [modalVisible, setModalVisible] = useState(false);
+
+  // Responsive size helper
+  const responsiveSize = (mobile, tablet, largeTablet) => {
+    if (isLargeTablet) return largeTablet || tablet;
+    if (isTablet) return tablet;
+    return mobile;
+  };
+
+  // Responsive columns: 2 on mobile, 3 on tablet, 4 on large tablet
+  const numColumns = isLargeTablet ? 4 : (isTablet ? 3 : 2);
+
+  // Calculate card width based on screen size
+  const cardWidth = () => {
+    const padding = responsiveSize(15, 20, 25);
+    const gap = responsiveSize(10, 15, 20);
+    const totalGap = gap * (numColumns - 1);
+    const availableWidth = width - (padding * 2);
+    return (availableWidth - totalGap) / numColumns;
+  };
 
   const categories = [
     "All",
@@ -105,7 +128,7 @@ export default function TourismPlacesList() {
       )}`
     );
 
-  // ✅ FIXED: Navigation to details page
+  // Navigation to details page
   const handleCardPress = (item) => {
     navigation.navigate("TourismPlaceDetails", {
       place: item,
@@ -138,53 +161,118 @@ export default function TourismPlacesList() {
 
   const ListEmptyComponent = () =>
     !modalVisible && (
-      <View style={styles.emptyContainer}>
-        <Ionicons name="search-outline" size={50} color="#999" />
-        <Text style={styles.emptyText}>No places found</Text>
+      <View style={[
+        styles.emptyContainer,
+        { marginTop: responsiveSize(40, 60, 80) }
+      ]}>
+        <Ionicons 
+          name="search-outline" 
+          size={responsiveSize(50, 70, 90)} 
+          color="#999" 
+        />
+        <Text style={[
+          styles.emptyText,
+          { fontSize: responsiveSize(16, 18, 20) }
+        ]}>
+          No places found
+        </Text>
       </View>
     );
 
   if (loading) {
-    return (
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#93210A" />
-      </View>
-    );
+    return <Loader />;
   }
 
   return (
     <View style={styles.container}>
+      <StatusBar backgroundColor="#93210A" barStyle="light-content" />
+      
       {/* HEADER */}
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()}>
-          <Ionicons name="chevron-back" size={26} color="#fff" />
+      <View style={[
+        styles.header,
+        isTablet && styles.headerTablet,
+        isLargeTablet && styles.headerLargeTablet
+      ]}>
+        <TouchableOpacity 
+          onPress={() => navigation.goBack()}
+          style={[
+            styles.backButton,
+            isTablet && styles.backButtonTablet
+          ]}
+        >
+          <Ionicons 
+            name="chevron-back" 
+            size={responsiveSize(24, 28, 32)} 
+            color="#fff" 
+          />
         </TouchableOpacity>
 
-        <Text style={[styles.heading, isMobile && styles.mobileHeading]}>
+        <Text style={[
+          styles.heading,
+          isMobile && styles.mobileHeading,
+          isTablet && styles.headingTablet,
+          isLargeTablet && styles.headingLargeTablet
+        ]}>
           Tourism Places
         </Text>
 
-        <View style={{ width: 26 }} />
+        <View style={[
+          styles.headerSpacer,
+          isTablet && styles.headerSpacerTablet
+        ]} />
       </View>
 
       {/* SEARCH + FILTER */}
-      <View style={styles.filterSection}>
-        <View style={styles.searchContainer}>
-          <Ionicons name="search" size={20} color="#666" />
+      <View style={[
+        styles.filterSection,
+        isTablet && styles.filterSectionTablet
+      ]}>
+        <View style={[
+          styles.searchContainer,
+          isTablet && styles.searchContainerTablet
+        ]}>
+          <Ionicons 
+            name="search" 
+            size={responsiveSize(18, 20, 22)} 
+            color="#666" 
+          />
           <TextInput
-            style={styles.searchInput}
+            style={[
+              styles.searchInput,
+              isTablet && styles.searchInputTablet
+            ]}
             placeholder="Search places..."
             value={searchQuery}
             onChangeText={setSearchQuery}
+            placeholderTextColor="#999"
           />
+          {searchQuery.length > 0 && (
+            <TouchableOpacity onPress={() => setSearchQuery("")}>
+              <Ionicons 
+                name="close" 
+                size={responsiveSize(18, 20, 22)} 
+                color="#666" 
+              />
+            </TouchableOpacity>
+          )}
         </View>
 
         <TouchableOpacity
-          style={styles.filterButton}
+          style={[
+            styles.filterButton,
+            isTablet && styles.filterButtonTablet
+          ]}
           onPress={() => setModalVisible(true)}
         >
-          <MaterialIcons name="filter-list" size={22} color="#fff" />
-          <Text style={styles.filterButtonText}>
+          <MaterialIcons 
+            name="filter-list" 
+            size={responsiveSize(20, 22, 24)} 
+            color="#fff" 
+          />
+          <Text style={[
+            styles.filterButtonText,
+            isTablet && styles.filterButtonTextTablet
+          ]}>
             {selectedCategory === "All" ? "Category" : selectedCategory}
           </Text>
         </TouchableOpacity>
@@ -195,17 +283,27 @@ export default function TourismPlacesList() {
         <FlatList
           data={filteredData}
           keyExtractor={(item, index) => index.toString()}
-          numColumns={2}
-          columnWrapperStyle={{ justifyContent: "space-between" }}
+          numColumns={numColumns}
+          key={numColumns}
+          columnWrapperStyle={numColumns > 1 ? {
+            justifyContent: "space-between",
+            marginBottom: responsiveSize(12, 16, 20)
+          } : undefined}
           contentContainerStyle={[
             styles.listContent,
+            { paddingHorizontal: responsiveSize(15, 20, 25) },
             filteredData.length === 0 && { flex: 1 },
           ]}
           ListEmptyComponent={ListEmptyComponent}
           renderItem={({ item }) => (
             <TouchableOpacity
-              style={[styles.card, { width: "48%" }]}
-              onPress={() => handleCardPress(item)} // ✅ FIXED
+              style={[
+                styles.card,
+                { width: cardWidth() },
+                isTablet && styles.cardTablet
+              ]}
+              onPress={() => handleCardPress(item)}
+              activeOpacity={0.85}
             >
               <Image
                 source={{
@@ -215,24 +313,42 @@ export default function TourismPlacesList() {
                       : IMAGE_BASE_URL + item.image
                     : "https://cdn-icons-png.flaticon.com/512/2659/2659360.png",
                 }}
-                style={styles.cardImage}
+                style={[
+                  styles.cardImage,
+                  isTablet && styles.cardImageTablet
+                ]}
               />
 
-              <View style={styles.cardContent}>
-                <Text style={styles.title} numberOfLines={2}>
+              <View style={[
+                styles.cardContent,
+                isTablet && styles.cardContentTablet
+              ]}>
+                <Text style={[
+                  styles.title,
+                  isTablet && styles.titleTablet
+                ]} numberOfLines={2}>
                   {item.title}
                 </Text>
 
                 {item.category && (
-                  <View style={styles.categoryBadge}>
-                    <Text style={styles.categoryBadgeText}>
+                  <View style={[
+                    styles.categoryBadge,
+                    isTablet && styles.categoryBadgeTablet
+                  ]}>
+                    <Text style={[
+                      styles.categoryBadgeText,
+                      isTablet && styles.categoryBadgeTextTablet
+                    ]}>
                       {item.category}
                     </Text>
                   </View>
                 )}
 
                 {/* ICON ROW */}
-                <View style={styles.iconRow}>
+                <View style={[
+                  styles.iconRow,
+                  isTablet && styles.iconRowTablet
+                ]}>
                   {item.phone && (
                     <TouchableOpacity
                       onPress={(e) => {
@@ -240,7 +356,11 @@ export default function TourismPlacesList() {
                         openPhone(item.phone);
                       }}
                     >
-                      <FontAwesome name="phone" size={20} color="#93210A" />
+                      <FontAwesome 
+                        name="phone" 
+                        size={responsiveSize(18, 20, 22)} 
+                        color="#93210A" 
+                      />
                     </TouchableOpacity>
                   )}
 
@@ -253,7 +373,7 @@ export default function TourismPlacesList() {
                     >
                       <FontAwesome5
                         name="map-marker-alt"
-                        size={20}
+                        size={responsiveSize(18, 20, 22)}
                         color="#2346a5"
                       />
                     </TouchableOpacity>
@@ -268,7 +388,7 @@ export default function TourismPlacesList() {
                     >
                       <FontAwesome
                         name="whatsapp"
-                        size={20}
+                        size={responsiveSize(18, 20, 22)}
                         color="#25D366"
                       />
                     </TouchableOpacity>
@@ -283,11 +403,26 @@ export default function TourismPlacesList() {
       {/* CATEGORY MODAL */}
       <Modal visible={modalVisible} transparent animationType="slide">
         <View style={styles.modalContainer}>
-          <View style={styles.modalContent}>
+          <View style={[
+            styles.modalContent,
+            { 
+              marginTop: responsiveSize(200, 300, 400),
+              padding: responsiveSize(20, 24, 28)
+            }
+          ]}>
             <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Select Category</Text>
+              <Text style={[
+                styles.modalTitle,
+                { fontSize: responsiveSize(18, 20, 22) }
+              ]}>
+                Select Category
+              </Text>
               <TouchableOpacity onPress={() => setModalVisible(false)}>
-                <Ionicons name="close" size={24} />
+                <Ionicons 
+                  name="close" 
+                  size={responsiveSize(22, 24, 26)} 
+                  color="#333" 
+                />
               </TouchableOpacity>
             </View>
 
@@ -305,36 +440,86 @@ export default function TourismPlacesList() {
 
 /* ================= STYLES ================= */
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#f5f5f5" },
+  container: { 
+    flex: 1, 
+    backgroundColor: "#f5f5f5" 
+  },
 
+  // Header Styles
   header: {
     flexDirection: "row",
     alignItems: "center",
+    justifyContent: "space-between",
     backgroundColor: "#93210A",
-    padding: 15,
-    marginTop: 30,
+    paddingHorizontal: 16,
+    paddingTop: StatusBar.currentHeight + 10,
+    paddingBottom: 15,
+    borderBottomLeftRadius: 20,
+    borderBottomRightRadius: 20,
+    elevation: 4,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
   },
-
+  headerTablet: {
+    paddingTop: StatusBar.currentHeight + 20,
+    paddingBottom: 20,
+    paddingHorizontal: 24,
+    borderBottomLeftRadius: 30,
+    borderBottomRightRadius: 30,
+  },
+  headerLargeTablet: {
+    paddingTop: StatusBar.currentHeight + 25,
+    paddingBottom: 24,
+    paddingHorizontal: 32,
+  },
+  backButton: {
+    width: 34,
+    height: 34,
+    borderRadius: 17,
+    backgroundColor: "rgba(255,255,255,0.2)",
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  backButtonTablet: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+  },
   heading: {
     flex: 1,
     textAlign: "center",
-    fontSize: 22,
+    fontSize: 20,
     fontWeight: "bold",
     color: "#fff",
+    letterSpacing: 0.5,
+  },
+  mobileHeading: { 
+    fontSize: 18 
+  },
+  headingTablet: {
+    fontSize: 24,
+  },
+  headingLargeTablet: {
+    fontSize: 28,
+  },
+  headerSpacer: {
+    width: 34,
+  },
+  headerSpacerTablet: {
+    width: 44,
   },
 
-  mobileHeading: { fontSize: 18 },
-
-  loadingContainer: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-
+  // Filter Section
   filterSection: {
     flexDirection: "row",
     padding: 15,
     gap: 10,
+  },
+  filterSectionTablet: {
+    padding: 20,
+    gap: 15,
   },
 
   searchContainer: {
@@ -342,73 +527,156 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     backgroundColor: "#fff",
-    borderRadius: 8,
-    paddingHorizontal: 10,
+    borderRadius: 10,
+    paddingHorizontal: 12,
+    elevation: 2,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    borderWidth: 1,
+    borderColor: "#f0f0f0",
   },
-
-  searchInput: { flex: 1 },
+  searchContainerTablet: {
+    borderRadius: 12,
+    paddingHorizontal: 14,
+  },
+  searchInput: { 
+    flex: 1,
+    paddingVertical: 10,
+    paddingHorizontal: 8,
+    fontSize: 14,
+  },
+  searchInputTablet: {
+    paddingVertical: 12,
+    fontSize: 16,
+  },
 
   filterButton: {
     flexDirection: "row",
     alignItems: "center",
     backgroundColor: "#93210A",
     paddingHorizontal: 14,
-    borderRadius: 8,
+    borderRadius: 10,
+    elevation: 2,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+  },
+  filterButtonTablet: {
+    paddingHorizontal: 18,
+    borderRadius: 12,
+  },
+  filterButtonText: { 
+    color: "#fff", 
+    marginLeft: 5,
+    fontSize: 13,
+    fontWeight: "600",
+  },
+  filterButtonTextTablet: {
+    fontSize: 15,
+    marginLeft: 8,
   },
 
-  filterButtonText: { color: "#fff", marginLeft: 5 },
+  // List Styles
+  listContent: { 
+    paddingBottom: 30 
+  },
 
-  listContent: { padding: 15 },
-
+  // Card Styles
   card: {
     backgroundColor: "#fff",
     borderRadius: 12,
     marginBottom: 12,
     elevation: 3,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
     overflow: "hidden",
+    borderWidth: 1,
+    borderColor: "#f0f0f0",
   },
-
-  cardImage: { width: "100%", height: 110 },
-
-  cardContent: { padding: 10 },
-
-  title: { fontSize: 15, fontWeight: "600" },
+  cardTablet: {
+    borderRadius: 16,
+    elevation: 4,
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.15,
+    shadowRadius: 6,
+  },
+  cardImage: { 
+    width: "100%", 
+    height: 110,
+    backgroundColor: "#f0f0f0",
+  },
+  cardImageTablet: {
+    height: 140,
+  },
+  cardContent: { 
+    padding: 10 
+  },
+  cardContentTablet: {
+    padding: 14,
+  },
+  title: { 
+    fontSize: 14, 
+    fontWeight: "600",
+    color: "#333",
+    lineHeight: 18,
+  },
+  titleTablet: {
+    fontSize: 16,
+    lineHeight: 20,
+  },
 
   categoryBadge: {
     alignSelf: "flex-start",
     backgroundColor: "#eef2ff",
     paddingHorizontal: 8,
-    paddingVertical: 2,
+    paddingVertical: 3,
     borderRadius: 10,
     marginVertical: 6,
   },
-
+  categoryBadgeTablet: {
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 12,
+    marginVertical: 8,
+  },
   categoryBadgeText: {
     fontSize: 11,
     fontWeight: "600",
     color: "#2346a5",
+  },
+  categoryBadgeTextTablet: {
+    fontSize: 12,
   },
 
   iconRow: {
     flexDirection: "row",
     justifyContent: "space-between",
     marginTop: 8,
-    paddingHorizontal: 10,
+    paddingHorizontal: 5,
+  },
+  iconRowTablet: {
+    marginTop: 12,
+    paddingHorizontal: 8,
   },
 
   emptyContainer: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    marginTop: 40,
   },
 
   emptyText: {
-    marginTop: 10,
-    fontSize: 16,
+    marginTop: 12,
     color: "#777",
+    textAlign: "center",
   },
 
+  // Modal Styles
   modalContainer: {
     flex: 1,
     justifyContent: "flex-end",
@@ -417,35 +685,40 @@ const styles = StyleSheet.create({
 
   modalContent: {
     backgroundColor: "#fff",
-    padding: 20,
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
     maxHeight: "60%",
-    marginTop:200,
   },
 
   modalHeader: {
     flexDirection: "row",
     justifyContent: "space-between",
+    alignItems: "center",
     marginBottom: 15,
   },
 
-  modalTitle: { fontSize: 18, fontWeight: "bold" },
+  modalTitle: { 
+    fontWeight: "bold",
+    color: "#333",
+  },
 
   categoryItem: {
     paddingVertical: 15,
     borderBottomWidth: 1,
-    
     borderBottomColor: "#eee",
   },
 
-  selectedCategoryItem: { backgroundColor: "#f9f9f9" },
+  selectedCategoryItem: { 
+    backgroundColor: "#f9f9f9" 
+  },
 
-  categoryText: { fontSize: 16 },
+  categoryText: { 
+    fontSize: 16,
+    color: "#333",
+  },
 
   selectedCategoryText: {
     color: "#93210A",
     fontWeight: "600",
   },
 });
-

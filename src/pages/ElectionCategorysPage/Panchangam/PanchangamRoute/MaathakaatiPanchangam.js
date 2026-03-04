@@ -16,6 +16,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import axios from "axios";
 import { useNavigation } from "@react-navigation/native";
+import Loader from "../../../../components/Alert/Loader";
 
 const API_URL = "https://hdrss-backend.onrender.com/api/v1/panchangam/maathkaati";
 
@@ -293,41 +294,28 @@ export default function MaathaKaatiPanchangam() {
 
   if (loading) {
     return (
-      <View style={[styles.screen, styles.center]}>
-        <ActivityIndicator size={isTablet ? "large" : "large"} color={COLORS.primary} />
-        <Text style={[styles.loadingText, { fontSize: responsive.smallTextSize }]}>
-          மாத காட்டியை ஏற்றுகிறது...
-        </Text>
-      </View>
+     <Loader visible={true} message="தரவு ஏற்றப்படுகிறது..." />
     );
   }
 
   return (
     <View style={styles.container}>
       {/* Header */}
-      <View style={[
-        styles.headerGradient,
-        {
-          paddingTop: responsive.headerPadding,
-          paddingHorizontal: responsive.contentPadding,
-          backgroundColor: COLORS.headerBg,
-        }
-      ]}>
-        <View style={styles.headerContent}>
-          <TouchableOpacity
-            style={[styles.backButton, { width: responsive.iconBtnSize, height: responsive.iconBtnSize }]}
-            onPress={goBack}
-            activeOpacity={0.7}
-          >
-            <Ionicons name="chevron-back" size={responsive.headerIconSize} color="#fff" />
-          </TouchableOpacity>
+     
+        <View style={[styles.header, isTablet && styles.headerTablet]}>
+         <TouchableOpacity
+        style={[styles.backButton, isTablet && styles.backButtonTablet]}
+        onPress={() => navigation.goBack()}
+      >
+        <Ionicons name="chevron-back" size={isTablet ? 30 : 26} color="#fff" />
+      </TouchableOpacity>
           
-          <Text style={[styles.headerTitle, { fontSize: responsive.headerTitleSize }]}>
+          <Text style={[styles.headerTitle, isTablet && styles.headerTitleTablet]}>
             மாதக் காட்டி
           </Text>
           
           <View style={{ width: responsive.iconBtnSize }} />
-        </View>
+       
       </View>
 
       <ScrollView 
@@ -728,33 +716,49 @@ const styles = StyleSheet.create({
   },
 
   // Header styles
-  headerGradient: {
-    paddingTop: Platform.OS === 'ios' ? 50 : 40,
-    paddingBottom: 14,
-    paddingHorizontal: 12,
-   
-    elevation: 6,
-    shadowColor: "#000",
-    shadowOpacity: 0.12,
-    shadowRadius: 10,
-    shadowOffset: { width: 0, height: 4 },
-  },
-  headerContent: {
+ 
+  header: {
    flexDirection: "row",
     alignItems: "center",
-    justifyContent: "space-between",
-    width: "100%",
+    backgroundColor: "#93210A",
+    paddingTop:40,
+    paddingBottom:30,
+    borderBottomLeftRadius: 20,
+    borderBottomRightRadius: 20,
   },
-  backButton: {
+
+  headerTablet:{
+    paddingTop:45,
+    paddingBottom:28,
+    paddingHorizontal: 18,
+  },
+
+ backButton:{
+    width: 40,
+    height: 40,
     borderRadius: 20,
+    backgroundColor: "rgba(255,255,255,0.15)",
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "rgba(255,255,255,0.2)",
+    marginLeft:15,
+    
   },
+  backButtonTablet:{
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+  },
+
   headerTitle: {
-    color: COLORS.white,
-    fontWeight: "900",
-    letterSpacing: 0.5,
+    flex: 1,
+    textAlign: "center",
+    color: "#fff",
+    fontSize: 20,
+    fontWeight: "800",
+    letterSpacing: 0.3,
+  },
+  headerTitleTablet: {
+    fontSize: 23,
   },
 
   // Top card styles

@@ -19,7 +19,7 @@ import { Ionicons } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { createComplaint } from "../../Controller/ComplaintController/ComplaintController";
-
+import CustomAlert from "../../components/Alert/CustomAlert"; // Import your CustomAlert component
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get("window");
 const isTablet = screenWidth >= 600;
@@ -34,6 +34,12 @@ export default function ComplaintPage3({ navigation, route }) {
   const [address, setAddress] = useState("");
   const [images, setImages] = useState([]);
   const [loading, setLoading] = useState(false);
+  
+  // Alert states
+  const [alertVisible, setAlertVisible] = useState(false);
+  const [alertType, setAlertType] = useState("success");
+  const [alertTitle, setAlertTitle] = useState("");
+  const [alertMessage, setAlertMessage] = useState("");
 
   // 📅 Handle date change
   const handleDateChange = (event, selectedDate) => {
@@ -46,7 +52,7 @@ export default function ComplaintPage3({ navigation, route }) {
   const pickImages = async () => {
     const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (!permission.granted) {
-      Alert.alert("Permission Denied", "You need to allow gallery access to upload images");
+      showAlert("error", "Permission Denied", "You need to allow gallery access to upload images");
       return;
     }
 
@@ -59,13 +65,22 @@ export default function ComplaintPage3({ navigation, route }) {
     if (!result.canceled) {
       const uris = result.assets.map((a) => a.uri);
       setImages(uris);
+      showAlert("success", "Success", `${uris.length} image(s) selected successfully`);
     }
+  };
+
+  // Show custom alert
+  const showAlert = (type, title, message) => {
+    setAlertType(type);
+    setAlertTitle(title);
+    setAlertMessage(message);
+    setAlertVisible(true);
   };
 
   // 📨 Submit complaint
   const handleSubmit = async () => {
     if (!title || !description || !address) {
-      Alert.alert("Error", "Please fill all required fields");
+      showAlert("error", "Error", "Please fill all required fields");
       return;
     }
 
@@ -80,15 +95,13 @@ export default function ComplaintPage3({ navigation, route }) {
       };
 
       const res = await createComplaint(payload);
-      Alert.alert("Success", "Complaint submitted successfully", [
-        {
-          text: "OK",
-          onPress: () => navigation.goBack(),
-        },
-      ]);
+      showAlert("success", "Success", "Complaint submitted successfully");
+      setTimeout(() => {
+        navigation.goBack();
+      }, 1500);
     } catch (error) {
       console.error("Error submitting complaint:", error);
-      Alert.alert("Error", "Something went wrong while submitting complaint");
+      showAlert("error", "Error", "Something went wrong while submitting complaint");
     } finally {
       setLoading(false);
     }
@@ -97,6 +110,7 @@ export default function ComplaintPage3({ navigation, route }) {
   // Remove single image
   const removeImage = (index) => {
     setImages(images.filter((_, i) => i !== index));
+    showAlert("success", "Success", "Image removed successfully");
   };
 
   return (
@@ -277,6 +291,17 @@ export default function ComplaintPage3({ navigation, route }) {
           </ScrollView>
         </View>
       </KeyboardAvoidingView>
+
+      {/* Custom Alert Component */}
+      <CustomAlert
+        visible={alertVisible}
+        type={alertType}
+        title={alertTitle}
+        message={alertMessage}
+        onConfirm={() => setAlertVisible(false)}
+        autoClose={true}
+        duration={2000}
+      />
     </SafeAreaView>
   );
 }

@@ -9,6 +9,7 @@ import {
   ActivityIndicator,
 } from "react-native";
 import YoutubePlayer from "react-native-youtube-iframe";
+import Loader from "../Alert/Loader";
 
 export default function InterviewVideos() {
   const { width } = useWindowDimensions();
@@ -18,8 +19,8 @@ export default function InterviewVideos() {
   const [playing, setPlaying] = useState(false);
 
   const isTablet = width >= 600;
-  const videoWidth = isTablet ? 700 : 320;
-  const videoHeight = isTablet ? 500 : 180;
+  const videoWidth = isTablet ? 700 : 420;
+  const videoHeight = isTablet ? 500 : 280;
 
   // Function to extract YouTube video ID from URL
   const getYouTubeId = (url) => {
@@ -105,10 +106,7 @@ export default function InterviewVideos() {
 
   if (loading) {
     return (
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#93210A" />
-        <Text style={styles.loadingText}>Loading videos...</Text>
-      </View>
+     <Loader/>
     );
   }
 

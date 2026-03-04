@@ -13,6 +13,7 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import axios from "axios";
+import Loader from "../../../../components/Alert/Loader";
 
 export default function HinduNoolgal2({ route, navigation }) {
   const { categoryId, categoryName } = route.params;
@@ -141,18 +142,18 @@ export default function HinduNoolgal2({ route, navigation }) {
           )}
         </View>
 
-        <Ionicons
+        {/* <Ionicons
           name="chevron-forward"
           size={isTablet ? 24 : 20}
           color="#444"
-        />
+        /> */}
       </TouchableOpacity>
     );
   };
 
   return (
     <SafeAreaView style={styles.container}>
-      <StatusBar backgroundColor="#8B1A1A" barStyle="light-content" />
+     
 
       {/* Header */}
       <View style={[styles.header, isTablet && styles.headerTablet]}>
@@ -172,10 +173,7 @@ export default function HinduNoolgal2({ route, navigation }) {
 
       {/* Body */}
       {loading ? (
-        <View style={styles.center}>
-          <ActivityIndicator size="large" />
-          <Text style={{ marginTop: 10 }}>Loading...</Text>
-        </View>
+        <Loader/>
       ) : error ? (
         <View style={styles.center}>
           <Text style={{ color: "red", textAlign: "center" }}>{error}</Text>
@@ -204,42 +202,46 @@ const styles = StyleSheet.create({
 
   // Header (mobile)
   header: {
-    backgroundColor: "#8B0000",
-    paddingHorizontal: 16,
-    paddingVertical: 20,
-    flexDirection: "row",
+   flexDirection: "row",
     alignItems: "center",
+    backgroundColor: "#93210A",
+    paddingTop:40,
+    paddingBottom:30,
+    borderBottomLeftRadius: 20,
+    borderBottomRightRadius: 20,
   },
   headerTablet: {
-    paddingHorizontal: 24,
-    paddingVertical: 18,
+    paddingTop:45,
+    paddingBottom:28,
+    paddingHorizontal: 18,
   },
 
   backBtn: {
-    width: 40,
+     width: 40,
     height: 40,
-    justifyContent: "center",
+    borderRadius: 20,
+    backgroundColor: "rgba(255,255,255,0.15)",
     alignItems: "center",
-    marginTop: 20,
+    justifyContent: "center",
+    marginLeft:15,
   },
   backBtnTablet: {
     width: 50,
     height: 50,
-    marginTop: 2,
+    borderRadius: 25,
   },
 
   headerTitle: {
-    flex: 1,
-    color: "#fff",
-    fontSize: 17,
-    fontWeight: "800",
+      flex: 1,
     textAlign: "center",
-    paddingHorizontal: 10,
-    marginTop: 20,
+    color: "#fff",
+    fontSize: 18,
+    fontWeight: "800",
+    letterSpacing: 0.3,
   },
   headerTitleTablet: {
     fontSize: 22,
-    letterSpacing: 0.4,
+    
   },
 
   center: { flex: 1, alignItems: "center", justifyContent: "center" },

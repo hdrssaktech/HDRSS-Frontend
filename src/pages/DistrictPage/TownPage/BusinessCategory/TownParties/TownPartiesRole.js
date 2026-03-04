@@ -15,6 +15,7 @@ import {
 import axios from "axios";
 import Ionicons from "react-native-vector-icons/Ionicons";
 import { useNavigation } from "@react-navigation/native";
+import Loader from "../../../../../components/Alert/Loader";
 
 export default function TownPartiesRoles({ route }) {
   const { townId, partyName } = route.params;
@@ -61,23 +62,7 @@ export default function TownPartiesRoles({ route }) {
 
   if (loading) {
     return (
-      <SafeAreaView style={styles.safeArea}>
-        <StatusBar backgroundColor="#93210A" barStyle="light-content" />
-        <View style={styles.header}>
-          <TouchableOpacity 
-            onPress={() => navigation.goBack()}
-            style={styles.backButton}
-          >
-            <Ionicons name="chevron-back" size={28} color="#fff" />
-          </TouchableOpacity>
-          <Text style={styles.headerTitle} numberOfLines={1}>{partyName}</Text>
-          <View style={styles.placeholder} />
-        </View>
-        <View style={styles.loader}>
-          <ActivityIndicator size="large" color="#93210A" />
-          <Text style={styles.loadingText}>Loading roles...</Text>
-        </View>
-      </SafeAreaView>
+      <Loader/>
     );
   }
 
@@ -114,21 +99,7 @@ export default function TownPartiesRoles({ route }) {
 
   const renderHeader = () => (
     <View style={styles.headerContainer}>
-      <Text style={styles.screenTitle}>Party Roles</Text>
-      <Text style={styles.screenSubtitle}>
-        Select a role to view members
-      </Text>
-      <View style={styles.statsContainer}>
-        <View style={styles.statItem}>
-          <Text style={styles.statNumber}>{roles.length}</Text>
-          <Text style={styles.statLabel}>Roles</Text>
-        </View>
-        <View style={styles.statDivider} />
-        <View style={styles.statItem}>
-          <Ionicons name="business-outline" size={20} color="#93210A" />
-          <Text style={styles.statLabel}>{partyName}</Text>
-        </View>
-      </View>
+  
     </View>
   );
 
@@ -147,7 +118,6 @@ export default function TownPartiesRoles({ route }) {
         </TouchableOpacity>
         <View style={styles.headerTitleContainer}>
           <Text style={styles.headerTitle} numberOfLines={1}>{partyName}</Text>
-          <Text style={styles.headerSubtitle} numberOfLines={1}>Roles</Text>
         </View>
         {/* <TouchableOpacity 
           onPress={handleRefresh}
@@ -276,11 +246,10 @@ const styles = StyleSheet.create({
 
   // List Header
   headerContainer: {
-    backgroundColor: "#fff",
+    // backgroundColor: "#fff",
     padding: moderateScale(20),
     marginBottom: moderateScale(12),
-    borderBottomWidth: 1,
-    borderBottomColor: "#eee",
+    // borderBottomColor: "#eee",
   },
   screenTitle: {
     fontSize: isTablet ? moderateScale(24) : moderateScale(20),

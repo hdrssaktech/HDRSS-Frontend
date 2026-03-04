@@ -15,6 +15,7 @@ import { useNavigation, useRoute } from "@react-navigation/native";
 import { Video } from "expo-av";
 import YoutubePlayer from "react-native-youtube-iframe";
 import { fetchTourismById } from "../../../Controller/TourismController/TourismController";
+import Loader from "../../../components/Alert/Loader";
 
 export default function TourismPage3() {
   const navigation = useNavigation();
@@ -57,9 +58,7 @@ export default function TourismPage3() {
 
   if (loading) {
     return (
-      <View style={styles.center}>
-        <ActivityIndicator size="large" color="#93210A" />
-      </View>
+      <Loader/>
     );
   }
 
@@ -87,13 +86,12 @@ export default function TourismPage3() {
     <View style={styles.container}>
       {/* HEADER */}
       <View style={[styles.header, isTablet && styles.headerTablet]}>
-        <TouchableOpacity onPress={() => navigation.goBack()}>
-          <Ionicons
-            name="chevron-back"
-            size={isTablet ? 34 : 26}
-            color="#fff"
-          />
-        </TouchableOpacity>
+       <TouchableOpacity
+        style={[styles.backButton, isTablet && styles.backButtonTablet]}
+        onPress={() => navigation.goBack()}
+      >
+        <Ionicons name="chevron-back" size={isTablet ? 30 : 26} color="#fff" />
+      </TouchableOpacity>
         <Text
           style={[styles.headerTitle, isTablet && styles.headerTitleTablet]}
           numberOfLines={1}
@@ -243,29 +241,48 @@ const styles = StyleSheet.create({
   center: { flex: 1, justifyContent: "center", alignItems: "center" },
 
   header: {
-    flexDirection: "row",
+   flexDirection: "row",
     alignItems: "center",
-    padding: 15,
-    marginTop: 32,
     backgroundColor: "#93210A",
+    paddingTop:40,
+    paddingBottom:30,
+    borderBottomLeftRadius: 20,
+    borderBottomRightRadius: 20,
   },
   headerTablet: {
-    paddingVertical: 26,
-    paddingHorizontal: 28,
-    marginTop: -3,
+   paddingTop:45,
+    paddingBottom:28,
+    paddingHorizontal: 18,
   },
 
   headerTitle: {
+     flex: 1,
+    textAlign: "center",
     color: "#fff",
-    fontWeight: "700",
-    fontSize: 22,
-    marginLeft: 78,
-    padding: 8,
+    fontSize: 20,
+    fontWeight: "800",
+    letterSpacing: 0.3,
+     marginRight:70,
   },
   headerTitleTablet: {
-    fontSize: 28,
-    padding: 8,
-    left: 125,
+    fontSize: 24,
+    marginRight:55,
+    
+  },
+
+  backButton:{
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: "rgba(255,255,255,0.15)",
+    alignItems: "center",
+    justifyContent: "center",
+    marginLeft:15,
+  },
+  backButtonTablet:{
+    width: 50,
+    height: 50,
+    borderRadius: 25,
   },
 
   banner: { width: "100%", height: 160 },

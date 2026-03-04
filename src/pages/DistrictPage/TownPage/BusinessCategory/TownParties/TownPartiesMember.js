@@ -14,6 +14,7 @@ import {
 import axios from "axios";
 import Ionicons from "react-native-vector-icons/Ionicons";
 import { useNavigation } from "@react-navigation/native";
+import Loader from "../../../../../components/Alert/Loader";
 
 export default function TownPartiesMember({ route }) {
   const { townId, partyName, role } = route.params;
@@ -28,10 +29,11 @@ export default function TownPartiesMember({ route }) {
         `https://hdrss-backend.onrender.com/api/town-parties/${townId}`
       );
       const filtered = res.data.data.filter(
-        item => item.parties === partyName && item.role === role
+        item => item.parties === partyName
       );
+      const data = res.data.data || [];
 
-      setMembers(filtered.sort((a,b)=>a.orderNo -b.orderNo));
+      setMembers(filtered);
     } catch (err) {
       console.log(err);
     } finally {
@@ -45,9 +47,7 @@ export default function TownPartiesMember({ route }) {
 
   if (loading) {
     return (
-      <View style={styles.loader}>
-        <ActivityIndicator size="large" color="#93210A" />
-      </View>
+      <Loader/>
     );
   }
 
@@ -127,10 +127,7 @@ export default function TownPartiesMember({ route }) {
         </TouchableOpacity>
         <View style={styles.titleContainer}>
           <Text style={styles.headerTitle} numberOfLines={2}>
-            {role}
-          </Text>
-          <Text style={styles.subtitle} numberOfLines={1}>
-            {partyName}
+            Members
           </Text>
         </View>
         <View style={styles.placeholder} />
@@ -202,6 +199,8 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.2,
     shadowRadius: 3,
+    borderBottomEndRadius: moderateScale(12),
+    borderBottomStartRadius: moderateScale(12),
   },
   backButton: {
     paddingRight: moderateScale(10),

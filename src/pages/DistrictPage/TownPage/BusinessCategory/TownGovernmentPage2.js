@@ -16,6 +16,7 @@ import {
 import axios from "axios";
 import { useRoute, useNavigation } from "@react-navigation/native";
 import Ionicons from "react-native-vector-icons/Ionicons";
+import Loader from "../../../../components/Alert/Loader";
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
 const isTablet = screenWidth >= 600;
@@ -58,12 +59,7 @@ export default function TownGovernmentPage2() {
 
   if (loading) {
     return (
-      <View style={[styles.center, isTablet && styles.centerTablet]}>
-        <ActivityIndicator size={isTablet ? "large" : "large"} color="#93210A" />
-        <Text style={[styles.loadingText, isTablet && styles.loadingTextTablet]}>
-          Loading services...
-        </Text>
-      </View>
+     <Loader/>
     );
   }
 
@@ -77,7 +73,7 @@ export default function TownGovernmentPage2() {
           isTablet && styles.cardImageTablet,
           { 
             width: isTablet ? screenWidth * 0.25 : screenWidth * 0.35,
-            height: isTablet ? 180 : 140 
+            height: isTablet ? 180 : 120 
           }
         ]} 
         resizeMode="cover"
@@ -90,80 +86,41 @@ export default function TownGovernmentPage2() {
               numberOfLines={2}>
           {item.name || "Service"}
         </Text>
-
-        {/* LOCAL AREA */}
-        {item.localarea && (
-          <View style={[styles.infoRow, isTablet && styles.infoRowTablet]}>
-            <Ionicons 
-              name="business" 
-              size={isTablet ? 22 : 18} 
-              color="#93210A" 
-              style={[styles.icon, isTablet && styles.iconTablet]} 
-            />
-            <Text style={[styles.infoText, isTablet && styles.infoTextTablet]} 
-                  numberOfLines={2}>
-              {item.localarea}
-            </Text>
-          </View>
-        )}
-
         {/* LOCATION */}
-        {item.location && (
-          <TouchableOpacity 
-            style={[styles.infoRow, isTablet && styles.infoRowTablet]}
-            onPress={() => {
-              const encodedLocation = encodeURIComponent(item.location);
-              Linking.openURL(`https://www.google.com/maps/search/?api=1&query=${encodedLocation}`);
-            }}
-            activeOpacity={0.7}
-          >
-            <Ionicons 
-              name="location" 
-              size={isTablet ? 22 : 18} 
-              color="#93210A" 
-              style={[styles.icon, isTablet && styles.iconTablet]} 
-            />
-            <Text style={[styles.infoText, isTablet && styles.infoTextTablet]} 
-                  numberOfLines={2}>
-              {item.location}
-            </Text>
-          </TouchableOpacity>
-        )}
+       <View style={styles.iconColumn}>
+  {/* LOCATION */}
+  {item.location && (
+    <TouchableOpacity
+      style={styles.iconWrapper}
+      onPress={() => {
+        const encodedLocation = encodeURIComponent(item.location);
+        Linking.openURL(
+          `https://www.google.com/maps/search/?api=1&query=${encodedLocation}`
+        );
+      }}
+    >
+      <Ionicons
+        name="location"
+        size={isTablet ? 38 :22}   // 🔥 Increased size
+        color="#93210A"
+      />
+    </TouchableOpacity>
+  )}
 
-        {/* PHONE NUMBER */}
-        {item.phonenumber && (
-          <TouchableOpacity 
-            style={[styles.infoRow, isTablet && styles.infoRowTablet]}
-            onPress={() => Linking.openURL(`tel:${item.phonenumber}`)}
-            activeOpacity={0.7}
-          >
-            <Ionicons 
-              name="call" 
-              size={isTablet ? 22 : 18} 
-              color="#93210A" 
-              style={[styles.icon, isTablet && styles.iconTablet]} 
-            />
-            <Text style={[styles.infoText, isTablet && styles.infoTextTablet]}>
-              {item.phonenumber}
-            </Text>
-          </TouchableOpacity>
-        )}
-
-        {/* ADDITIONAL INFO IF AVAILABLE */}
-        {item.description && (
-          <View style={[styles.infoRow, isTablet && styles.infoRowTablet]}>
-            <Ionicons 
-              name="information-circle" 
-              size={isTablet ? 22 : 18} 
-              color="#93210A" 
-              style={[styles.icon, isTablet && styles.iconTablet]} 
-            />
-            <Text style={[styles.infoText, isTablet && styles.infoTextTablet]} 
-                  numberOfLines={isTablet ? 3 : 2}>
-              {item.description}
-            </Text>
-          </View>
-        )}
+  {/* PHONE */}
+  {item.phonenumber && (
+    <TouchableOpacity
+      style={styles.iconWrapper}
+      onPress={() => Linking.openURL(`tel:${item.phonenumber}`)}
+    >
+      <Ionicons
+        name="call"
+        size={isTablet ? 38 : 22 }   // 🔥 Increased size
+        color="#93210A"
+      />
+    </TouchableOpacity>
+  )}
+</View>
       </View>
     </View>
   );
@@ -190,11 +147,6 @@ export default function TownGovernmentPage2() {
           <Text style={[styles.headerTitle, isTablet && styles.headerTitleTablet]}>
             Government Services
           </Text>
-          {services.length > 0 && (
-            <Text style={[styles.headerSubtitle, isTablet && styles.headerSubtitleTablet]}>
-              {services.length} service(s)
-            </Text>
-          )}
         </View>
 
         <View style={[styles.headerRightPlaceholder, isTablet && styles.headerRightPlaceholderTablet]} />
@@ -285,6 +237,8 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.25,
     shadowRadius: 3.84,
     elevation: 5,
+    borderBottomLeftRadius: 20,
+    borderBottomRightRadius: 20,
   },
   backButton: {
     padding: 5,
@@ -295,13 +249,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   headerTitle: {
-    fontSize: 22,
+    fontSize:18,
     fontWeight: "bold",
     color: "#fff",
     textAlign: 'center',
   },
   headerSubtitle: {
-    fontSize: 14,
+    fontSize: 12,
     color: "rgba(255, 255, 255, 0.9)",
     marginTop: 2,
   },
@@ -419,7 +373,7 @@ const styles = StyleSheet.create({
   // ============ CARD TITLE ============
   // Mobile Card Title
   cardTitle: {
-    fontSize: 18,
+    fontSize:16,
     fontWeight: "bold",
     color: "#93210A",
     marginBottom: 10,
@@ -427,7 +381,7 @@ const styles = StyleSheet.create({
   
   // Tablet Card Title
   cardTitleTablet: {
-    fontSize: 22,
+    fontSize: 20,
     marginBottom: 12,
   },
   
@@ -449,7 +403,7 @@ const styles = StyleSheet.create({
   icon: {
     marginRight: 10,
     marginTop: 2,
-    width: 20,
+    width: 200,
   },
   
   // Tablet Icon
@@ -508,4 +462,13 @@ const styles = StyleSheet.create({
     fontSize: 16,
     marginTop: 15,
   },
+  iconColumn: {
+  flexDirection: "row",   // 🔥 Column layout
+  marginTop: 10,
+  gap: 20,              // 🔥 Space between icons (requires React Native 0.71+)
+},
+
+iconWrapper: {
+  marginBottom: 12,        // Space between icons
+},
 });

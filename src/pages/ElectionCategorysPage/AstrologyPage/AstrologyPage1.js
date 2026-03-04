@@ -11,10 +11,12 @@ import {
   Animated,
   Platform,
 } from "react-native";
-import Icon from "react-native-vector-icons/MaterialIcons";
+
 import { useNavigation } from "@react-navigation/native";
 import { fetchAstrologyTypes } from "../../../Controller/AstrologyController/AstrologyController";
 import YoutubePlayer from "react-native-youtube-iframe";
+import Loader from "../../../components/Alert/Loader";
+import { Ionicons } from "@expo/vector-icons";
 
 export default function AstrologyPage1() {
   const navigation = useNavigation();
@@ -42,6 +44,7 @@ export default function AstrologyPage1() {
     if (isTablet) return 280;
     return 150;
   };
+  
   const getVideoHeight = () => {
     if (isLargeTablet) return 280;
     if (isTablet) return 380;
@@ -132,38 +135,19 @@ export default function AstrologyPage1() {
   return (
     <View style={styles.container}>
       {/* 🔴 HEADER */}
-      <View style={[
-        styles.header,
-        { 
-          padding: responsiveSize(15, 20, 25),
-          marginTop: Platform.OS === "ios" ? responsiveSize(32, 40, 48) : responsiveSize(28, 36, 44)
-        }
-      ]}>
-        <TouchableOpacity 
+      <View style={[styles.header, isTablet && styles.headerTablet]}>
+        <TouchableOpacity
+          style={[styles.backButton, isTablet && styles.backButtonTablet]}
           onPress={() => navigation.goBack()}
-          style={[
-            styles.backButton,
-            { 
-              padding: responsiveSize(8, 10, 12),
-              borderRadius: responsiveSize(20, 24, 28)
-            }
-          ]}
         >
-          <Icon 
-            name="arrow-back" 
-            size={responsiveSize(22, 26, 30)} 
-            color="#fff" 
-          />
+          <Ionicons name="chevron-back" size={isTablet ? 30 : 26} color="#fff" />
         </TouchableOpacity>
         
-        <Text style={[
-          styles.headerTitle,
-          { fontSize: responsiveSize(22, 28, 32) }
-        ]}>
+        <Text style={[styles.headerTitle, isTablet && styles.headerTitleTablet]}>
           Astrology
         </Text>
         
-        <View style={{ width: responsiveSize(40, 50, 60) }} />
+        <View style={[styles.headerSpacer, isTablet && styles.headerSpacerTablet]} />
       </View>
 
       {/* 🔹 CONTENT */}
@@ -234,21 +218,10 @@ export default function AstrologyPage1() {
 
         {/* 🔮 ASTROLOGY TYPES GRID */}
         {loading ? (
-          <View style={styles.loaderContainer}>
-            <ActivityIndicator
-              size={responsiveSize("large", 50, 60)}
-              color="#93210A"
-            />
-            <Text style={[
-              styles.loaderText,
-              { fontSize: responsiveSize(14, 16, 18) }
-            ]}>
-              Loading astrology types...
-            </Text>
-          </View>
+          <Loader/>
         ) : astrologyData.length === 0 ? (
           <View style={styles.emptyContainer}>
-            <Icon name="error-outline" size={responsiveSize(60, 80, 100)} color="#93210A" />
+            <Ionicons name="alert-circle" size={responsiveSize(60, 80, 100)} color="#93210A" />
             <Text style={[
               styles.emptyText,
               { fontSize: responsiveSize(16, 20, 24) }
@@ -386,23 +359,52 @@ const styles = StyleSheet.create({
 
   /* 🔴 HEADER */
   header: {
-    flexDirection: "row",
+   flexDirection: "row",
     alignItems: "center",
-    justifyContent: "space-between",
     backgroundColor: "#93210A",
+    paddingTop:40,
+    paddingBottom:30,
+    borderBottomLeftRadius: 20,
+    borderBottomRightRadius: 20,
+  },
+  headerTablet: {
+   paddingTop:45,
+    paddingBottom:28,
+    paddingHorizontal: 18,
   },
   
   backButton: {
-    backgroundColor: "rgba(255,255,255,0.2)",
-    alignItems: 'center',
-    justifyContent: 'center',
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: "rgba(255,255,255,0.15)",
+    alignItems: "center",
+    justifyContent: "center",
+    marginLeft:15,
+  },
+  backButtonTablet: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+  },
+
+  headerTitle: {
+    flex: 1,
+    textAlign: "center",
+    color: "#fff",
+    fontSize: 20,
+    fontWeight: "800",
+    letterSpacing: 0.3,
+  },
+  headerTitleTablet: {
+    fontSize: 24,
   },
   
-  headerTitle: {
-    color: "#fff",
-    fontWeight: "700",
-    textAlign: 'center',
-    flex: 1,
+  headerSpacer: {
+    width: 40,
+  },
+  headerSpacerTablet: {
+    width: 50,
   },
 
   /* 📜 CONTENT */

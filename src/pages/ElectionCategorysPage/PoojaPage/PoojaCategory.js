@@ -7,16 +7,17 @@ import {
   TouchableOpacity,
   StatusBar,
   Dimensions,
-  Platform
+  Platform,
+  TextInput
 } from "react-native";
 import React, { useEffect, useState } from "react";
 import { useRoute, useNavigation } from "@react-navigation/native";
 import Icon from "react-native-vector-icons/MaterialIcons";
 import Ionicons from "react-native-vector-icons/Ionicons";
-import { TextInput } from "react-native";
+import Loader from "../../../components/Alert/Loader";
 
 const { width } = Dimensions.get('window');
-const isTablet = width >= 768;
+const isTablet = width >= 600;
 
 export default function PoojaCategory() {
   const route = useRoute();
@@ -62,17 +63,13 @@ export default function PoojaCategory() {
   };
 
   if (loading) {
-    return (
-      <View style={styles.center}>
-        <Text>Loading...</Text>
-      </View>
-    );
+    return <Loader />;
   }
 
   if (!data || data.length === 0) {
     return (
       <View style={styles.center}>
-        <Text>No Data Found</Text>
+        <Text style={styles.noDataText}>No Data Found</Text>
       </View>
     );
   }
@@ -83,25 +80,29 @@ export default function PoojaCategory() {
       <StatusBar backgroundColor="#93210A" barStyle="light-content" />
       
       {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity 
-          style={styles.backButton}
+      <View style={[styles.header, isTablet && styles.headerTablet]}>
+        <TouchableOpacity
+          style={[styles.backButton, isTablet && styles.backButtonTablet]}
           onPress={() => navigation.goBack()}
         >
-          <Icon name="arrow-back" size={24} color="white" />
+          <Ionicons name="chevron-back" size={isTablet ? 30 : 24} color="#fff" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Pooja Services</Text>
-        <View style={styles.headerRightPlaceholder} />
+        
+        <Text style={[styles.headerTitle, isTablet && styles.headerTitleTablet]}>
+          Pooja Services
+        </Text>
+        
+        <View style={[styles.headerRightPlaceholder, isTablet && styles.headerRightPlaceholderTablet]} />
       </View>
 
       {/* Search Bar */}
-      <View style={styles.searchContainer}>
+      <View style={[styles.searchContainer, isTablet && styles.searchContainerTablet]}>
         <Icon name="search" size={isTablet ? 24 : 20} color="#999" />
         <TextInput
           placeholder="Search pooja by title..."
           value={searchText}
           onChangeText={handleSearch}
-          style={styles.searchInput}
+          style={[styles.searchInput, isTablet && styles.searchInputTablet]}
           placeholderTextColor="#999"
         />
         {searchText.length > 0 && (
@@ -170,8 +171,8 @@ export default function PoojaCategory() {
                         // Linking.openURL(`tel:${item.Phone}`)
                       }}
                     >
-                      <View style={[styles.iconCircle, styles.phoneIcon]}>
-                        <Icon name="phone" size={isTablet ? 20 : 18} color="white" />
+                      <View style={[styles.iconCircle, styles.phoneIcon, isTablet && styles.iconCircleTablet]}>
+                        <Icon name="phone" size={isTablet ? 22 : 18} color="white" />
                       </View>
                     </TouchableOpacity>
                   )}
@@ -186,8 +187,8 @@ export default function PoojaCategory() {
                         // Linking.openURL(`https://wa.me/${item.whatshapp}`)
                       }}
                     >
-                      <View style={[styles.iconCircle, styles.whatsappIcon]}>
-                        <Ionicons name="logo-whatsapp" size={isTablet ? 20 : 18} color="white" />
+                      <View style={[styles.iconCircle, styles.whatsappIcon, isTablet && styles.iconCircleTablet]}>
+                        <Ionicons name="logo-whatsapp" size={isTablet ? 22 : 18} color="white" />
                       </View>
                     </TouchableOpacity>
                   )}
@@ -202,12 +203,22 @@ export default function PoojaCategory() {
                         // Linking.openURL(`https://maps.google.com/?q=${item.location}`)
                       }}
                     >
-                      <View style={[styles.iconCircle, styles.locationIcon]}>
-                        <Icon name="location-on" size={isTablet ? 20 : 18} color="white" />
+                      <View style={[styles.iconCircle, styles.locationIcon, isTablet && styles.iconCircleTablet]}>
+                        <Icon name="location-on" size={isTablet ? 22 : 18} color="white" />
                       </View>
                     </TouchableOpacity>
                   )}
                 </View>
+
+                {/* Optional: Add More Details indicator */}
+                {item.description && (
+                  <View style={styles.moreContainer}>
+                    <Text style={[styles.moreText, isTablet && styles.moreTextTablet]}>
+                      View Details
+                    </Text>
+                    <Icon name="arrow-forward" size={isTablet ? 20 : 16} color="#93210A" />
+                  </View>
+                )}
               </View>
             </View>
           </TouchableOpacity>
@@ -228,68 +239,112 @@ const styles = StyleSheet.create({
     alignItems: "center",
     backgroundColor: "#f8f9fa",
   },
-  header: {
-    backgroundColor: "#93210A",
-    paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight + 10 : 50,
-    paddingBottom: 15,
-    paddingHorizontal: 20,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    elevation: 3,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 3,
+  noDataText: {
+    fontSize: 16,
+    color: "#666",
   },
-  backButton: {
-    padding: 5,
+
+  // Header Styles
+  header: {
+   flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#93210A",
+    paddingTop:40,
+    paddingBottom:30,
+    borderBottomLeftRadius: 20,
+    borderBottomRightRadius: 20,
+  },
+  headerTablet: {
+    paddingTop:45,
+    paddingBottom:28,
+    paddingHorizontal: 18,
+  },
+  backButton:{
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: "rgba(255,255,255,0.15)",
+    alignItems: "center",
+    justifyContent: "center",
+    marginLeft:15,
+  },
+  backButtonTablet:{
+    width: 50,
+    height: 50,
+    borderRadius: 25,
   },
   headerTitle: {
-    color: "white",
-    fontSize: isTablet ? 24 : 20,
-    fontWeight: "bold",
-    letterSpacing: 0.5,
-    textAlign: 'center',
     flex: 1,
+    textAlign: "center",
+    color: "#fff",
+    fontSize: 20,
+    fontWeight: "800",
+    letterSpacing: 0.3,
+  },
+  headerTitleTablet: {
+    fontSize: 24,
   },
   headerRightPlaceholder: {
     width: 34,
   },
+  headerRightPlaceholderTablet: {
+    width: 44,
+  },
+
+  // Search Bar Styles
   searchContainer: {
     flexDirection: "row",
     alignItems: "center",
     backgroundColor: "#fff",
-    margin: isTablet ? 20 : 15,
-    paddingHorizontal: isTablet ? 16 : 12,
-    paddingVertical: isTablet ? 4 : 0,
+    margin: 15,
+    marginHorizontal: 15,
+    paddingHorizontal: 12,
     borderRadius: 12,
     elevation: 3,
     shadowColor: "#000",
-    shadowOffset: { width: 0, height: 1 },
+    shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
+    borderWidth: 1,
+    borderColor: "#f0f0f0",
+  },
+  searchContainerTablet: {
+    margin: 20,
+    marginHorizontal: 20,
+    paddingHorizontal: 16,
+    borderRadius: 16,
   },
   searchInput: {
     flex: 1,
-    height: isTablet ? 50 : 45,
-    marginLeft: 12,
-    fontSize: isTablet ? 16 : 14,
+    height: 45,
+    marginLeft: 10,
+    fontSize: 14,
     color: "#333",
-    paddingVertical: isTablet ? 8 : 0,
+    paddingVertical: 0,
   },
+  searchInputTablet: {
+    height: 55,
+    fontSize: 16,
+    marginLeft: 12,
+  },
+
+  // Scroll Content Styles
   scrollView: {
     flex: 1,
   },
   scrollContent: {
     padding: 15,
+    paddingBottom: 30,
   },
   scrollContentTablet: {
     padding: 20,
+    paddingBottom: 40,
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'space-between',
   },
+
+  // Card Styles
   card: {
     backgroundColor: "white",
     borderRadius: 16,
@@ -300,18 +355,23 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 6,
     overflow: "hidden",
+    borderWidth: 1,
+    borderColor: "#f0f0f0",
   },
   cardTablet: {
-    width: width >= 1024 ? '48%' : '100%',
+    width: width >= 1024 ? '49%' : '100%',
     marginBottom: 20,
+    borderRadius: 20,
   },
   cardContent: {
     flexDirection: "row",
-    height: isTablet ? 160 : 140,
+    height: 140,
   },
   cardContentTablet: {
     height: 180,
   },
+
+  // Image Styles
   imageContainer: {
     width: "40%",
     padding: 10,
@@ -323,9 +383,11 @@ const styles = StyleSheet.create({
   image: {
     width: "100%",
     height: "100%",
-    borderRadius: 10,
+    borderRadius: 12,
     backgroundColor: "#f0f0f0",
   },
+
+  // Details Styles
   detailsContainer: {
     width: "60%",
     padding: 12,
@@ -333,39 +395,47 @@ const styles = StyleSheet.create({
   },
   detailsContainerTablet: {
     width: "65%",
-    padding: 15,
+    padding: 16,
   },
   title: {
-    fontSize: isTablet ? 18 : 16,
+    fontSize: 15,
     fontWeight: "bold",
     color: "#333",
-    marginBottom: 8,
-    lineHeight: isTablet ? 24 : 22,
+    marginBottom: 6,
+    lineHeight: 20,
   },
   titleTablet: {
-    fontSize: 20,
-    marginBottom: 12,
+    fontSize: 18,
+    marginBottom: 10,
+    lineHeight: 24,
   },
+
+  // Icons Styles
   iconsContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 8,
-    gap: isTablet ? 16 : 12,
+    gap: 10,
   },
   iconButton: {
-    padding: 4,
+    padding: 2,
   },
   iconCircle: {
-    width: isTablet ? 40 : 36,
-    height: isTablet ? 40 : 36,
-    borderRadius: isTablet ? 20 : 18,
+    width: 34,
+    height: 34,
+    borderRadius: 17,
     justifyContent: 'center',
     alignItems: 'center',
-    elevation: 2,
+    elevation: 3,
     shadowColor: "#000",
-    shadowOffset: { width: 0, height: 1 },
+    shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.2,
-    shadowRadius: 2,
+    shadowRadius: 3,
+  },
+  iconCircleTablet: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
   },
   phoneIcon: {
     backgroundColor: '#93210A',
@@ -376,17 +446,22 @@ const styles = StyleSheet.create({
   locationIcon: {
     backgroundColor: '#93210A',
   },
+
+  // More Container Styles
   moreContainer: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
     paddingTop: 8,
     borderTopWidth: 1,
-    borderTopColor: "#eee",
+    borderTopColor: "#f0f0f0",
   },
   moreText: {
-    fontSize: isTablet ? 14 : 12,
+    fontSize: 12,
     color: "#93210A",
     fontWeight: '600',
+  },
+  moreTextTablet: {
+    fontSize: 14,
   },
 });

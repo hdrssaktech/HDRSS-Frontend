@@ -10,10 +10,12 @@ import {
   ActivityIndicator,
   Animated,
 } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 import Icon from "react-native-vector-icons/MaterialIcons";
 import YoutubePlayer from "react-native-youtube-iframe";
 import { useNavigation } from "@react-navigation/native";
 import { LinearGradient } from 'expo-linear-gradient';
+import Loader from "../../../components/Alert/Loader";
 
 export default function AstrologyPage3({ route }) {
   const navigation = useNavigation();
@@ -115,12 +117,12 @@ export default function AstrologyPage3({ route }) {
           })}
         ]}
       >
-        <TouchableOpacity 
-          style={styles.backButton}
-          onPress={() => navigation.goBack()}
-        >
-          <Icon name="arrow-back" size={isTablet ? 28 : 24} color="#fff" />
-        </TouchableOpacity>
+      <TouchableOpacity
+        style={[styles.backButton, isTablet && styles.backButtonTablet]}
+        onPress={() => navigation.goBack()}
+      >
+        <Ionicons name="chevron-back" size={isTablet ? 30 : 26} color="#fff" />
+      </TouchableOpacity>
 
         <Animated.Text 
           style={[
@@ -205,9 +207,7 @@ export default function AstrologyPage3({ route }) {
           </View>
           
           {loading ? (
-            <View style={styles.loadingContainer}>
-              <ActivityIndicator size="large" color="#93210A" />
-            </View>
+            <Loader/>
           ) : (
             <ScrollView 
               horizontal 
@@ -473,6 +473,8 @@ const styles = StyleSheet.create({
     paddingTop: 50,
     paddingBottom: 16,
     zIndex: 100,
+    borderBottomLeftRadius: 20,
+    borderBottomRightRadius: 20,
   },
   headerTablet: {
     paddingHorizontal: 24,

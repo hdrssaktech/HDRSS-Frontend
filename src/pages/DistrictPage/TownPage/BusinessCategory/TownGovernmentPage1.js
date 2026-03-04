@@ -15,6 +15,7 @@ import {
 import axios from "axios";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import Ionicons from "react-native-vector-icons/Ionicons";
+import Loader from "../../../../components/Alert/Loader";
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
 const isTablet = screenWidth >= 600;
@@ -76,7 +77,6 @@ export default function TownGovernmentPage1() {
     try {
       const res = await API.get(`/town-government/${townId}`);
       setData(res.data.data); // your array
-      console.log("API Response:", res.data);
     } catch (err) {
       console.error("API Error:", err);
     } finally {
@@ -90,12 +90,7 @@ export default function TownGovernmentPage1() {
 
   if (loading) {
     return (
-      <View style={styles.center}>
-        <ActivityIndicator size="large" color="#93210A" />
-        <Text style={[styles.loadingText, isTablet && styles.loadingTextTablet]}>
-          Loading departments...
-        </Text>
-      </View>
+     <Loader/>
     );
   }
 
@@ -151,11 +146,6 @@ export default function TownGovernmentPage1() {
           <Text style={[styles.headerTitle, isTablet && styles.headerTitleTablet]}>
             Town Government
           </Text>
-          {/* {data.length > 0 && (
-            // <Text style={[styles.headerSubtitle, isTablet && styles.headerSubtitleTablet]}>
-            //   {data.length} department(s)
-            // </Text>
-          )} */}
         </View>
 
         <View style={[styles.headerRightPlaceholder, isTablet && styles.headerRightPlaceholderTablet]} />
@@ -245,6 +235,8 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.25,
     shadowRadius: 3.84,
     elevation: 5,
+    borderBottomLeftRadius: 20,
+    borderBottomRightRadius: 20,
   },
   backButton: {
     padding: 5,
@@ -255,7 +247,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   headerTitle: {
-    fontSize: 22,
+    fontSize: 18,
     fontWeight: "bold",
     color: "#fff",
     textAlign: 'center',
@@ -275,13 +267,16 @@ const styles = StyleSheet.create({
     paddingBottom: 20,
     paddingTop: Platform.OS === 'ios' ? 20 : StatusBar.currentHeight + 15,
   },
+
   backButtonTablet: {
     padding: 8,
     marginRight: 15,
   },
+
   headerTitleTablet: {
     fontSize: 28,
   },
+
   headerSubtitleTablet: {
     fontSize: 16,
     marginTop: 4,

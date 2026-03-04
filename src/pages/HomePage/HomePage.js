@@ -1,3 +1,425 @@
+// import React, { useState, useEffect, useRef } from "react";
+// import {
+//   View,
+//   Text,
+//   TouchableOpacity,
+//   FlatList,
+//   Image,
+//   Animated,
+//   ScrollView,
+//   useWindowDimensions,
+//   ActivityIndicator,
+//   StyleSheet,
+// } from "react-native";
+// import { useNavigation, useFocusEffect } from "@react-navigation/native";
+// import { LinearGradient } from "expo-linear-gradient";
+
+// /* COMPONENTS */
+// import Advertisement from "../../components/Add/Advertisement";
+// import InterviewVideos from "../../components/Add/InterviewVideos";
+// import DistrictList from "../DistrictPage/DistrictPage1";
+// import EventsPage from "../../components/Events/EventPage1";
+// import Header from "../../components/Header/Header";
+// import Sidebar from "../../components/Sidebar/Sidebar";
+// // import CurrentLocation from "../../components/Location/CurrentLocation";
+// /* DATA */
+// import { INTERVIEW_DATA } from "../InterviewPage/Interviewdata";
+// import { fetchNews } from "../../Controller/NewsController/NewsController";
+
+// /* ================= FEATURES ================= */
+// const FEATURES = [
+
+//   { id: 0,label: "பஞ்சாங்கம்", image: require("../../../assets/panchagam/panchagam.jpg") },
+//   { id: 1, label: "இந்துத்துவா", image: require("../../../assets/hinduthua/hindu.webp") },
+//   { id: 2, label: "வரலாறு", image: require("../../../assets/Left Swap/History.jpeg") },
+//   { id: 3, label: "ஜோதிடம்", image: require("../../../assets/Left Swap/Astrology.webp") },
+//   { id: 4, label: "கதைகள்", image: require("../../../assets/Left Swap/Story.jpg") },
+//   { id: 5, label: "பூஜை", image: require("../../../assets/Left Swap/poojai.jpg") },
+//   { id: 6, label: "சுற்றுலா", image: require("../../../assets/Left Swap/tourism.jpg") },
+//   { id: 7, label: "வாஸ்து", image: require("../../../assets/Left Swap/vasthu.jpeg") },
+// ];
+// const columns =25; 
+// const size =5;  
+
+// const BACKGROUNDS = [
+//   require("../../../assets/home-bg-img/header-img.png"),
+//   require("../../../assets/home-bg-img/ohm-img.png"),
+//   require("../../../assets/home-bg-img/ruthurasa-img.png"),
+//   require("../../../assets/home-bg-img/header-img.png"),
+//   require("../../../assets/home-bg-img/ohm-img.png"),
+//   require("../../../assets/home-bg-img/ruthurasa-img.png"),
+// ];
+
+
+// export default function HomePage() {
+//   const navigation = useNavigation();
+//   const { width } = useWindowDimensions();
+//   const isTablet = width >= 600;
+//   const styles = getStyles(isTablet);
+
+//   const [showSidebar, setShowSidebar] = useState(false);
+//   const [news, setNews] = useState([]);
+//   const [loading, setLoading] = useState(true);
+
+//   /* 📰 FETCH NEWS */
+//   useEffect(() => {
+//     const loadNews = async () => {
+//       const data = await fetchNews();
+//       const OrderedData = data.sort((a, b) => (a.orderNo ?? Infinity) - (b.orderNo ?? Infinity));
+//       setNews(OrderedData);
+//       setLoading(false);
+//     };
+//     loadNews();
+//   }, []);
+
+//   /* 🗳 ELECTION BUTTON ANIMATION */
+//   const slideAnim = useRef(new Animated.Value(-300)).current;
+
+//   useFocusEffect(
+//     React.useCallback(() => {
+//       slideAnim.setValue(-300);
+//       Animated.timing(slideAnim, {
+//         toValue: 0,
+//         duration: 900,
+//         useNativeDriver: true,
+//       }).start();
+//     }, [])
+//   );
+
+
+//   return (
+//     <View
+//     style={styles.container}
+//   >
+//       {/* 🔥 Background Collage */}
+// <View style={styles.backgroundWrapper}>
+//   {[...Array(500)].map((_, index) => {
+//     const img = BACKGROUNDS[index % BACKGROUNDS.length];
+
+//     return (
+//       <Image
+//         key={index}
+//         source={img}
+//         style={[
+//           styles.backgroundImage,
+//           {
+//             width: `${size}%`,
+//             height: `${size}%`,
+
+//             top: `${Math.floor(index / columns) * size}%`,
+//             left: `${(index % columns) * size}%`,
+//           },
+//         ]}
+//       />
+//     );
+//   })}
+// </View>
+
+
+
+//      <View style={styles.overlay}>
+
+//       {/* ✅ HEADER */}
+//       <Header toggleSidebar={() => setShowSidebar(!showSidebar)} />
+
+//         {/* ✅ LEFT SIDEBAR */}
+//       {showSidebar && (
+//         <View style={[styles.sidebarOverlay, isTablet && styles.sidebarOverlayTablet]}>
+//           <Sidebar closeSidebar={() => setShowSidebar(false)} isTablet={isTablet} />
+//         </View>
+//       )}
+//       <FlatList
+//         data={[]}
+//         keyExtractor={() => "home"}
+//         showsVerticalScrollIndicator={false}
+//         ListHeaderComponent={
+//           <>
+//             {/* 🗳 Election Button */}
+
+//             <Animated.View
+//               style={[
+//                 styles.centerButtonContainer,
+//                 { transform: [{ translateX: slideAnim }] },
+//               ]}
+//             >
+//               <TouchableOpacity
+//                 onPress={() => navigation.navigate("Assemblies")}
+//               >
+//                 <LinearGradient
+//                  colors={["#FFD700", "#FF8C00", "#93210A"]}
+//                   style={styles.gradientButton}
+//                 >
+//                   <Text style={styles.gradientButtonText}>
+//                     🗳 2026 Election Survey...
+//                   </Text>
+//                 </LinearGradient>
+//               </TouchableOpacity>
+//             </Animated.View>
+//             <View style={styles.advertisementWrapper}>
+//               <Advertisement />
+//             </View>
+
+//             <DistrictList />
+//           </>
+//         }
+//         ListFooterComponent={
+//           <>
+//             {/* 🎥 INTERVIEW VIDEOS */}
+//             <FlatList
+//               data={INTERVIEW_DATA.slice(0, 1)}
+//               keyExtractor={(item) => item.id.toString()}
+//               renderItem={({ item }) => <InterviewVideos video={item} />}
+//               scrollEnabled={false}
+//             />
+
+//             <TouchableOpacity
+//               onPress={() => navigation.navigate("InterviewPage1")}
+//               style={styles.seeMoreContainer}
+//             >
+//               {/* <Text style={styles.more}>See All Videos →</Text> */}
+//             </TouchableOpacity>
+
+//             {/* 📰 NEWS */}
+//             <Text style={styles.heading}>Latest News</Text>
+
+//             {loading ? (
+//               <ActivityIndicator size="large" color="#93210A" />
+//             ) : (
+//               <FlatList
+//                 data={news.slice(0, isTablet ? 3 : 2)}
+//                 keyExtractor={(item) => item.id.toString()}
+//                 scrollEnabled={false}
+//                 renderItem={({ item }) => (
+//                   <TouchableOpacity
+//                     onPress={() =>
+//                       navigation.navigate("Newspage2", { news: item })
+//                     }
+//                      activeOpacity={0.85}
+//                   >
+//                   <LinearGradient
+//                       colors={['#FFF3E0', '#FFE0B2']}
+//                       style={styles.newsCard}
+//                     >
+
+//                     <Image source={{ uri: item.image }} style={styles.newsImage} />
+//                     <View style={styles.newsContent}>
+//                       <Text style={styles.newsCategory}>{item.type}</Text>
+//                       <Text style={styles.newsTitle} numberOfLines={2}>
+//                         {item.title}
+//                       </Text>
+//                     </View>
+//                     </LinearGradient>
+//                   </TouchableOpacity>
+//                 )}
+//               />
+//             )}
+
+//             <TouchableOpacity
+//               onPress={() => navigation.navigate("NewsPage1")}
+//               style={styles.seeMoreContainer}
+//             >
+//               <Text style={styles.more}>See All News →</Text>
+//             </TouchableOpacity>
+
+//             <EventsPage />
+
+//             {/* 🔵 EXPLORE MORE */}
+//             <View style={styles.circleMenuContainer}>
+//               <Text style={styles.heading}>Explore More</Text>
+
+//               <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+//                 {FEATURES.map((item) => (
+//                   <TouchableOpacity
+//                     key={item.id}
+//                     onPress={() => {
+//                       if (item.label === "வரலாறு") navigation.navigate("HistoryPage1");
+//                       if (item.label === "ஜோதிடம்") navigation.navigate("AstrologyPage1");
+//                       if (item.label === "கதைகள்") navigation.navigate("StoryPage1");
+//                       if (item.label === "பூஜை") navigation.navigate("PoojaPage1");
+//                       if (item.label === "சுற்றுலா") navigation.navigate("TourismPage1");
+//                       if (item.label === "வாஸ்து") navigation.navigate("VaasthuPage");
+//                       if (item.label === "இந்துத்துவா") navigation.navigate("HinduThuvm");
+//                       if (item.label === "பஞ்சாங்கம்") navigation.navigate("Panchangam");
+                     
+//                     }}
+//                   >
+//                     <View style={styles.circleCardWrapper}>
+//                       <LinearGradient
+//                         colors={["#FFF8E7", "#FFD89B", "#FFB75E"]}
+//                         style={styles.circleGradient}
+//                       >
+//                         <Image source={item.image} style={styles.circleImage} />
+//                       </LinearGradient>
+//                       <Text style={styles.label}>{item.label}</Text>
+//                     </View>
+//                   </TouchableOpacity>
+//                 ))}
+//               </ScrollView>
+//             </View>
+//           </>
+//         }
+//       />
+//     </View>
+//       </View>
+//   );
+// }
+
+// /* ================= STYLES ================= */
+// const getStyles = (isTablet) =>
+//   StyleSheet.create({
+//     container: {
+//       flex: 1,
+//       backgroundColor: "#ffffff",
+//     },
+
+//     /* 🔥 LEFT SIDEBAR FIX */
+//     sidebarOverlay: {
+//       position: "absolute",
+//       top: 0,
+//       left: -140,
+//       width: "100%",
+//       height: "100%",
+//       zIndex: 999,
+//     },
+
+//     sidebarOverlayTablet: {
+//     left: -440, 
+//     paddingHorizontal:-50,
+//   },
+//   backgroundWrapper: {
+//   ...StyleSheet.absoluteFillObject,
+//   width: "100%",
+//   height: "100%",
+//   flexDirection: "row",
+//   flexWrap: "wrap",
+//   // zIndex: -1,
+// },
+
+// backgroundImage: {
+//   position: "absolute",
+//   opacity: 0.15,
+// },
+// leftImage: {
+//   left:20,
+// },
+
+// rightImage: {
+//   right:50,
+// },
+
+// overlay: {
+//   flex: 1,
+//   backgroundColor: "rgba(255, 242, 242, 0.84)",
+// },
+
+
+//     centerButtonContainer: {
+//       alignItems: "center",
+//       marginTop:isTablet ? 25 : 14
+//     },
+
+//     gradientButton: {
+//       paddingVertical: isTablet ? 18 : 12,
+//       paddingHorizontal: isTablet ? 55 : 30,
+//       borderRadius: 30,
+//     },
+
+//     gradientButtonText: {
+//       color: "#fff",
+//       fontSize: isTablet ? 22 : 16,
+//       fontWeight: "bold",
+//     },
+
+//     advertisementWrapper: {
+//       marginVertical: isTablet ? 25 : 15,
+//     },
+
+//     heading: {
+//       fontSize: isTablet ? 26 : 20,
+//       fontWeight: "bold",
+//       color: "#93210A",
+//       marginHorizontal: 15,
+//       marginVertical: 10,
+//     },
+
+//     seeMoreContainer: {
+//       alignItems: "flex-end",
+//       paddingHorizontal: 15,
+//       marginBottom: 10,
+//     },
+
+//     more: {
+//       color: "#93210A",
+//       fontSize: isTablet ? 18 : 14,
+//       fontWeight: "600",
+//     },
+
+//     newsCard: {
+//       flexDirection: "row",
+//       backgroundColor: "#ffffff",
+//       marginHorizontal: 15,
+//       marginVertical: 8,
+//       padding:10,
+//       elevation: 4,
+//       overflow: "hidden",
+//     },
+
+//     newsImage: {
+//       width: isTablet ? 150 : 120,
+//       height: isTablet ? 125 : 100,
+//     },
+
+//     newsContent: {
+//       flex: 1,
+//       padding: 10,
+//       justifyContent: "center",
+//     },
+
+//     newsCategory: {
+//       fontSize: isTablet ? 18 : 13,
+//       color: "#93210A",
+//       fontWeight: "bold",
+//     },
+
+//     newsTitle: {
+//       fontSize: isTablet ? 18 : 11,
+//       fontWeight: "bold",
+//       color: "#000",
+//       marginTop: 4,
+//     },
+
+//     circleMenuContainer: {
+//       marginVertical: 20,
+//     },
+
+//     circleCardWrapper: {
+//       alignItems: "center",
+//       marginHorizontal: isTablet ? 20 : 12,
+//     },
+
+//     circleGradient: {
+//       width: isTablet ? 230 : 120,
+//       height: isTablet ? 230 : 120,
+//       borderRadius: 120,
+//       justifyContent: "center",
+//       alignItems: "center",
+//     },
+
+//     circleImage: {
+//       width: isTablet ? 180 : 90,
+//       height: isTablet ? 180 : 90,
+//       borderRadius: 100,
+//     },
+
+//     label: {
+//       marginTop: 8,
+//       fontSize: isTablet ? 16 : 13,
+//       fontWeight: "600",
+//     },
+//   });
+
+
+
 import React, { useState, useEffect, useRef } from "react";
 import {
   View,
@@ -8,12 +430,10 @@ import {
   Animated,
   ScrollView,
   useWindowDimensions,
-  ActivityIndicator,
   StyleSheet,
 } from "react-native";
 import { useNavigation, useFocusEffect } from "@react-navigation/native";
 import { LinearGradient } from "expo-linear-gradient";
-import { ImageBackground } from "react-native";
 
 /* COMPONENTS */
 import Advertisement from "../../components/Add/Advertisement";
@@ -22,14 +442,13 @@ import DistrictList from "../DistrictPage/DistrictPage1";
 import EventsPage from "../../components/Events/EventPage1";
 import Header from "../../components/Header/Header";
 import Sidebar from "../../components/Sidebar/Sidebar";
-// import CurrentLocation from "../../components/Location/CurrentLocation";
 /* DATA */
 import { INTERVIEW_DATA } from "../InterviewPage/Interviewdata";
 import { fetchNews } from "../../Controller/NewsController/NewsController";
+import Loader from "../../components/Alert/Loader";
 
 /* ================= FEATURES ================= */
 const FEATURES = [
-
   { id: 0,label: "பஞ்சாங்கம்", image: require("../../../assets/panchagam/panchagam.jpg") },
   { id: 1, label: "இந்துத்துவா", image: require("../../../assets/hinduthua/hindu.webp") },
   { id: 2, label: "வரலாறு", image: require("../../../assets/Left Swap/History.jpeg") },
@@ -39,8 +458,9 @@ const FEATURES = [
   { id: 6, label: "சுற்றுலா", image: require("../../../assets/Left Swap/tourism.jpg") },
   { id: 7, label: "வாஸ்து", image: require("../../../assets/Left Swap/vasthu.jpeg") },
 ];
-const columns =25; 
-const size =5;  
+
+const columns = 25; 
+const size = 5;  
 
 const BACKGROUNDS = [
   require("../../../assets/home-bg-img/header-img.png"),
@@ -51,7 +471,6 @@ const BACKGROUNDS = [
   require("../../../assets/home-bg-img/ruthurasa-img.png"),
 ];
 
-
 export default function HomePage() {
   const navigation = useNavigation();
   const { width } = useWindowDimensions();
@@ -60,17 +479,11 @@ export default function HomePage() {
 
   const [showSidebar, setShowSidebar] = useState(false);
   const [news, setNews] = useState([]);
+  const [adsData, setAdsData] = useState([]);
+  const [districtData, setDistrictData] = useState([]);
+  const [eventsData, setEventsData] = useState([]);
+  const [interviewData, setInterviewData] = useState([]);
   const [loading, setLoading] = useState(true);
-
-  /* 📰 FETCH NEWS */
-  useEffect(() => {
-    const loadNews = async () => {
-      const data = await fetchNews();
-      setNews(data);
-      setLoading(false);
-    };
-    loadNews();
-  }, []);
 
   /* 🗳 ELECTION BUTTON ANIMATION */
   const slideAnim = useRef(new Animated.Value(-300)).current;
@@ -86,175 +499,226 @@ export default function HomePage() {
     }, [])
   );
 
+  /* 📰 FETCH ALL DATA SIMULTANEOUSLY */
+  useEffect(() => {
+    const loadAllData = async () => {
+      try {
+        setLoading(true);
+        
+        // Mock functions - replace with your actual API calls
+        const fetchAds = async () => []; // Your actual fetch function
+        const fetchDistricts = async () => []; // Your actual fetch function
+        const fetchEvents = async () => []; // Your actual fetch function
+        const fetchInterviews = async () => []; // Your actual fetch function
+
+        const [
+          newsRes,
+          adsRes,
+          districtRes,
+          eventsRes,
+          interviewRes,
+        ] = await Promise.all([
+          fetchNews(),
+          fetchAds(),
+          fetchDistricts(),
+          fetchEvents(),
+          fetchInterviews(),
+        ]);
+
+        // Sort news by orderNo
+        const orderedNews = newsRes.sort((a, b) => 
+          (a.orderNo ?? Infinity) - (b.orderNo ?? Infinity)
+        );
+
+        setNews(orderedNews);
+        setAdsData(adsRes);
+        setDistrictData(districtRes);
+        setEventsData(eventsRes);
+        setInterviewData(interviewRes);
+
+      } catch (error) {
+        console.log("Error loading data:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadAllData();
+  }, []);
+
+  // Show loader only during initial data fetch
+  if (loading) {
+    return (
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+        <Loader />
+      </View>
+    );
+  }
 
   return (
-    <View
-    style={styles.container}
-  >
+    <View style={styles.container}>
       {/* 🔥 Background Collage */}
-<View style={styles.backgroundWrapper}>
-  {[...Array(500)].map((_, index) => {
-    const img = BACKGROUNDS[index % BACKGROUNDS.length];
+      <View style={styles.backgroundWrapper}>
+        {[...Array(500)].map((_, index) => {
+          const img = BACKGROUNDS[index % BACKGROUNDS.length];
+          return (
+            <Image
+              key={index}
+              source={img}
+              style={[
+                styles.backgroundImage,
+                {
+                  width: `${size}%`,
+                  height: `${size}%`,
+                  top: `${Math.floor(index / columns) * size}%`,
+                  left: `${(index % columns) * size}%`,
+                },
+              ]}
+            />
+          );
+        })}
+      </View>
 
-    return (
-      <Image
-        key={index}
-        source={img}
-        style={[
-          styles.backgroundImage,
-          {
-            width: `${size}%`,
-            height: `${size}%`,
-
-            top: `${Math.floor(index / columns) * size}%`,
-            left: `${(index % columns) * size}%`,
-          },
-        ]}
-      />
-    );
-  })}
-</View>
-
-
-
-     <View style={styles.overlay}>
-
-      {/* ✅ HEADER */}
-      <Header toggleSidebar={() => setShowSidebar(!showSidebar)} />
+      <View style={styles.overlay}>
+        {/* ✅ HEADER */}
+        <Header toggleSidebar={() => setShowSidebar(!showSidebar)} />
 
         {/* ✅ LEFT SIDEBAR */}
-      {showSidebar && (
-        <View style={[styles.sidebarOverlay, isTablet && styles.sidebarOverlayTablet]}>
-          <Sidebar closeSidebar={() => setShowSidebar(false)} isTablet={isTablet} />
-        </View>
-      )}
-      <FlatList
-        data={[]}
-        keyExtractor={() => "home"}
-        showsVerticalScrollIndicator={false}
-        ListHeaderComponent={
-          <>
-            {/* 🗳 Election Button */}
+        {showSidebar && (
+          <View style={[styles.sidebarOverlay, isTablet && styles.sidebarOverlayTablet]}>
+            <Sidebar closeSidebar={() => setShowSidebar(false)} isTablet={isTablet} />
+          </View>
+        )}
 
-            <Animated.View
-              style={[
-                styles.centerButtonContainer,
-                { transform: [{ translateX: slideAnim }] },
-              ]}
-            >
-              <TouchableOpacity
-                onPress={() => navigation.navigate("Assemblies")}
+        <FlatList
+          data={[]}
+          keyExtractor={() => "home"}
+          showsVerticalScrollIndicator={false}
+          ListHeaderComponent={
+            <>
+              {/* 🗳 Election Button */}
+              <Animated.View
+                style={[
+                  styles.centerButtonContainer,
+                  { transform: [{ translateX: slideAnim }] },
+                ]}
               >
-                <LinearGradient
-                 colors={["#FFD700", "#FF8C00", "#93210A"]}
-                  style={styles.gradientButton}
+                <TouchableOpacity
+                  onPress={() => navigation.navigate("Assemblies")}
                 >
-                  <Text style={styles.gradientButtonText}>
-                    🗳 2026 Election Survey...
-                  </Text>
-                </LinearGradient>
-              </TouchableOpacity>
-            </Animated.View>
-            <View style={styles.advertisementWrapper}>
-              <Advertisement />
-            </View>
+                  <LinearGradient
+                    colors={["#FFD700", "#FF8C00", "#93210A"]}
+                    style={styles.gradientButton}
+                  >
+                    <Text style={styles.gradientButtonText}>
+                      🗳 2026 Election Survey...
+                    </Text>
+                  </LinearGradient>
+                </TouchableOpacity>
+              </Animated.View>
 
-            <DistrictList />
-          </>
-        }
-        ListFooterComponent={
-          <>
-            {/* 🎥 INTERVIEW VIDEOS */}
-            <FlatList
-              data={INTERVIEW_DATA.slice(0, 1)}
-              keyExtractor={(item) => item.id.toString()}
-              renderItem={({ item }) => <InterviewVideos video={item} />}
-              scrollEnabled={false}
-            />
+              {/* Advertisement Component */}
+              <View style={styles.advertisementWrapper}>
+                <Advertisement data={adsData} />
+              </View>
 
-            <TouchableOpacity
-              onPress={() => navigation.navigate("InterviewPage1")}
-              style={styles.seeMoreContainer}
-            >
-              {/* <Text style={styles.more}>See All Videos →</Text> */}
-            </TouchableOpacity>
-
-            {/* 📰 NEWS */}
-            <Text style={styles.heading}>Latest News</Text>
-
-            {loading ? (
-              <ActivityIndicator size="large" color="#93210A" />
-            ) : (
+              {/* District List */}
+              <DistrictList data={districtData} />
+            </>
+          }
+          ListFooterComponent={
+            <>
+              {/* 🎥 INTERVIEW VIDEOS */}
               <FlatList
-                data={news.slice(0, isTablet ? 3 : 2)}
+                data={INTERVIEW_DATA.slice(0, 1)}
                 keyExtractor={(item) => item.id.toString()}
-                scrollEnabled={false}
                 renderItem={({ item }) => (
-                  <TouchableOpacity
-                    style={styles.newsCard}
-                    onPress={() =>
-                      navigation.navigate("Newspage2", { news: item })
-                    }
-                  >
-                    <Image source={{ uri: item.image }} style={styles.newsImage} />
-                    <View style={styles.newsContent}>
-                      <Text style={styles.newsCategory}>{item.type}</Text>
-                      <Text style={styles.newsTitle} numberOfLines={2}>
-                        {item.title}
-                      </Text>
-                    </View>
-                  </TouchableOpacity>
+                  <InterviewVideos video={item} data={interviewData} />
                 )}
+                scrollEnabled={false}
               />
-            )}
 
-            <TouchableOpacity
-              onPress={() => navigation.navigate("NewsPage1")}
-              style={styles.seeMoreContainer}
-            >
-              <Text style={styles.more}>See All News →</Text>
-            </TouchableOpacity>
+              {/* 📰 NEWS SECTION */}
+              <Text style={styles.heading}>Latest News</Text>
 
-            <EventsPage />
-
-            {/* 🔵 EXPLORE MORE */}
-            <View style={styles.circleMenuContainer}>
-              <Text style={styles.heading}>Explore More</Text>
-
-              <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-                {FEATURES.map((item) => (
-                  <TouchableOpacity
-                    key={item.id}
-                    onPress={() => {
-                      if (item.label === "வரலாறு") navigation.navigate("HistoryPage1");
-                      if (item.label === "ஜோதிடம்") navigation.navigate("AstrologyPage1");
-                      if (item.label === "கதைகள்") navigation.navigate("StoryPage1");
-                      if (item.label === "பூஜை") navigation.navigate("PoojaPage1");
-                      if (item.label === "சுற்றுலா") navigation.navigate("TourismPage1");
-                      if (item.label === "வாஸ்து") navigation.navigate("VaasthuPage");
-                      if (item.label === "இந்துத்துவா") navigation.navigate("HinduThuvm");
-                      if (item.label === "பஞ்சாங்கம்") navigation.navigate("Panchangam");
-                     
-                    }}
-                  >
-                    <View style={styles.circleCardWrapper}>
+              {news.length === 0 ? (
+                <Text style={styles.noDataText}>No news available</Text>
+              ) : (
+                <FlatList
+                  data={news.slice(0, isTablet ? 3 : 2)}
+                  keyExtractor={(item) => item.id.toString()}
+                  scrollEnabled={false}
+                  renderItem={({ item }) => (
+                    <TouchableOpacity
+                      onPress={() =>
+                        navigation.navigate("Newspage2", { news: item })
+                      }
+                      activeOpacity={0.85}
+                    >
                       <LinearGradient
-                        colors={["#FFF8E7", "#FFD89B", "#FFB75E"]}
-                        style={styles.circleGradient}
+                        colors={['#FFF3E0', '#FFE0B2']}
+                        style={styles.newsCard}
                       >
-                        <Image source={item.image} style={styles.circleImage} />
+                        <Image source={{ uri: item.image }} style={styles.newsImage} />
+                        <View style={styles.newsContent}>
+                          <Text style={styles.newsCategory}>{item.type}</Text>
+                          <Text style={styles.newsTitle} numberOfLines={2}>
+                            {item.title}
+                          </Text>
+                        </View>
                       </LinearGradient>
-                      <Text style={styles.label}>{item.label}</Text>
-                    </View>
-                  </TouchableOpacity>
-                ))}
-              </ScrollView>
-            </View>
-          </>
-        }
-      />
-    </View>
+                    </TouchableOpacity>
+                  )}
+                />
+              )}
+
+              <TouchableOpacity
+                onPress={() => navigation.navigate("NewsPage1")}
+                style={styles.seeMoreContainer}
+              >
+                <Text style={styles.more}>See All News →</Text>
+              </TouchableOpacity>
+
+              {/* Events Page */}
+              <EventsPage data={eventsData} />
+
+              {/* 🔵 EXPLORE MORE */}
+              <View style={styles.circleMenuContainer}>
+                <Text style={styles.heading}>Explore More</Text>
+
+                <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+                  {FEATURES.map((item) => (
+                    <TouchableOpacity
+                      key={item.id}
+                      onPress={() => {
+                        if (item.label === "வரலாறு") navigation.navigate("HistoryPage1");
+                        if (item.label === "ஜோதிடம்") navigation.navigate("AstrologyPage1");
+                        if (item.label === "கதைகள்") navigation.navigate("StoryPage1");
+                        if (item.label === "பூஜை") navigation.navigate("PoojaPage1");
+                        if (item.label === "சுற்றுலா") navigation.navigate("TourismPage1");
+                        if (item.label === "வாஸ்து") navigation.navigate("VaasthuPage");
+                        if (item.label === "இந்துத்துவா") navigation.navigate("HinduThuvm");
+                        if (item.label === "பஞ்சாங்கம்") navigation.navigate("Panchangam");
+                      }}
+                    >
+                      <View style={styles.circleCardWrapper}>
+                        <LinearGradient
+                          colors={["#FFF8E7", "#FFD89B", "#FFB75E"]}
+                          style={styles.circleGradient}
+                        >
+                          <Image source={item.image} style={styles.circleImage} />
+                        </LinearGradient>
+                        <Text style={styles.label}>{item.label}</Text>
+                      </View>
+                    </TouchableOpacity>
+                  ))}
+                </ScrollView>
+              </View>
+            </>
+          }
+        />
       </View>
+    </View>
   );
 }
 
@@ -266,7 +730,6 @@ const getStyles = (isTablet) =>
       backgroundColor: "#ffffff",
     },
 
-    /* 🔥 LEFT SIDEBAR FIX */
     sidebarOverlay: {
       position: "absolute",
       top: 0,
@@ -277,39 +740,31 @@ const getStyles = (isTablet) =>
     },
 
     sidebarOverlayTablet: {
-    left: -440, 
-    paddingHorizontal:-50,
-  },
-  backgroundWrapper: {
-  ...StyleSheet.absoluteFillObject,
-  width: "100%",
-  height: "100%",
-  flexDirection: "row",
-  flexWrap: "wrap",
-  // zIndex: -1,
-},
+      left: -440,
+      paddingHorizontal: -50,
+    },
 
-backgroundImage: {
-  position: "absolute",
-  opacity: 0.15,
-},
-leftImage: {
-  left:20,
-},
+    backgroundWrapper: {
+      ...StyleSheet.absoluteFillObject,
+      width: "100%",
+      height: "100%",
+      flexDirection: "row",
+      flexWrap: "wrap",
+    },
 
-rightImage: {
-  right:50,
-},
+    backgroundImage: {
+      position: "absolute",
+      opacity: 0.15,
+    },
 
-overlay: {
-  flex: 1,
-  backgroundColor: "rgba(255, 242, 242, 0.84)",
-},
-
+    overlay: {
+      flex: 1,
+      backgroundColor: "rgba(255, 242, 242, 0.84)",
+    },
 
     centerButtonContainer: {
       alignItems: "center",
-      marginTop:isTablet ? 25 : 14
+      marginTop: isTablet ? 25 : 14,
     },
 
     gradientButton: {
@@ -350,9 +805,10 @@ overlay: {
 
     newsCard: {
       flexDirection: "row",
-      backgroundColor: "#fff",
+      backgroundColor: "#ffffff",
       marginHorizontal: 15,
       marginVertical: 8,
+      padding: 10,
       elevation: 4,
       overflow: "hidden",
     },
@@ -369,7 +825,7 @@ overlay: {
     },
 
     newsCategory: {
-      fontSize: isTablet ? 18 : 11,
+      fontSize: isTablet ? 18 : 13,
       color: "#93210A",
       fontWeight: "bold",
     },
@@ -379,6 +835,13 @@ overlay: {
       fontWeight: "bold",
       color: "#000",
       marginTop: 4,
+    },
+
+    noDataText: {
+      textAlign: "center",
+      marginVertical: 20,
+      fontSize: isTablet ? 18 : 14,
+      color: "#666",
     },
 
     circleMenuContainer: {
@@ -410,5 +873,3 @@ overlay: {
       fontWeight: "600",
     },
   });
-
-

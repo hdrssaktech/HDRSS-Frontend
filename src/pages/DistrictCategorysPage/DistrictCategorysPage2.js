@@ -4,17 +4,22 @@ import {
   Text,
   Image,
   StyleSheet,
-  ActivityIndicator,
   ScrollView,
   TouchableOpacity,
   Linking,
   Dimensions,
   Alert,
+  Platform,
 } from "react-native";
 import { useRoute, useNavigation } from "@react-navigation/native";
 import { getPlaceDetails } from "../../api/api.js";
 import { Ionicons, MaterialIcons } from "@expo/vector-icons";
 import YoutubePlayer from "react-native-youtube-iframe";
+import Loader from "../../components/Alert/Loader.js";
+
+const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
+const isTablet = screenWidth >= 600;
+const isLargeTablet = screenWidth >= 1024;
 
 export default function DistrictCategorysPage2() {
   const route = useRoute();
@@ -23,18 +28,12 @@ export default function DistrictCategorysPage2() {
   const [place, setPlace] = useState(null);
   const [loading, setLoading] = useState(true);
   const [playing, setPlaying] = useState(false);
-  const[show,Setshow] = useState(false);
-
-  const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
-  const isTablet = screenWidth >= 600;
-
-  const { width } = Dimensions.get("window");
+  const [show, setShow] = useState(false);
 
   useEffect(() => {
     const fetchPlace = async () => {
       try {
         const data = await getPlaceDetails(districtId, categoryName, placeId);
-
         if (data) {
           setPlace(data);
         } else {
@@ -48,7 +47,6 @@ export default function DistrictCategorysPage2() {
         setLoading(false);
       }
     };
-
     fetchPlace();
   }, [districtId, categoryName, placeId]);
 
@@ -83,15 +81,12 @@ export default function DistrictCategorysPage2() {
   // Extract YouTube video ID from URL
   const getYouTubeId = (url) => {
     if (!url) return null;
-    
-    // Handle different YouTube URL formats
     const patterns = [
       /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([a-zA-Z0-9_-]{11})/,
       /youtube\.com\/watch\?v=([a-zA-Z0-9_-]{11})/,
       /youtu\.be\/([a-zA-Z0-9_-]{11})/,
       /youtube\.com\/embed\/([a-zA-Z0-9_-]{11})/
     ];
-    
     for (let pattern of patterns) {
       const match = url.match(pattern);
       if (match && match[1]) {
@@ -102,17 +97,15 @@ export default function DistrictCategorysPage2() {
   };
 
   if (loading) {
-    return (
-      <View style={styles.center}>
-        <ActivityIndicator size="large" color="#93210A" />
-      </View>
-    );
+    return <Loader />;
   }
 
   if (!place) {
     return (
       <View style={styles.center}>
-        <Text style={{ color: "#93210A", fontSize: 18 }}>No details found</Text>
+        <Text style={[styles.noDataText, isTablet && styles.noDataTextTablet]}>
+          No details found
+        </Text>
       </View>
     );
   }
@@ -120,10 +113,14 @@ export default function DistrictCategorysPage2() {
   const youtubeId = place.video ? getYouTubeId(place.video) : null;
 
   return (
-    <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
+    <ScrollView 
+      style={styles.container} 
+      showsVerticalScrollIndicator={false}
+      contentContainerStyle={styles.scrollContent}
+    >
       {/* 📢 FIXED ADVERTISEMENT BANNER at TOP of screen */}
       {place.advertisment && Array.isArray(place.advertisment) && place.advertisment.length > 0 && (
-        <View style={styles.adBanner}>
+        <View style={[styles.adBanner, isTablet && styles.adBannerTablet]}>
           <ScrollView 
             horizontal 
             showsHorizontalScrollIndicator={false}
@@ -131,7 +128,7 @@ export default function DistrictCategorysPage2() {
             style={styles.adScroll}
           >
             {place.advertisment.map((img, index) => (
-              <View key={index} style={styles.adSlide}>
+              <View key={index} style={[styles.adSlide, { width: screenWidth }]}>
                 <Image
                   source={{ uri: img }}
                   style={styles.adBannerImage}
@@ -144,86 +141,99 @@ export default function DistrictCategorysPage2() {
       )}
 
       {/* 🖼️ BACK BUTTON - Fixed position over advertisement */}
-      <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
-        <Ionicons name="chevron-back" size={28} color="#fff" />
+      <TouchableOpacity 
+        style={[styles.backButton, isTablet && styles.backButtonTablet]} 
+        onPress={() => navigation.goBack()}
+      >
+        <Ionicons name="chevron-back" size={isTablet ? 32 : 28} color="#fff" />
       </TouchableOpacity>
 
       {/* 🏷️ Title + Category - Comes AFTER advertisement */}
-      <View style={styles.header}>
-        <Text style={styles.title}>{place.name || "Unnamed Place"}</Text>
-        <View style={styles.categoryBadge}>
-          <Text style={styles.categoryText}>
+      <View style={[styles.header, isTablet && styles.headerTablet]}>
+        <Text style={[styles.title, isTablet && styles.titleTablet]}>
+          {place.name || "Unnamed Place"}
+        </Text>
+        <View style={[styles.categoryBadge, isTablet && styles.categoryBadgeTablet]}>
+          <Text style={[styles.categoryText, isTablet && styles.categoryTextTablet]}>
             {categoryName ? categoryName.toUpperCase() : "CATEGORY"}
           </Text>
         </View>
       </View>
 
       {/* ☎️ Contact Buttons - Comes BEFORE main image */}
-      <View style={styles.buttonRow}>
+      <View style={[styles.buttonRow, isTablet && styles.buttonRowTablet]}>
         {place.phone && (
-          <TouchableOpacity style={styles.button} onPress={openPhone}>
-            <MaterialIcons name="call" size={20} color="#fff" />
-            <Text style={styles.buttonText}>Call</Text>
+          <TouchableOpacity 
+            style={[styles.button, isTablet && styles.buttonTablet]} 
+            onPress={openPhone}
+          >
+            <MaterialIcons name="call" size={isTablet ? 24 : 20} color="#fff" />
+            <Text style={[styles.buttonText, isTablet && styles.buttonTextTablet]}>Call</Text>
           </TouchableOpacity>
         )}
 
         {place.whatsapp && (
           <TouchableOpacity
-            style={[styles.button, styles.whatsappButton]}
+            style={[styles.button, styles.whatsappButton, isTablet && styles.buttonTablet]}
             onPress={openWhatsApp}
           >
-            <Ionicons name="logo-whatsapp" size={20} color="#fff" />
-            <Text style={styles.buttonText}>WhatsApp</Text>
+            <Ionicons name="logo-whatsapp" size={isTablet ? 24 : 20} color="#fff" />
+            <Text style={[styles.buttonText, isTablet && styles.buttonTextTablet]}>WhatsApp</Text>
           </TouchableOpacity>
         )}
 
         {place.location && (
           <TouchableOpacity
-            style={[styles.button, styles.locationButton]}
+            style={[styles.button, styles.locationButton, isTablet && styles.buttonTablet]}
             onPress={openLocation}
           >
-            <Ionicons name="navigate" size={20} color="#fff" />
-            <Text style={styles.buttonText}>Navigate</Text>
+            <Ionicons name="navigate" size={isTablet ? 24 : 20} color="#fff" />
+            <Text style={[styles.buttonText, isTablet && styles.buttonTextTablet]}>Navigate</Text>
           </TouchableOpacity>
         )}
       </View>
 
       {/* 🖼️ MAIN IMAGE - Shows AFTER contact buttons */}
-      <View style={{ position: "relative", marginTop: 10 }}>
+      <View style={[styles.imageWrapper, isTablet && styles.imageWrapperTablet]}>
         <Image
           source={{
             uri: place.image || "https://via.placeholder.com/600x400.png?text=No+Image+Available",
           }}
-          style={[styles.image, { width }]}
+          style={[styles.image, isTablet && styles.imageTablet, { width: screenWidth }]}
         />
         
         {/* Location Info on Image */}
         {place.location && (
-          <View style={styles.imageLocation}>
-            <Ionicons name="location" size={18} color="#fff" />
-            <Text style={styles.imageLocationText}>{place.location}</Text>
+          <View style={[styles.imageLocation, isTablet && styles.imageLocationTablet]}>
+            <Ionicons name="location" size={isTablet ? 20 : 18} color="#fff" />
+            <Text style={[styles.imageLocationText, isTablet && styles.imageLocationTextTablet]}>
+              {place.location}
+            </Text>
           </View>
         )}
       </View>
 
       {/* 📝 About Section */}
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>About</Text>
-        <Text style={styles.description} numberOfLines={show ? undefined:4} >
+      <View style={[styles.section, isTablet && styles.sectionTablet]}>
+        <Text style={[styles.sectionTitle, isTablet && styles.sectionTitleTablet]}>About</Text>
+        <Text style={[styles.description, isTablet && styles.descriptionTablet]} numberOfLines={show ? undefined : 4}>
           {place.description || "No description available for this place."}
         </Text>
-        <TouchableOpacity onPress={()=>Setshow(!show)}>
+        <TouchableOpacity onPress={() => setShow(!show)}>
           <View>
-          <Text style={{color:'#93210A',fontSize:15,textAlign:'right'}} >{show ? 'Read Less...' : 'Read More...'}</Text>
-        </View>
+            <Text style={[styles.readMoreText, isTablet && styles.readMoreTextTablet]}>
+              {show ? 'Read Less...' : 'Read More...'}
+            </Text>
+          </View>
         </TouchableOpacity>
-      
       </View>
 
       {/* 🖼️ Gallery Section */}
       {place.gallery && Array.isArray(place.gallery) && place.gallery.length > 0 && (
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Visiting Places</Text>
+        <View style={[styles.section, isTablet && styles.sectionTablet]}>
+          <Text style={[styles.sectionTitle, isTablet && styles.sectionTitleTablet]}>
+            Visiting Places
+          </Text>
           <ScrollView 
             horizontal 
             showsHorizontalScrollIndicator={false}
@@ -233,7 +243,7 @@ export default function DistrictCategorysPage2() {
               <Image
                 key={index}
                 source={{ uri: img }}
-                style={styles.galleryImage}
+                style={[styles.galleryImage, isTablet && styles.galleryImageTablet]}
                 onError={(e) => console.warn("Image load error:", e.nativeEvent.error)}
               />
             ))}
@@ -243,12 +253,12 @@ export default function DistrictCategorysPage2() {
 
       {/* 📺 Video Section - At the bottom */}
       {place.video && youtubeId && (
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Video</Text>
-          <View style={styles.videoContainer}>
+        <View style={[styles.section, styles.videoSection, isTablet && styles.sectionTablet]}>
+          <Text style={[styles.sectionTitle, isTablet && styles.sectionTitleTablet]}>Video</Text>
+          <View style={[styles.videoContainer, isTablet && styles.videoContainerTablet]}>
             <YoutubePlayer
-              height={isTablet ? 380 : 200}
-              width={width - 50} // Account for padding
+              height={isTablet ? (isLargeTablet ? 450 : 380) : 200}
+              width={screenWidth - (isTablet ? 60 : 40)}
               play={playing}
               videoId={youtubeId}
               onChangeState={(event) => {
@@ -263,7 +273,7 @@ export default function DistrictCategorysPage2() {
       )}
 
       {/* Footer Space */}
-      <View style={styles.footer} />
+      <View style={[styles.footer, isTablet && styles.footerTablet]} />
     </ScrollView>
   );
 }
@@ -273,10 +283,20 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#f5f5f5",
   },
+  scrollContent: {
+    flexGrow: 1,
+  },
   center: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
+  },
+  noDataText: {
+    color: "#93210A",
+    fontSize: 18,
+  },
+  noDataTextTablet: {
+    fontSize: 22,
   },
   
   // Fixed Advertisement Banner at TOP
@@ -285,12 +305,14 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
     width: '100%',
   },
+  adBannerTablet: {
+    height: 250,
+  },
   adScroll: {
     flex: 1,
   },
   adSlide: {
-    width: Dimensions.get('window').width,
-    height: 200,
+    height: 180,
     position: 'relative',
   },
   adBannerImage: {
@@ -298,30 +320,22 @@ const styles = StyleSheet.create({
     height: '100%',
     resizeMode: 'cover',
   },
-  adBadge: {
-    position: "absolute",
-    top: 10,
-    right: 10,
-    backgroundColor: "rgba(147, 33, 10, 0.9)",
-    paddingHorizontal: 12,
-    paddingVertical: 5,
-    borderRadius: 4,
-  },
-  adBadgeText: {
-    color: "#fff",
-    fontSize: 10,
-    fontWeight: "bold",
-  },
   
   // Fixed Back Button
   backButton: {
     position: "absolute",
-    top: 40,
+    top: Platform.OS === 'ios' ? 50 : 40,
     left: 15,
     backgroundColor: "rgba(0,0,0,0.5)",
-    borderRadius: 20,
-    padding: 6,
+    borderRadius: 25,
+    padding: 8,
     zIndex: 100,
+  },
+  backButtonTablet: {
+    top: Platform.OS === 'ios' ? 60 : 50,
+    left: 20,
+    padding: 10,
+    borderRadius: 30,
   },
   
   // Header Styles
@@ -331,10 +345,16 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderColor: "#ddd",
   },
+  headerTablet: {
+    padding: 20,
+  },
   title: {
     fontSize: 20,
     fontWeight: "bold",
     color: "#93210A",
+  },
+  titleTablet: {
+    fontSize: 26,
   },
   categoryBadge: {
     marginTop: 8,
@@ -344,10 +364,19 @@ const styles = StyleSheet.create({
     paddingVertical: 5,
     paddingHorizontal: 12,
   },
+  categoryBadgeTablet: {
+    marginTop: 10,
+    borderRadius: 20,
+    paddingVertical: 6,
+    paddingHorizontal: 15,
+  },
   categoryText: {
     fontSize: 12,
     fontWeight: "bold",
     color: "#333",
+  },
+  categoryTextTablet: {
+    fontSize: 14,
   },
   
   // Contact Buttons - BEFORE image
@@ -359,6 +388,9 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderColor: "#ddd",
   },
+  buttonRowTablet: {
+    paddingVertical: 20,
+  },
   button: {
     flexDirection: "row",
     alignItems: "center",
@@ -366,6 +398,14 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     paddingHorizontal: 12,
     borderRadius: 8,
+    minWidth: 90,
+    justifyContent: "center",
+  },
+  buttonTablet: {
+    paddingVertical: 15,
+    paddingHorizontal: 20,
+    borderRadius: 12,
+    minWidth: 120,
   },
   whatsappButton: {
     backgroundColor: "#25D366",
@@ -375,15 +415,28 @@ const styles = StyleSheet.create({
   },
   buttonText: {
     color: "#fff",
-    fontSize: 16,
-    marginLeft: 8,
+    fontSize: 14,
+    marginLeft: 6,
     fontWeight: "bold",
+  },
+  buttonTextTablet: {
+    fontSize: 18,
+    marginLeft: 8,
   },
   
   // Main Image - AFTER contact buttons
+  imageWrapper: {
+    position: "relative",
+  },
+  imageWrapperTablet: {
+    marginTop: 5,
+  },
   image: {
     height: 250,
     resizeMode: "cover",
+  },
+  imageTablet: {
+    height: 350,
   },
   imageLocation: {
     position: "absolute",
@@ -396,11 +449,22 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
     borderRadius: 20,
   },
+  imageLocationTablet: {
+    bottom: 20,
+    left: 20,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 25,
+  },
   imageLocationText: {
     color: "#fff",
     fontSize: 14,
     marginLeft: 5,
     fontWeight: "600",
+  },
+  imageLocationTextTablet: {
+    fontSize: 16,
+    marginLeft: 6,
   },
   
   // Section Styles
@@ -415,16 +479,40 @@ const styles = StyleSheet.create({
     shadowRadius: 5,
     elevation: 2,
   },
+  sectionTablet: {
+    marginTop: 15,
+    padding: 20,
+    borderRadius: 15,
+    marginHorizontal: 15,
+  },
   sectionTitle: {
     fontSize: 18,
     fontWeight: "bold",
     color: "#93210A",
     marginBottom: 10,
   },
+  sectionTitleTablet: {
+    fontSize: 22,
+    marginBottom: 15,
+  },
   description: {
     fontSize: 14,
     color: "#555",
     lineHeight: 22,
+  },
+  descriptionTablet: {
+    fontSize: 16,
+    lineHeight: 26,
+  },
+  readMoreText: {
+    color: '#93210A',
+    fontSize: 15,
+    textAlign: 'right',
+    marginTop: 8,
+  },
+  readMoreTextTablet: {
+    fontSize: 17,
+    marginTop: 10,
   },
   
   // Gallery Styles
@@ -437,8 +525,17 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     marginRight: 10,
   },
+  galleryImageTablet: {
+    width: 280,
+    height: 200,
+    borderRadius: 15,
+    marginRight: 15,
+  },
   
   // Video Styles
+  videoSection: {
+    paddingBottom: 15,
+  },
   videoContainer: {
     alignItems: "center",
     justifyContent: "center",
@@ -447,9 +544,16 @@ const styles = StyleSheet.create({
     overflow: "hidden",
     marginTop: 10,
   },
+  videoContainerTablet: {
+    borderRadius: 15,
+    marginTop: 15,
+  },
   
   // Footer
   footer: {
     height: 30,
+  },
+  footerTablet: {
+    height: 40,
   },
 });

@@ -19,6 +19,7 @@ import { Ionicons } from "@expo/vector-icons";
 import YoutubePlayer from "react-native-youtube-iframe";
 import TownPage1 from "./TownPage/TownPage1";
 import { Linking } from "react-native";
+import Loader from "../../components/Alert/Loader";
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get("window");
 const isTablet = screenWidth >= 600;
@@ -161,9 +162,9 @@ export default function DistrictPage2() {
 
   if (loading) {
     return (
-      <View style={styles.center}>
-        <ActivityIndicator size="large" color="#93210A" />
-      </View>
+      // <View style={styles.center}>
+        <Loader visible={true} progress={50} message="Loading district details..." />
+      // </View>
     );
   }
 
@@ -179,8 +180,8 @@ export default function DistrictPage2() {
     navigation.navigate("GovernmentPage1", { districtId });
   };
 
-  const handlepartiesPress = (districtId) => {
-    navigation.navigate("Partiespage1", { districtId });
+  const handlepartiesPress = (districtId, districtName) => {
+    navigation.navigate("Partiespage1", { districtId,districtName: districtName });
   };
 
   const tourismPlaces =
@@ -444,7 +445,7 @@ export default function DistrictPage2() {
 
             <TouchableOpacity
               style={[styles.partyButton, isTablet && styles.partyButtonTablet]}
-              onPress={() => handlepartiesPress(districtId)}
+              onPress={() => handlepartiesPress(districtId,district.name)}
             >
               <Text style={[styles.twoButtonText, isTablet && styles.twoButtonTextTablet]}>
                 Parties
@@ -454,7 +455,7 @@ export default function DistrictPage2() {
 
           {/* 🏘️ Town Section */}
           <View>
-            <TownPage1 />
+            <TownPage1 districtName={district.name} />
           </View>
 
         {/* 📋 TWO Buttons Row - Complaint, Visiting Places */}

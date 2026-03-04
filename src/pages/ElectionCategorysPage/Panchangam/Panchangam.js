@@ -212,26 +212,15 @@ export default function Panchangam() {
       <StatusBar barStyle="light-content" backgroundColor={COLORS.primary} />
 
       {/* Header */}
-      <View style={[
-        styles.header,
-        {
-          paddingTop: responsive.headerPaddingTop,
-          paddingHorizontal: responsive.horizontalPadding,
-          backgroundColor: COLORS.primary,
-        }
-      ]}>
+      <View style={[styles.header, isTablet && styles.headerTablet]}>
         <TouchableOpacity
-          onPress={() => navigation.goBack()}
-          style={styles.headerIconBtn}
-        >
-          <Ionicons 
-            name="arrow-back" 
-            size={responsive.headerIconSize} 
-            color={COLORS.white} 
-          />
-        </TouchableOpacity>
+        style={[styles.backButton, isTablet && styles.backButtonTablet]}
+        onPress={() => navigation.goBack()}
+      >
+        <Ionicons name="chevron-back" size={isTablet ? 30 : 26} color="#fff" />
+      </TouchableOpacity>
 
-        <Text style={[styles.headerTitle, { fontSize: responsive.headerTitleSize }]}>
+        <Text style={[styles.headerTitle, isTablet && styles.headerTitleTablet]}>
           பஞ்சாங்கம்
         </Text>
 
@@ -504,14 +493,17 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: "row",
     alignItems: "center",
-    paddingBottom: 16,
+    backgroundColor: "#93210A",
+    paddingTop:40,
+    paddingBottom:30,
     borderBottomLeftRadius: 20,
     borderBottomRightRadius: 20,
-    elevation: 6,
-    shadowColor: COLORS.shadow,
-    shadowOpacity: 0.12,
-    shadowRadius: 10,
-    shadowOffset: { width: 0, height: 4 },
+  },
+
+   headerTablet: {
+    paddingTop:45,
+    paddingBottom:28,
+    paddingHorizontal: 18,
   },
   headerIconBtn: {
     width: 44,
@@ -523,9 +515,29 @@ const styles = StyleSheet.create({
   headerTitle: {
     flex: 1,
     textAlign: "center",
-    color: COLORS.white,
-    fontWeight: "900",
-    letterSpacing: 0.5,
+    color: "#fff",
+    fontSize: 20,
+    fontWeight: "800",
+    letterSpacing: 0.3,
+  },
+  headerTitleTablet: {
+    fontSize: 22,
+  },
+
+  backButton:{
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: "rgba(255,255,255,0.15)",
+    alignItems: "center",
+    justifyContent: "center",
+    marginLeft:15,
+    
+  },
+  backButtonTablet:{
+    width: 50,
+    height: 50,
+    borderRadius: 25,
   },
 
   // Container

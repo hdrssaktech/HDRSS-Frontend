@@ -9,11 +9,18 @@ import {
   Pressable,
   ActivityIndicator,
   Platform,
+  useWindowDimensions,
+  TouchableOpacity,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import axios from "axios";
+import Loader from "../../../../components/Alert/Loader";
 
 export default function GowriPanchangam({ navigation }) {
+  const { width, height } = useWindowDimensions();
+  const isTablet = width >= 600;
+  const isLandscape = width > height;
+
   const API_URL =
     "https://hdrss-backend.onrender.com/api/v1/panchangam/gowri-panjagam";
 
@@ -89,26 +96,38 @@ export default function GowriPanchangam({ navigation }) {
     <SafeAreaView style={styles.safe}>
       <StatusBar barStyle="light-content" backgroundColor="#8B0000" />
 
-      {/* Header */}
-      <View style={styles.header}>
-        <Pressable
-          onPress={() => (navigation ? navigation.goBack() : null)}
-          style={styles.backBtn}
-        >
-          <Ionicons name="arrow-back" size={Platform.OS === 'web' ? 24 : 22} color="#FFFFFF" />
-        </Pressable>
+      <View style={[styles.header, isTablet && styles.headerTablet]}>
+       <TouchableOpacity
+        style={[styles.backButton, isTablet && styles.backButtonTablet]}
+        onPress={() => navigation.goBack()}
+      >
+        <Ionicons name="chevron-back" size={isTablet ? 30 : 26} color="#fff" />
+      </TouchableOpacity>
 
-        <Text style={styles.headerTitle}>கௌரி பஞ்சாங்கம்</Text>
-        <View style={{ width: Platform.OS === 'web' ? 40 : 34 }} />
+        <Text style={[
+          styles.headerTitle,
+          isTablet && styles.headerTitleTablet
+        ]}>
+          கௌரி பஞ்சாங்கம்
+        </Text>
+        <View style={{ 
+          width: isTablet ? 60 : (Platform.OS === 'web' ? 40 : 34) 
+        }} />
       </View>
 
       {/* Tabs - Horizontal Scroll */}
-      <View style={styles.tabWrapper}>
+      <View style={[
+        styles.tabWrapper,
+        isTablet && styles.tabWrapperTablet
+      ]}>
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
           style={styles.tabScrollView}
-          contentContainerStyle={styles.tabContainer}
+          contentContainerStyle={[
+            styles.tabContainer,
+            isTablet && styles.tabContainerTablet
+          ]}
         >
           {TABS.map((t) => {
             const active = t.weekday === activeWeekday;
@@ -116,9 +135,18 @@ export default function GowriPanchangam({ navigation }) {
               <Pressable
                 key={t.weekday}
                 onPress={() => setActiveWeekday(t.weekday)}
-                style={[styles.tabItem, active && styles.tabItemActive]}
+                style={[
+                  styles.tabItem, 
+                  active && styles.tabItemActive,
+                  isTablet && styles.tabItemTablet,
+                  isLandscape && styles.tabItemLandscape
+                ]}
               >
-                <Text style={[styles.tabText, active && styles.tabTextActive]}>
+                <Text style={[
+                  styles.tabText, 
+                  active && styles.tabTextActive,
+                  isTablet && styles.tabTextTablet
+                ]}>
                   {t.label}
                 </Text>
               </Pressable>
@@ -129,57 +157,146 @@ export default function GowriPanchangam({ navigation }) {
 
       {/* Main Content */}
       <ScrollView
-        contentContainerStyle={styles.content}
+        contentContainerStyle={[
+          styles.content,
+          isTablet && styles.contentTablet,
+          isLandscape && styles.contentLandscape
+        ]}
         showsVerticalScrollIndicator={false}
       >
         {/* Info Box */}
-        <View style={styles.infoBox}>
-          <Text style={styles.infoText}>
+        <View style={[
+          styles.infoBox,
+          isTablet && styles.infoBoxTablet
+        ]}>
+          <Text style={[
+            styles.infoText,
+            isTablet && styles.infoTextTablet
+          ]}>
             * சூறிய உதயத்தில் இருந்து நேரத்தை கணக்கிட்டு கொள்ளவும்.
           </Text>
         </View>
 
         {/* Main Card - Always same size */}
-        <View style={styles.card}>
+        <View style={[
+          styles.card,
+          isTablet && styles.cardTablet,
+          isLandscape && styles.cardLandscape
+        ]}>
           {loading ? (
-            <View style={styles.stateContainer}>
-              <ActivityIndicator size={Platform.OS === 'web' ? "large" : "small"} color="#8B0000" />
-              <Text style={styles.stateText}>Loading...</Text>
-            </View>
+            <Loader/>
           ) : error ? (
-            <View style={styles.stateContainer}>
-              <Text style={styles.errText}>{error}</Text>
-              <Pressable onPress={fetchGowri} style={styles.retryBtn}>
-                <Text style={styles.retryText}>Retry</Text>
+            <View style={[
+              styles.stateContainer,
+              isTablet && styles.stateContainerTablet
+            ]}>
+              <Text style={[
+                styles.errText,
+                isTablet && styles.errTextTablet
+              ]}>
+                {error}
+              </Text>
+              <Pressable 
+                onPress={fetchGowri} 
+                style={[
+                  styles.retryBtn,
+                  isTablet && styles.retryBtnTablet
+                ]}
+              >
+                <Text style={[
+                  styles.retryText,
+                  isTablet && styles.retryTextTablet
+                ]}>
+                  Retry
+                </Text>
               </Pressable>
             </View>
           ) : (
             <>
               {/* Good/Bad Section */}
-              <View style={styles.goodBadContainer}>
-                <Text style={styles.goodBadLine}>
-                  <Text style={styles.labelBlack}>சுபம் : </Text>
-                  <Text style={styles.goodText}>{goodList.join(", ")}</Text>
+              <View style={[
+                styles.goodBadContainer,
+                isTablet && styles.goodBadContainerTablet
+              ]}>
+                <Text style={[
+                  styles.goodBadLine,
+                  isTablet && styles.goodBadLineTablet
+                ]}>
+                  <Text style={[
+                    styles.labelBlack,
+                    isTablet && styles.labelBlackTablet
+                  ]}>
+                    சுபம் : 
+                  </Text>
+                  <Text style={[
+                    styles.goodText,
+                    isTablet && styles.goodTextTablet
+                  ]}>
+                    {" "}{goodList.join(", ")}
+                  </Text>
                 </Text>
 
-                <Text style={[styles.goodBadLine, { marginTop: Platform.OS === 'web' ? 8 : 4 }]}>
-                  <Text style={styles.labelBlack}>அசுபம் : </Text>
-                  <Text style={styles.badText}>{badList.join(", ")}</Text>
+                <Text style={[
+                  styles.goodBadLine, 
+                  { marginTop: isTablet ? 12 : (Platform.OS === 'web' ? 8 : 4) },
+                  isTablet && styles.goodBadLineTablet
+                ]}>
+                  <Text style={[
+                    styles.labelBlack,
+                    isTablet && styles.labelBlackTablet
+                  ]}>
+                    அசுபம் : 
+                  </Text>
+                  <Text style={[
+                    styles.badText,
+                    isTablet && styles.badTextTablet
+                  ]}>
+                    {" "}{badList.join(", ")}
+                  </Text>
                 </Text>
               </View>
 
               {/* Table */}
-              <View style={styles.tableWrap}>
+              <View style={[
+                styles.tableWrap,
+                isTablet && styles.tableWrapTablet
+              ]}>
                 {/* Table Header */}
                 <View style={[styles.tr, styles.trHeader]}>
-                  <View style={[styles.tdTime, styles.tdBorder]}>
-                    <Text style={styles.thText}>நேரம்</Text>
+                  <View style={[
+                    styles.tdTime, 
+                    styles.tdBorder,
+                    isTablet && styles.tdTimeTablet
+                  ]}>
+                    <Text style={[
+                      styles.thText,
+                      isTablet && styles.thTextTablet
+                    ]}>
+                      நேரம்
+                    </Text>
                   </View>
-                  <View style={[styles.tdMid, styles.tdBorder]}>
-                    <Text style={styles.thText}>பகல்/இரவு</Text>
+                  <View style={[
+                    styles.tdMid, 
+                    styles.tdBorder,
+                    isTablet && styles.tdMidTablet
+                  ]}>
+                    <Text style={[
+                      styles.thText,
+                      isTablet && styles.thTextTablet
+                    ]}>
+                      பகல்/இரவு
+                    </Text>
                   </View>
-                  <View style={styles.tdRight}>
-                    <Text style={styles.thText}>கௌரி</Text>
+                  <View style={[
+                    styles.tdRight,
+                    isTablet && styles.tdRightTablet
+                  ]}>
+                    <Text style={[
+                      styles.thText,
+                      isTablet && styles.thTextTablet
+                    ]}>
+                      கௌரி
+                    </Text>
                   </View>
                 </View>
 
@@ -188,20 +305,43 @@ export default function GowriPanchangam({ navigation }) {
                   // Show actual data
                   rows.map((r, idx) => (
                     <View key={idx} style={styles.blockRow}>
-                      <View style={styles.timeCell}>
-                        <Text style={styles.timeText}>{r.time}</Text>
+                      <View style={[
+                        styles.timeCell,
+                        isTablet && styles.timeCellTablet
+                      ]}>
+                        <Text style={[
+                          styles.timeText,
+                          isTablet && styles.timeTextTablet
+                        ]}>
+                          {r.time}
+                        </Text>
                       </View>
 
                       <View style={styles.twoRows}>
-                        <View style={styles.innerRow}>
-                          <View style={styles.midCell}>
-                            <Text style={styles.midText}>{r.day.label}</Text>
+                        <View style={[
+                          styles.innerRow,
+                          isTablet && styles.innerRowTablet
+                        ]}>
+                          <View style={[
+                            styles.midCell,
+                            isTablet && styles.midCellTablet
+                          ]}>
+                            <Text style={[
+                              styles.midText,
+                              isTablet && styles.midTextTablet
+                            ]}>
+                              {r.day.label}
+                            </Text>
                           </View>
-                          <View style={styles.rightCell}>
+                          <View style={[
+                            styles.rightCell,
+                            isTablet && styles.rightCellTablet
+                          ]}>
                             <Text
                               style={[
                                 styles.valueText,
                                 { color: colorForValue(r.day.value) },
+                                isTablet && styles.valueTextTablet
                               ]}
                             >
                               {r.day.value}
@@ -209,15 +349,31 @@ export default function GowriPanchangam({ navigation }) {
                           </View>
                         </View>
 
-                        <View style={[styles.innerRow, styles.innerRowBottom]}>
-                          <View style={styles.midCell}>
-                            <Text style={styles.midText}>{r.night.label}</Text>
+                        <View style={[
+                          styles.innerRow, 
+                          styles.innerRowBottom,
+                          isTablet && styles.innerRowTablet
+                        ]}>
+                          <View style={[
+                            styles.midCell,
+                            isTablet && styles.midCellTablet
+                          ]}>
+                            <Text style={[
+                              styles.midText,
+                              isTablet && styles.midTextTablet
+                            ]}>
+                              {r.night.label}
+                            </Text>
                           </View>
-                          <View style={styles.rightCell}>
+                          <View style={[
+                            styles.rightCell,
+                            isTablet && styles.rightCellTablet
+                          ]}>
                             <Text
                               style={[
                                 styles.valueText,
                                 { color: colorForValue(r.night.value) },
+                                isTablet && styles.valueTextTablet
                               ]}
                             >
                               {r.night.value}
@@ -231,26 +387,73 @@ export default function GowriPanchangam({ navigation }) {
                   // Show placeholder rows for days with no data
                   [1, 2, 3, 4, 5].map((item) => (
                     <View key={item} style={styles.blockRow}>
-                      <View style={styles.timeCell}>
-                        <Text style={styles.placeholderText}>--:--</Text>
+                      <View style={[
+                        styles.timeCell,
+                        isTablet && styles.timeCellTablet
+                      ]}>
+                        <Text style={[
+                          styles.placeholderText,
+                          isTablet && styles.placeholderTextTablet
+                        ]}>
+                          --:--
+                        </Text>
                       </View>
 
                       <View style={styles.twoRows}>
-                        <View style={styles.innerRow}>
-                          <View style={styles.midCell}>
-                            <Text style={styles.placeholderText}>பகல்</Text>
+                        <View style={[
+                          styles.innerRow,
+                          isTablet && styles.innerRowTablet
+                        ]}>
+                          <View style={[
+                            styles.midCell,
+                            isTablet && styles.midCellTablet
+                          ]}>
+                            <Text style={[
+                              styles.placeholderText,
+                              isTablet && styles.placeholderTextTablet
+                            ]}>
+                              பகல்
+                            </Text>
                           </View>
-                          <View style={styles.rightCell}>
-                            <Text style={styles.placeholderText}>--</Text>
+                          <View style={[
+                            styles.rightCell,
+                            isTablet && styles.rightCellTablet
+                          ]}>
+                            <Text style={[
+                              styles.placeholderText,
+                              isTablet && styles.placeholderTextTablet
+                            ]}>
+                              --
+                            </Text>
                           </View>
                         </View>
 
-                        <View style={[styles.innerRow, styles.innerRowBottom]}>
-                          <View style={styles.midCell}>
-                            <Text style={styles.placeholderText}>இரவு</Text>
+                        <View style={[
+                          styles.innerRow, 
+                          styles.innerRowBottom,
+                          isTablet && styles.innerRowTablet
+                        ]}>
+                          <View style={[
+                            styles.midCell,
+                            isTablet && styles.midCellTablet
+                          ]}>
+                            <Text style={[
+                              styles.placeholderText,
+                              isTablet && styles.placeholderTextTablet
+                            ]}>
+                              இரவு
+                            </Text>
                           </View>
-                          <View style={styles.rightCell}>
-                            <Text style={styles.placeholderText}>--</Text>
+                          <View style={[
+                            styles.rightCell,
+                            isTablet && styles.rightCellTablet
+                          ]}>
+                            <Text style={[
+                              styles.placeholderText,
+                              isTablet && styles.placeholderTextTablet
+                            ]}>
+                              --
+                            </Text>
                           </View>
                         </View>
                       </View>
@@ -261,8 +464,14 @@ export default function GowriPanchangam({ navigation }) {
 
               {/* No Data Message (if applicable) */}
               {!hasData && !loading && !error && (
-                <View style={styles.noDataContainer}>
-                  <Text style={styles.noDataText}>
+                <View style={[
+                  styles.noDataContainer,
+                  isTablet && styles.noDataContainerTablet
+                ]}>
+                  <Text style={[
+                    styles.noDataText,
+                    isTablet && styles.noDataTextTablet
+                  ]}>
                     இந்த நாளுக்கு தரவு இல்லை
                   </Text>
                 </View>
@@ -270,7 +479,12 @@ export default function GowriPanchangam({ navigation }) {
 
               {/* Description (if available) */}
               {hasData && !!selectedObj?.description && (
-                <Text style={styles.description}>{selectedObj.description}</Text>
+                <Text style={[
+                  styles.description,
+                  isTablet && styles.descriptionTablet
+                ]}>
+                  {selectedObj.description}
+                </Text>
               )}
             </>
           )}
@@ -304,28 +518,39 @@ const styles = StyleSheet.create({
       boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
     }),
   },
-  backBtn: {
-    width: Platform.OS === 'web' ? 40 : 34,
-    height: Platform.OS === 'web' ? 40 : 34,
-    borderRadius: Platform.OS === 'web' ? 20 : 17,
+  headerTablet: {
+    height: 80,
+    paddingHorizontal: 30,
+  },
+  headerLandscape: {
+    height: 70,
+  },
+  backButton:{
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: "rgba(255,255,255,0.15)",
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "rgba(255,255,255,0.15)",
-    cursor: Platform.OS === 'web' ? 'pointer' : 'auto',
-    ...(Platform.OS === 'web' && {
-      transition: 'background-color 0.2s',
-      ':hover': {
-        backgroundColor: 'rgba(255,255,255,0.25)',
-      },
-    }),
+    marginLeft:15,
   },
+  backButtonTablet:{
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+  },
+
+
   headerTitle: {
     flex: 1,
     textAlign: "center",
-    fontSize: Platform.OS === 'web' ? 22 : 18,
+    color: "#fff",
+    fontSize: 17,
     fontWeight: "800",
-    color: "#FFFFFF",
-    letterSpacing: 0.5,
+    letterSpacing: 0.3,
+  },
+  headerTitleTablet: {
+    fontSize: 22,
   },
 
   // Tab wrapper for web shadow
@@ -335,6 +560,9 @@ const styles = StyleSheet.create({
       boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
     }),
   },
+  tabWrapperTablet: {
+    paddingHorizontal: 10,
+  },
   tabScrollView: { 
     backgroundColor: RED,
   },
@@ -342,6 +570,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: Platform.OS === 'web' ? 16 : 8, 
     paddingBottom: Platform.OS === 'web' ? 12 : 8, 
     gap: Platform.OS === 'web' ? 8 : 6,
+  },
+  tabContainerTablet: {
+    paddingHorizontal: 24,
+    paddingBottom: 16,
+    gap: 12,
   },
   tabItem: {
     paddingHorizontal: Platform.OS === 'web' ? 22 : 14,
@@ -359,6 +592,15 @@ const styles = StyleSheet.create({
       },
     }),
   },
+  tabItemTablet: {
+    paddingHorizontal: 30,
+    paddingVertical: 14,
+    borderRadius: 30,
+  },
+  tabItemLandscape: {
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+  },
   tabItemActive: { 
     backgroundColor: "#FFFFFF",
     ...(Platform.OS === 'web' && {
@@ -369,6 +611,9 @@ const styles = StyleSheet.create({
     fontSize: Platform.OS === 'web' ? 16 : 14, 
     fontWeight: "700", 
     color: "#FFFFFF",
+  },
+  tabTextTablet: {
+    fontSize: 20,
   },
   tabTextActive: { 
     color: RED,
@@ -385,6 +630,14 @@ const styles = StyleSheet.create({
       width: '100%',
     }),
   },
+  contentTablet: {
+    padding: 30,
+    paddingBottom: 40,
+    maxWidth: 1000,
+  },
+  contentLandscape: {
+    paddingHorizontal: 40,
+  },
 
   infoBox: {
     backgroundColor: "#3D73F1",
@@ -396,11 +649,20 @@ const styles = StyleSheet.create({
       boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
     }),
   },
+  infoBoxTablet: {
+    borderRadius: 16,
+    paddingVertical: 18,
+    paddingHorizontal: 24,
+    marginBottom: 24,
+  },
   infoText: { 
     color: "#FFFFFF", 
     fontSize: Platform.OS === 'web' ? 15 : 13.5, 
     fontWeight: "700",
     textAlign: "center",
+  },
+  infoTextTablet: {
+    fontSize: 18,
   },
 
   // Main card
@@ -421,6 +683,14 @@ const styles = StyleSheet.create({
       shadowOffset: { width: 0, height: 2 },
     }),
   },
+  cardTablet: {
+    borderRadius: 28,
+    padding: 28,
+    minHeight: 550,
+  },
+  cardLandscape: {
+    minHeight: 500,
+  },
 
   // State containers
   stateContainer: {
@@ -429,6 +699,10 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     gap: 16,
+  },
+  stateContainerTablet: {
+    minHeight: 450,
+    gap: 24,
   },
   stateText: { 
     color: "#666", 
@@ -441,6 +715,9 @@ const styles = StyleSheet.create({
     fontSize: Platform.OS === 'web' ? 16 : 14, 
     textAlign: "center",
     marginBottom: 8,
+  },
+  errTextTablet: {
+    fontSize: 20,
   },
   retryBtn: {
     backgroundColor: RED,
@@ -456,10 +733,18 @@ const styles = StyleSheet.create({
       },
     }),
   },
+  retryBtnTablet: {
+    paddingHorizontal: 32,
+    paddingVertical: 16,
+    borderRadius: 16,
+  },
   retryText: { 
     color: "#FFF", 
     fontWeight: "700",
     fontSize: Platform.OS === 'web' ? 16 : 13,
+  },
+  retryTextTablet: {
+    fontSize: 20,
   },
 
   // Good/Bad section
@@ -469,24 +754,42 @@ const styles = StyleSheet.create({
     padding: Platform.OS === 'web' ? 20 : 12,
     marginBottom: Platform.OS === 'web' ? 20 : 12,
   },
+  goodBadContainerTablet: {
+    borderRadius: 24,
+    padding: 28,
+    marginBottom: 28,
+  },
   goodBadLine: { 
     fontSize: Platform.OS === 'web' ? 17 : 15, 
     lineHeight: Platform.OS === 'web' ? 26 : 21,
+  },
+  goodBadLineTablet: {
+    fontSize: 20,
+    lineHeight: 32,
   },
   labelBlack: { 
     color: "#333", 
     fontWeight: "700",
     fontSize: Platform.OS === 'web' ? 17 : 15,
   },
+  labelBlackTablet: {
+    fontSize: 20,
+  },
   goodText: { 
     color: "#1C9A3E", 
     fontWeight: "800",
     fontSize: Platform.OS === 'web' ? 17 : 15,
   },
+  goodTextTablet: {
+    fontSize: 20,
+  },
   badText: { 
     color: "#D9342B", 
     fontWeight: "800",
     fontSize: Platform.OS === 'web' ? 17 : 15,
+  },
+  badTextTablet: {
+    fontSize: 20,
   },
 
   // Table styles
@@ -499,6 +802,9 @@ const styles = StyleSheet.create({
     ...(Platform.OS === 'web' && {
       boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
     }),
+  },
+  tableWrapTablet: {
+    borderRadius: 16,
   },
   tr: { 
     flexDirection: "row",
@@ -520,11 +826,19 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
+  tdTimeTablet: {
+    width: 140,
+    paddingVertical: 16,
+  },
   tdMid: { 
     width: Platform.OS === 'web' ? 90 : 74, 
     paddingVertical: Platform.OS === 'web' ? 12 : 8, 
     alignItems: "center",
     justifyContent: "center",
+  },
+  tdMidTablet: {
+    width: 120,
+    paddingVertical: 16,
   },
   tdRight: { 
     flex: 1, 
@@ -532,11 +846,17 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
+  tdRightTablet: {
+    paddingVertical: 16,
+  },
 
   thText: { 
     fontSize: Platform.OS === 'web' ? 15 : 14, 
     fontWeight: "800", 
     color: "#333",
+  },
+  thTextTablet: {
+    fontSize: 20,
   },
 
   blockRow: { 
@@ -556,10 +876,17 @@ const styles = StyleSheet.create({
     paddingHorizontal: 6,
     backgroundColor: "#FAFAFA",
   },
+  timeCellTablet: {
+    width: 140,
+    paddingVertical: 20,
+  },
   timeText: { 
     fontSize: Platform.OS === 'web' ? 15 : 14, 
     fontWeight: "600", 
     color: "#333",
+  },
+  timeTextTablet: {
+    fontSize: 20,
   },
 
   twoRows: { 
@@ -570,6 +897,9 @@ const styles = StyleSheet.create({
     flexDirection: "row", 
     minHeight: Platform.OS === 'web' ? 48 : 38,
     backgroundColor: "#FFF",
+  },
+  innerRowTablet: {
+    minHeight: 60,
   },
   innerRowBottom: { 
     borderTopWidth: 1, 
@@ -585,10 +915,16 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     paddingHorizontal: 4,
   },
+  midCellTablet: {
+    width: 120,
+  },
   midText: { 
     fontSize: Platform.OS === 'web' ? 15 : 14, 
     fontWeight: "700", 
     color: "#333",
+  },
+  midTextTablet: {
+    fontSize: 20,
   },
 
   rightCell: { 
@@ -597,15 +933,24 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     paddingHorizontal: 8,
   },
+  rightCellTablet: {
+    paddingHorizontal: 16,
+  },
   valueText: { 
     fontSize: Platform.OS === 'web' ? 16 : 15, 
     fontWeight: "900",
+  },
+  valueTextTablet: {
+    fontSize: 22,
   },
 
   placeholderText: {
     fontSize: Platform.OS === 'web' ? 15 : 14,
     fontWeight: "500",
     color: "#999",
+  },
+  placeholderTextTablet: {
+    fontSize: 20,
   },
 
   description: { 
@@ -615,6 +960,11 @@ const styles = StyleSheet.create({
     fontStyle: "italic",
     lineHeight: Platform.OS === 'web' ? 22 : 18,
     paddingHorizontal: 4,
+  },
+  descriptionTablet: {
+    marginTop: 24,
+    fontSize: 18,
+    lineHeight: 28,
   },
 
   noDataContainer: {
@@ -629,10 +979,18 @@ const styles = StyleSheet.create({
     borderColor: "#FFCDD2",
     borderStyle: "dashed",
   },
+  noDataContainerTablet: {
+    marginTop: 28,
+    paddingVertical: 24,
+    borderRadius: 16,
+  },
   noDataText: {
     color: RED,
     fontSize: Platform.OS === 'web' ? 15 : 14,
     fontWeight: "700",
     textAlign: "center",
+  },
+  noDataTextTablet: {
+    fontSize: 20,
   },
 });

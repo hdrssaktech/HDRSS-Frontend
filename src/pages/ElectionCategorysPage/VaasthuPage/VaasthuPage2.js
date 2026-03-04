@@ -10,24 +10,23 @@ import {
   StatusBar,
   FlatList,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 import axios from "axios";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
+import Loader from "../../../components/Alert/Loader";
 
 const VaasthuPage2 = () => {
   const route = useRoute();
   const navigation = useNavigation();
   const { categoryId, categoryTitle } = route.params || {};
 
-  const { width, height } = useWindowDimensions();
+  const { width } = useWindowDimensions();
   
-  // Device detection
+  // Device detection - Simple like PoojaPage1
   const isTablet = width >= 600;
   
-  // Responsive columns - 2 columns for tablet, 1 for mobile
-  // If you want 3 columns for mobile, change to: isTablet ? 2 : 3
-  const numColumns = isTablet ? 2 : 2;
+  // Always use 2 columns for both mobile and tablet like PoojaPage1
+  const numColumns = 2;
 
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -53,29 +52,30 @@ const VaasthuPage2 = () => {
       .finally(() => setLoading(false));
   }, [categoryId]);
 
-  const renderItem = ({ item }) => (
+  if (loading) {
+    return <Loader />;
+  }
+
+  const renderItem = ({ item, index }) => (
     <TouchableOpacity
       style={[
         styles.card,
-        isTablet && styles.tabletCard,
+        isTablet && styles.cardTablet,
+        index % 2 === 0 ? styles.leftCard : styles.rightCard,
       ]}
+      activeOpacity={0.85}
       onPress={() =>
         navigation.navigate("VaasthuPage3", { item })
       }
-      activeOpacity={0.7}
     >
       <Image 
         source={{ uri: item.image }} 
-        style={[
-          styles.image,
-          isTablet && styles.tabletImage,
-        ]} 
+        style={[styles.image, isTablet && styles.imageTablet]} 
+        resizeMode="cover"
       />
-      <View style={styles.textContainer}>
-        <Text style={[
-          styles.text,
-          isTablet && styles.tabletText,
-        ]} numberOfLines={2}>
+
+      <View style={[styles.bottomRow, isTablet && styles.bottomRowTablet]}>
+        <Text style={[styles.title, isTablet && styles.titleTablet]} numberOfLines={1}>
           {item.title}
         </Text>
       </View>
@@ -83,22 +83,13 @@ const VaasthuPage2 = () => {
   );
 
   const renderEmptyState = () => (
-    <View style={[
-      styles.emptyContainer,
-      isTablet && styles.tabletEmptyContainer
-    ]}>
+    <View style={styles.emptyContainer}>
       <Ionicons name="images-outline" size={isTablet ? 80 : 60} color="#ccc" />
-      <Text style={[
-        styles.emptyText,
-        isTablet && styles.tabletEmptyText
-      ]}>
+      <Text style={[styles.emptyText, isTablet && styles.emptyTextTablet]}>
         No items found
       </Text>
       <TouchableOpacity 
-        style={[
-          styles.retryButton,
-          isTablet && styles.tabletRetryButton
-        ]}
+        style={[styles.retryButton, isTablet && styles.retryButtonTablet]}
         onPress={() => {
           setLoading(true);
           axios.get(`https://hdrss-backend.onrender.com/api/vastu/details/category/${categoryId}`)
@@ -107,186 +98,152 @@ const VaasthuPage2 = () => {
             .finally(() => setLoading(false));
         }}
       >
-        <Text style={styles.retryButtonText}>Try Again</Text>
+        <Text style={[styles.retryButtonText, isTablet && styles.retryButtonTextTablet]}>
+          Try Again
+        </Text>
       </TouchableOpacity>
     </View>
   );
 
-  const renderHeader = () => (
-    <View style={[
-      styles.header,
-      isTablet && styles.tabletHeader,
-    ]}>
-      <TouchableOpacity 
-        style={styles.backButton}
-        onPress={() => navigation.goBack()}
-      >
-        <Ionicons 
-          name="chevron-back" 
-          size={isTablet ? 32 : 26} 
-          color="#fff" 
-        />
-      </TouchableOpacity>
-      <Text style={[
-        styles.headerTitle,
-        isTablet && styles.tabletHeaderTitle,
-      ]} numberOfLines={1}>
-        {categoryTitle || "Items"}
+  const renderErrorState = () => (
+    <View style={styles.center}>
+      <Ionicons name="alert-circle-outline" size={isTablet ? 70 : 50} color="#8B1A1A" />
+      <Text style={[styles.errorText, isTablet && styles.errorTextTablet]}>
+        {error}
       </Text>
-      <View style={{ width: isTablet ? 32 : 26 }} />
+      <TouchableOpacity 
+        style={[styles.retryButton, isTablet && styles.retryButtonTablet]}
+        onPress={() => {
+          setLoading(true);
+          setError(null);
+          axios.get(`https://hdrss-backend.onrender.com/api/vastu/details/category/${categoryId}`)
+            .then((res) => setItems(res.data))
+            .catch(() => setError("Failed to load items"))
+            .finally(() => setLoading(false));
+        }}
+      >
+        <Text style={[styles.retryButtonText, isTablet && styles.retryButtonTextTablet]}>
+          Retry
+        </Text>
+      </TouchableOpacity>
     </View>
   );
-
-  if (loading) {
-    return (
-      <SafeAreaView style={styles.container}>
-        <StatusBar backgroundColor="#8B1A1A" barStyle="light-content" />
-        {renderHeader()}
-        <View style={[
-          styles.center,
-          isTablet && styles.tabletCenter
-        ]}>
-          <ActivityIndicator size="large" color="#8B1A1A" />
-          <Text style={[
-            styles.loadingText,
-            isTablet && styles.tabletLoadingText
-          ]}>
-            Loading items...
-          </Text>
-        </View>
-      </SafeAreaView>
-    );
-  }
 
   return (
-    <SafeAreaView style={styles.container}>
+    <View style={styles.screen}>
       <StatusBar backgroundColor="#8B1A1A" barStyle="light-content" />
-      
-      {renderHeader()}
 
+      {/* Header - Exactly like PoojaPage1 */}
+      <View style={[styles.header, isTablet && styles.headerTablet]}>
+        <TouchableOpacity
+          style={[styles.backButton, isTablet && styles.backButtonTablet]}
+          onPress={() => navigation.goBack()}
+        >
+          <Ionicons name="chevron-back" size={isTablet ? 30 : 26} color="#fff" />
+        </TouchableOpacity>
+        
+        <Text style={[styles.headerTitle, isTablet && styles.headerTitleTablet]}>
+          {categoryTitle || "Items"}
+        </Text>
+      </View>
+
+      {/* Content */}
       {error ? (
-        <View style={[
-          styles.center,
-          isTablet && styles.tabletCenter
-        ]}>
-          <Ionicons name="alert-circle-outline" size={isTablet ? 60 : 50} color="#8B1A1A" />
-          <Text style={[
-            styles.errorText,
-            isTablet && styles.tabletErrorText
-          ]}>
-            {error}
-          </Text>
-          <TouchableOpacity 
-            style={[
-              styles.retryButton,
-              isTablet && styles.tabletRetryButton
-            ]}
-            onPress={() => {
-              setLoading(true);
-              setError(null);
-              axios.get(`https://hdrss-backend.onrender.com/api/vastu/details/category/${categoryId}`)
-                .then((res) => setItems(res.data))
-                .catch(() => setError("Failed to load items"))
-                .finally(() => setLoading(false));
-            }}
-          >
-            <Text style={styles.retryButtonText}>Retry</Text>
-          </TouchableOpacity>
-        </View>
+        renderErrorState()
       ) : items.length === 0 ? (
         renderEmptyState()
       ) : (
         <FlatList
           data={items}
+          key={numColumns}
+          numColumns={numColumns}
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={[styles.container, isTablet && styles.containerTablet]}
           renderItem={renderItem}
           keyExtractor={(item) => item.id.toString()}
-          numColumns={numColumns}
-          key={numColumns}
-          contentContainerStyle={[
-            styles.listContainer,
-            isTablet && styles.tabletListContainer,
-          ]}
-          columnWrapperStyle={numColumns > 1 ? styles.columnWrapper : null}
-          showsVerticalScrollIndicator={false}
         />
       )}
-    </SafeAreaView>
+    </View>
   );
 };
 
 export default VaasthuPage2;
 
+/* ================= STYLES ================= */
+
 const styles = StyleSheet.create({
-  container: {
+  /* Screen - Exactly like PoojaPage1 */
+  screen: {
     flex: 1,
     backgroundColor: "#F5F5F5",
   },
-  
+
+  /* Center - For error states */
   center: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
     padding: 20,
   },
-  
-  tabletCenter: {
-    padding: 40,
-  },
 
+  /* Header - Exactly like PoojaPage1 */
   header: {
-    backgroundColor: "#8B1A1A",
-    padding: 16,
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "space-between",
-    elevation: 4,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 3,
+    backgroundColor: "#8B1A1A",
+    paddingTop: 40,
+    paddingBottom: 30,
+    borderBottomLeftRadius: 20,
+    borderBottomRightRadius: 20,
   },
-
-  tabletHeader: {
-     paddingVertical: 46,
-    paddingHorizontal: 24,
-    marginTop: -27,
+  headerTablet: {
+    paddingTop: 45,
+    paddingBottom: 28,
+    paddingHorizontal: 18,
   },
-
   backButton: {
-    padding: 4,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: "rgba(255,255,255,0.15)",
+    alignItems: "center",
+    justifyContent: "center",
+    marginLeft: 15,
   },
-
+  backButtonTablet: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+  },
   headerTitle: {
-    color: "#fff",
-    fontSize: 20,
-    fontWeight: "700",
-    textAlign: "center",
     flex: 1,
-    paddingHorizontal: 8,
+    textAlign: "center",
+    color: "#fff",
+    fontSize: 19,
+    fontWeight: "800",
+    letterSpacing: 0.3,
+    marginRight: 70,
+  },
+  headerTitleTablet: {
+    fontSize: 22,
+    marginRight: 70,
   },
 
-  tabletHeaderTitle: {
-    fontSize: 28,
-  },
-
-  listContainer: {
-    padding: 12,
-    paddingBottom: 20,
-  },
-
-  tabletListContainer: {
-    padding: 16,
+  /* Grid Container - Exactly like PoojaPage1 */
+  container: {
+    padding: 10,
     paddingBottom: 30,
   },
-
-  columnWrapper: {
-    justifyContent: 'space-between',
-    marginBottom: 16,
+  containerTablet: {
+    paddingHorizontal: 20,
+    paddingTop: 24,
   },
 
+  /* Card - Exactly like PoojaPage1 */
   card: {
     flex: 1,
     backgroundColor: "#fff",
+    margin: 6,
     borderRadius: 12,
     overflow: "hidden",
     elevation: 3,
@@ -294,55 +251,62 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
-    marginHorizontal: 8,
-    marginBottom: 16,
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: "#f0f0f0",
   },
-
-  tabletCard: {
+  cardTablet: {
     borderRadius: 16,
-    elevation: 4,
-    marginHorizontal: 8,
+    margin: 10,
+    marginBottom: 20,
+  },
+  leftCard: {
+    marginLeft: 10,
+    marginRight: 5,
+  },
+  rightCard: {
+    marginLeft: 5,
+    marginRight: 10,
   },
 
+  /* Image - Exactly like PoojaPage1 */
   image: {
     width: "100%",
-    height: 150,
-    resizeMode: "cover",
+    height: 120,
+    backgroundColor: "#f5f5f5",
+  },
+  imageTablet: {
+    height: 160,
   },
 
-  tabletImage: {
-    height: 180,
+  /* Bottom Row - Exactly like PoojaPage1 */
+  bottomRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    backgroundColor: "#fff",
+  },
+  bottomRowTablet: {
+    paddingHorizontal: 16,
+    paddingVertical: 14,
   },
 
-  textContainer: {
-    padding: 12,
-    minHeight: 60,
-    justifyContent: "center",
-  },
-
-  text: {
-    fontSize: 14,
+  /* Title - Exactly like PoojaPage1 */
+  title: {
+    fontSize: 13,
     fontWeight: "600",
     color: "#333",
+    flex: 1,
+    marginRight: 8,
     textAlign: "center",
   },
-
-  tabletText: {
-    fontSize: 16,
+  titleTablet: {
+    fontSize: 15,
   },
 
-  loadingText: {
-    marginTop: 12,
-    color: "#8B1A1A",
-    fontWeight: "600",
-    fontSize: 16,
-  },
-
-  tabletLoadingText: {
-    fontSize: 18,
-    marginTop: 16,
-  },
-
+  /* Error Text */
   errorText: {
     marginTop: 15,
     color: "#8B1A1A",
@@ -351,43 +315,45 @@ const styles = StyleSheet.create({
     textAlign: "center",
     marginHorizontal: 20,
   },
-
-  tabletErrorText: {
+  errorTextTablet: {
     fontSize: 18,
     marginTop: 20,
   },
 
+  /* Retry Button */
   retryButton: {
     marginTop: 20,
     backgroundColor: "#8B1A1A",
     paddingHorizontal: 24,
     paddingVertical: 12,
     borderRadius: 8,
+    elevation: 2,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
   },
-
-  tabletRetryButton: {
+  retryButtonTablet: {
     paddingHorizontal: 32,
     paddingVertical: 14,
     borderRadius: 10,
   },
-
   retryButtonText: {
     color: "#fff",
     fontWeight: "600",
     fontSize: 16,
   },
+  retryButtonTextTablet: {
+    fontSize: 18,
+  },
 
+  /* Empty State */
   emptyContainer: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
     padding: 40,
   },
-
-  tabletEmptyContainer: {
-    padding: 60,
-  },
-
   emptyText: {
     marginTop: 20,
     color: "#666",
@@ -395,8 +361,7 @@ const styles = StyleSheet.create({
     textAlign: "center",
     marginBottom: 20,
   },
-
-  tabletEmptyText: {
+  emptyTextTablet: {
     fontSize: 18,
     marginTop: 25,
   },

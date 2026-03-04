@@ -30,7 +30,7 @@ export default function TownPartiesCategory() {
       style={styles.card}
       activeOpacity={0.8}
       onPress={() =>
-        navigation.navigate('TownParties', {
+        navigation.navigate('TownPartiesMember', {
           partyName: item.name,
           townId: townId,
         })
@@ -39,7 +39,6 @@ export default function TownPartiesCategory() {
       <Image source={item.image} style={styles.image} resizeMode="contain" />
       <Text style={styles.partyName}>{item.name}</Text>
       <View style={styles.arrowContainer}>
-        {/* <Ionicons name="chevron-forward" size={20} color="#93210A" /> */}
       </View>
     </TouchableOpacity>
   );
@@ -83,6 +82,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 16,
     elevation: 3,
+    borderBottomLeftRadius: 20,
+    borderBottomRightRadius: 20,
   },
   header_arrow :{
     paddingTop:40,

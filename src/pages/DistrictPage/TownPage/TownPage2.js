@@ -22,7 +22,7 @@ const isTablet = width > 600;
 export default function TownPage2() {
   const route = useRoute();
   const navigation = useNavigation();
-  const { town, townId, DistrictName, DistrictId } = route.params;
+  const { town, townId, districtName, districtId } = route.params;
 
   const [showMore, setShowMore] = useState(false);
   const [showAllTemples, setShowAllTemples] = useState(false);
@@ -148,11 +148,11 @@ export default function TownPage2() {
           } />
 
           <Menu title="Complaint" onPress={() =>
-            navigation.navigate("ComplainPage1", { DistrictId, DistrictName })
+            navigation.navigate("ComplainPage1", { districtId:districtId, districtName:districtName })
           } />
 
           <Menu title="HDRSS" onPress={() =>
-            navigation.navigate("Member0", { DistrictId, DistrictName })
+            navigation.navigate("Member0", { districtId, districtName })
           } />
         </View>
 
@@ -375,8 +375,8 @@ const styles = StyleSheet.create({
 
   businessBtn: {
     backgroundColor: "#93210A",
-    margin: isTablet ? 30 : 25,
-    padding: isTablet ? 20 : 16,
+    margin: isTablet ? 30 : 15,
+    padding: isTablet ? 35 : 25,
     borderRadius: isTablet ? 18 : 14,
     flexDirection: "row",
     alignItems: "center",

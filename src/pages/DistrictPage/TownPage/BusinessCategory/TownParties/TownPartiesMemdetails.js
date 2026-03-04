@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   View,
   Text,
@@ -9,113 +9,210 @@ import {
   StatusBar,
   ScrollView,
   Dimensions,
+  Linking,
+  Alert,
+  Platform,
 } from "react-native";
 import Ionicons from "react-native-vector-icons/Ionicons";
-import { useNavigation } from "@react-navigation/native";
+import { useNavigation, useRoute } from "@react-navigation/native";
+import { LinearGradient } from "expo-linear-gradient";
+import YoutubePlayer from "react-native-youtube-iframe";
 
-export default function TownPartiesMemberDetails({ route }) {
+export default function TownPartiesMemberDetails() {
+  const route = useRoute();
   const { member } = route.params;
   const navigation = useNavigation();
+  const { width } = Dimensions.get('window');
+  const isTablet = width >= 600;
+
+  // Extract YouTube ID from URL
+  const getYoutubeId = (url) => {
+    if (!url) return null;
+    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+    const match = url.match(regExp);
+    return (match && match[2].length === 11) ? match[2] : null;
+  };
+
+  const videoId = member.video ? getYoutubeId(member.video) : null;
+
+  // Handle phone call
+  const handleCall = () => {
+    const phoneNumber = member.phoneNumber;
+    if (!phoneNumber) {
+      Alert.alert("Error", "Phone number not available");
+      return;
+    }
+
+    let phoneUrl = `tel:${phoneNumber}`;
+    
+    Linking.canOpenURL(phoneUrl)
+      .then((supported) => {
+        if (supported) {
+          return Linking.openURL(phoneUrl);
+        } else {
+          Alert.alert("Error", "Phone calls are not supported on this device");
+        }
+      })
+      .catch((err) => console.log("Error making call:", err));
+  };
+
+  // Handle location/directions
+  const handleLocation = () => {
+    const location = member.location;
+    if (!location) {
+      Alert.alert("Error", "Location not available");
+      return;
+    }
+
+    // Try to open in Google Maps or Apple Maps
+    const encodedLocation = encodeURIComponent(location);
+    const googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodedLocation}`;
+    const appleMapsUrl = `http://maps.apple.com/?q=${encodedLocation}`;
+
+    const url = Platform.OS === 'ios' ? appleMapsUrl : googleMapsUrl;
+
+    Linking.canOpenURL(url)
+      .then((supported) => {
+        if (supported) {
+          return Linking.openURL(url);
+        } else {
+          // Fallback to browser
+          return Linking.openURL(googleMapsUrl);
+        }
+      })
+      .catch((err) => {
+        console.log("Error opening maps:", err);
+        Alert.alert("Error", "Could not open maps");
+      });
+  };
+
+  // Share contact
+  const handleShare = () => {
+    const message = `Name: ${member.name}\nParty: ${member.parties}\nRole: ${member.role}\nPhone: ${member.phoneNumber}\nLocation: ${member.location}`;
+    
+    Linking.openURL(`sms:&body=${encodeURIComponent(message)}`)
+      .catch(() => {
+        Alert.alert("Error", "Could not open messaging app");
+      });
+  };
 
   return (
     <SafeAreaView style={styles.safeArea}>
       <StatusBar backgroundColor="#93210A" barStyle="light-content" />
 
-      {/* Flexible Header */}
-      <View style={styles.header}>
+      {/* Header with Gradient */}
+      <LinearGradient
+        colors={['#93210A', '#93210A', '#93210A']}
+        style={styles.header}
+      >
         <TouchableOpacity 
           onPress={() => navigation.goBack()}
           style={styles.backButton}
         >
-          <Ionicons name="chevron-back" size={28} color="#fff" />
+          <Ionicons name="arrow-back" size={24} color="#fff" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Member Details</Text>
-        <View style={styles.placeholder} />
-      </View>
+        <Text style={styles.headerTitle}>Member Profile</Text>
+        <TouchableOpacity 
+          onPress={handleShare}
+          style={styles.shareButton}
+        >
+          {/* <Ionicons name="share-social" size={22} color="#fff" /> */}
+        </TouchableOpacity>
+      </LinearGradient>
 
       <ScrollView 
         style={styles.scrollView}
-        contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
+        bounces={false}
       >
-        <View style={styles.container}>
-          {/* Profile Image */}
-          <Image
-            source={{ uri: member.image || "https://via.placeholder.com/150" }}
-            style={styles.avatar}
-            resizeMode="cover"
-          />
+        {/* Profile Header Card */}
+        <LinearGradient
+          colors={['#fff', '#fff5f0']}
+          style={styles.profileCard}
+        >
+          <View style={styles.profileImageContainer}>
+            <Image
+              source={{ uri: member.image || "https://via.placeholder.com/150" }}
+              style={styles.avatar}
+              resizeMode="cover"
+            />
+            <View style={styles.onlineBadge} />
+          </View>
 
-          {/* Name and Party */}
           <Text style={styles.name}>{member.name}</Text>
-          <View style={styles.partyContainer}>
-            <Ionicons name="flag-outline" size={16} color="#93210A" />
-            <Text style={styles.party}>{member.parties}</Text>
+          
+          <View style={styles.partyBadge}>
+            <Ionicons name="flag" size={16} color="#FFD700" />
+            <Text style={styles.partyText}>{member.parties}</Text>
           </View>
 
-          {/* Role */}
-          <View style={styles.infoCard}>
-            <View style={styles.infoRow}>
-              <Ionicons name="briefcase-outline" size={22} color="#93210A" />
-              <Text style={styles.infoText}>{member.role}</Text>
-            </View>
+          <View style={styles.roleContainer}>
+            <Ionicons name="briefcase" size={16} color="#93210A" />
+            <Text style={styles.roleText}>{member.role}</Text>
           </View>
+        </LinearGradient>
 
-          {/* Location */}
-          <View style={styles.infoCard}>
-            <View style={styles.infoRow}>
-              <Ionicons name="location-outline" size={22} color="#93210A" />
-              <Text style={styles.infoText}>{member.location}</Text>
-            </View>
-          </View>
+        {/* Quick Action Buttons */}
+        <View style={styles.actionContainer}>
+          <TouchableOpacity 
+            style={[styles.actionButton, styles.callButton]} 
+            onPress={handleCall}
+            activeOpacity={0.8}
+          >
+            <LinearGradient
+              colors={['#4CAF50', '#45a049']}
+              style={styles.actionGradient}
+            >
+              <Ionicons name="call" size={24} color="#fff" />
+              <Text style={styles.actionText}>Call</Text>
+            </LinearGradient>
+          </TouchableOpacity>
 
-          {/* Contact */}
-          <View style={styles.infoCard}>
-            <View style={styles.infoRow}>
-              <Ionicons name="call-outline" size={22} color="#93210A" />
-              <Text style={styles.infoText}>{member.phoneNumber}</Text>
-            </View>
-          </View>
-
-          {/* Title/Position */}
-          {member.title && (
-            <View style={styles.infoCard}>
-              <View style={styles.infoRow}>
-                <Ionicons name="person-outline" size={22} color="#93210A" />
-                <Text style={styles.infoText}>{member.title}</Text>
-              </View>
-            </View>
-          )}
-
-          {/* About Section */}
-          {member.about && (
-            <View style={styles.aboutContainer}>
-              <View style={styles.sectionHeader}>
-                <Ionicons name="information-circle-outline" size={22} color="#93210A" />
-                <Text style={styles.sectionTitle}>About</Text>
-              </View>
-              <Text style={styles.aboutText}>{member.about}</Text>
-            </View>
-          )}
-
-          {/* Video Link */}
-          {member.video && (
-            <TouchableOpacity style={styles.videoContainer}>
-              <View style={styles.videoIconContainer}>
-                <Ionicons name="play-circle" size={24} color="#fff" />
-              </View>
-              <Text style={styles.videoText}>Watch Video</Text>
-            </TouchableOpacity>
-          )}
-
-          {/* Order Number (if needed) */}
-          {/* {member.orderNo && (
-            <View style={styles.orderContainer}>
-              <Ionicons name="list-outline" size={18} color="#666" />
-              <Text style={styles.orderText}>Order: {member.orderNo}</Text>
-            </View>
-          )} */}
+          <TouchableOpacity 
+            style={[styles.actionButton, styles.locationButton]} 
+            onPress={handleLocation}
+            activeOpacity={0.8}
+          >
+            <LinearGradient
+              colors={['#2196F3', '#1976D2']}
+              style={styles.actionGradient}
+            >
+              <Ionicons name="navigate" size={24} color="#fff" />
+              <Text style={styles.actionText}>Directions</Text>
+            </LinearGradient>
+          </TouchableOpacity>
         </View>
+
+        {/* About Section */}
+        {member.about && (
+          <View style={styles.aboutCard}>
+            <View style={styles.aboutHeader}>
+              <Ionicons name="information-circle" size={24} color="#93210A" />
+              <Text style={styles.cardTitle}>About</Text>
+            </View>
+            <Text style={styles.aboutText}>{member.about}</Text>
+          </View>
+        )}
+
+        {/* YouTube Video Section */}
+        {videoId && (
+          <View style={styles.videoCard}>
+            <View style={styles.videoHeader}>
+              <Ionicons name="logo-youtube" size={24} color="#FF0000" />
+              <Text style={styles.cardTitle}>Interview Video</Text>
+            </View>
+            
+            <View style={styles.youtubeContainer}>
+              <YoutubePlayer
+                height={isTablet ? 300 : 200}
+                width={isTablet ?450 :320}
+                play={false}
+                videoId={videoId}
+                webViewStyle={styles.youtubePlayer}
+              />
+            </View>
+          </View>
+        )}
       </ScrollView>
     </SafeAreaView>
   );
@@ -129,165 +226,254 @@ const styles = StyleSheet.create({
     backgroundColor: "#93210A" 
   },
   
-  // Header Styles
+  // Header
   header: {
-    backgroundColor: "#93210A",
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
     paddingHorizontal: width * 0.04,
     paddingVertical: height * 0.02,
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    minHeight: height * 0.08,
+    paddingTop: Platform.OS === 'android' ? height * 0.04 : height * 0.02,
+    borderBottomLeftRadius: 20,
+    borderBottomRightRadius: 20,
   },
   backButton: {
-    width: width * 0.08,
-    alignItems: 'flex-start',
-    paddingTop:30,
+    padding: width * 0.02,
+    borderRadius: 20,
+    backgroundColor: 'rgba(255,255,255,0.2)',
   },
-  headerTitle: { 
-    color: "#fff", 
-    fontSize: width * 0.05, 
-    fontWeight: "bold",
-    textAlign: 'center',
-    paddingTop:30,
-    flex: 1,
-  },
-  placeholder: { 
-    width: width * 0.08 
+  headerTitle: {
+    color: '#fff',
+    fontSize: width * 0.05,
+    fontWeight: 'bold',
   },
   
   // ScrollView
   scrollView: {
     flex: 1,
-    backgroundColor: '#fff',
-  },
-  scrollContent: {
-    flexGrow: 1,
-    paddingBottom: height * 0.03,
+    backgroundColor: '#f8f9fa',
   },
   
-  // Container
-  container: {
-    flex: 1,
-    backgroundColor: "#fff",
-    alignItems: "center",
+  // Profile Card
+  profileCard: {
+    alignItems: 'center',
+    paddingVertical: height * 0.03,
     paddingHorizontal: width * 0.05,
-    paddingTop: height * 0.03,
+    borderBottomLeftRadius: 30,
+    borderBottomRightRadius: 30,
+    elevation: 4,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
   },
-  
-  // Avatar
-  avatar: {
-    width: width * 0.4,
-    height: width * 0.4,
-    borderRadius: width * 0.2,
+  profileImageContainer: {
+    position: 'relative',
     marginBottom: height * 0.02,
-    borderWidth: 3,
-    borderColor: "#93210A",
   },
-  
-  // Name
-  name: { 
-    fontSize: width * 0.06, 
-    fontWeight: "bold",
-    textAlign: 'center',
-    marginBottom: height * 0.01,
+  avatar: {
+    width: width * 0.28,
+    height: width * 0.28,
+    borderRadius: width * 0.14,
+    borderWidth: 4,
+    borderColor: '#93210A',
+  },
+  onlineBadge: {
+    position: 'absolute',
+    bottom: 5,
+    right: 5,
+    width: 15,
+    height: 15,
+    borderRadius: 7.5,
+    backgroundColor: '#4CAF50',
+    borderWidth: 2,
+    borderColor: '#fff',
+  },
+  name: {
+    fontSize: width * 0.06,
+    fontWeight: 'bold',
     color: '#333',
+    marginBottom: height * 0.01,
   },
-  
-  // Party
-  partyContainer: {
+  partyBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(147, 33, 10, 0.1)',
+    paddingHorizontal: width * 0.04,
+    paddingVertical: height * 0.008,
+    borderRadius: 20,
+    marginBottom: height * 0.01,
+    gap: width * 0.01,
+  },
+  partyText: {
+    color: '#93210A',
+    fontSize: width * 0.04,
+    fontWeight: '600',
+  },
+  roleContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: width * 0.02,
-    marginBottom: height * 0.03,
   },
-  party: { 
-    color: "#93210A", 
-    fontSize: width * 0.045,
+  roleText: {
+    color: '#666',
+    fontSize: width * 0.035,
+  },
+  
+  // Action Buttons
+  actionContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    paddingHorizontal: width * 0.05,
+    marginTop: height * 0.02,
+    marginBottom: height * 0.01,
+    gap: width * 0.03,
+  },
+  actionButton: {
+    flex: 1,
+    borderRadius: 12,
+    overflow: 'hidden',
+    elevation: 3,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
+  },
+  actionGradient: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: height * 0.015,
+    gap: width * 0.02,
+  },
+  actionText: {
+    color: '#fff',
+    fontSize: width * 0.04,
     fontWeight: '600',
   },
+  callButton: {
+    marginRight: width * 0.01,
+  },
+  locationButton: {
+    marginLeft: width * 0.01,
+  },
   
-  // Info Cards
+  // Cards
   infoCard: {
-    width: '100%',
-    backgroundColor: '#f8f8f8',
-    borderRadius: 12,
-    paddingHorizontal: width * 0.05,
-    paddingVertical: height * 0.02,
+    backgroundColor: '#fff',
+    marginHorizontal: width * 0.05,
+    marginTop: height * 0.02,
+    borderRadius: 15,
+    padding: width * 0.05,
+    elevation: 3,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
+  },
+  cardTitle: {
+    fontSize: width * 0.045,
+    fontWeight: 'bold',
+    color: '#333',
     marginBottom: height * 0.015,
-    borderLeftWidth: 4,
-    borderLeftColor: '#93210A',
   },
   infoRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: width * 0.04,
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: height * 0.012,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f0f0f0',
   },
-  infoText: {
+  infoIconContainer: {
+    width: width * 0.08,
+    alignItems: 'center',
+  },
+  infoContent: {
+    flex: 1,
+    marginLeft: width * 0.03,
+  },
+  infoLabel: {
+    fontSize: width * 0.03,
+    color: '#999',
+    marginBottom: 2,
+  },
+  infoValue: {
     fontSize: width * 0.04,
     color: '#333',
-    flex: 1,
-    flexWrap: 'wrap',
+    fontWeight: '500',
   },
   
-  // About Section
-  aboutContainer: {
-    width: '100%',
-    backgroundColor: '#f8f8f8',
-    borderRadius: 12,
-    padding: width * 0.05,
+  // About Card
+  aboutCard: {
+    backgroundColor: '#fff',
+    marginHorizontal: width * 0.05,
     marginTop: height * 0.02,
-    marginBottom: height * 0.02,
+    borderRadius: 15,
+    padding: width * 0.05,
+    elevation: 3,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
   },
-  sectionHeader: {
+  aboutHeader: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: width * 0.03,
     marginBottom: height * 0.015,
-  },
-  sectionTitle: {
-    fontSize: width * 0.045,
-    fontWeight: 'bold',
-    color: '#93210A',
   },
   aboutText: {
     fontSize: width * 0.038,
     color: '#555',
     lineHeight: height * 0.025,
-    textAlign: 'justify',
+    textAlign: 'left',
   },
   
-  // Video
-  videoContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#93210A',
-    borderRadius: 25,
-    paddingHorizontal: width * 0.05,
-    paddingVertical: height * 0.015,
-    gap: width * 0.03,
+  // Video Card
+  videoCard: {
+    backgroundColor: '#fff',
+    marginHorizontal: width * 0.05,
     marginTop: height * 0.02,
+    borderRadius: 15,
+    padding: width * 0.05,
+    elevation: 3,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
   },
-  videoIconContainer: {
-    backgroundColor: 'rgba(255,255,255,0.2)',
-    borderRadius: 20,
-    padding: width * 0.015,
-  },
-  videoText: {
-    color: '#fff',
-    fontSize: width * 0.04,
-    fontWeight: '600',
-  },
-  
-  // Order Number
-  orderContainer: {
+  videoHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: width * 0.02,
-    marginTop: height * 0.03,
+    gap: width * 0.03,
+    marginBottom: height * 0.015,
   },
-  orderText: {
+  youtubeContainer: {
+    borderRadius: 12,
+    overflow: 'hidden',
+    backgroundColor: '#000',
+    marginBottom: height * 0.01,
+  },
+  youtubePlayer: {
+    opacity: 0.99,
+  },
+  videoCaption: {
+    fontSize: width * 0.03,
     color: '#666',
+    textAlign: 'center',
+    marginTop: height * 0.005,
+  },
+  
+  // Footer
+  footerInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: width * 0.02,
+    marginVertical: height * 0.03,
+  },
+  footerText: {
+    color: '#999',
     fontSize: width * 0.035,
   },
 });

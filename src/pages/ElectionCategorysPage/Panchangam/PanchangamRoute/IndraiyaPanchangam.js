@@ -1,10 +1,3 @@
-// DailyPanchangamScreen.js - CORRECTED Rasi Kattam
-// ✅ Perfect box alignment - NO GAPS between boxes
-// ✅ Proper border rendering
-// ✅ Center box wider (2x)
-// ✅ All boxes touch perfectly
-// ✅ Removed inner icons from content sections, kept header icons
-
 import React, { useEffect, useMemo, useState } from "react";
 import {
   View,
@@ -17,9 +10,11 @@ import {
   SafeAreaView,
   StatusBar,
   Platform,
+  useWindowDimensions,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import axios from "axios";
+import Loader from "../../../../components/Alert/Loader";
 
 const API_URL = "https://hdrss-backend.onrender.com/api/v1/panchangam/indray-panjagam";
 
@@ -149,6 +144,10 @@ function SectionHeader({ title, compact = false }) {
 }
 
 export default function DailyPanchangamScreen({ navigation }) {
+  const { width, height } = useWindowDimensions();
+  const isTablet = width >= 600;
+  const isLandscape = width > height;
+
   const [currentDate, setCurrentDate] = useState(() => new Date());
   const [loading, setLoading] = useState(true);
   const [byDate, setByDate] = useState(new Map());
@@ -213,7 +212,7 @@ export default function DailyPanchangamScreen({ navigation }) {
     }));
   }, [record]);
 
-  // Nalla Neram - Removed emoji icons
+  // Nalla Neram
   const nallaNeram = useMemo(() => {
     const morning = record?.nalla_neram?.morning;
     const evening = record?.nalla_neram?.evening;
@@ -223,14 +222,14 @@ export default function DailyPanchangamScreen({ navigation }) {
     return out.length ? out.join("\n") : "நல்ல நேரம் இல்லை";
   }, [record]);
 
-  // Ketta Neram - Removed emoji icons
+  // Ketta Neram
   const kettaNeram = useMemo(() => {
     const arr = record?.ketta_neram;
     if (!Array.isArray(arr) || arr.length === 0) return "கெட்ட நேரம் இல்லை";
     return arr.join("\n");
   }, [record]);
 
-  // Gowri Nalla Neram - Removed emoji icons
+  // Gowri Nalla Neram
   const gowriNallaNeram = useMemo(() => {
     const morning = Array.isArray(record?.gowri_nalla_neram?.morning) 
       ? record.gowri_nalla_neram.morning 
@@ -279,15 +278,7 @@ export default function DailyPanchangamScreen({ navigation }) {
   const onToday = () => setCurrentDate(new Date());
 
   if (loading) {
-    return (
-      <SafeAreaView style={styles.safeArea}>
-        <StatusBar barStyle="light-content" backgroundColor="#8B0000" />
-        <View style={[styles.container, styles.center]}>
-          <ActivityIndicator size="large" color="#ff4f9a" />
-          <Text style={styles.loadingText}>பஞ்சாங்கம் தரவு ஏற்றப்படுகிறது...</Text>
-        </View>
-      </SafeAreaView>
-    );
+    return <Loader />;
   }
 
   return (
@@ -295,93 +286,222 @@ export default function DailyPanchangamScreen({ navigation }) {
       <StatusBar barStyle="light-content" backgroundColor="#8B0000" />
       
       {/* Header with Back Button */}
-      <View style={styles.header}>
+      <View style={[
+        styles.header,
+        isTablet && styles.headerTablet,
+        isLandscape && styles.headerLandscape
+      ]}>
         <TouchableOpacity
-          onPress={() => navigation?.goBack()}
-          style={styles.headerIconBtn}
+          style={[
+            styles.backButton,
+            isTablet && styles.backButtonTablet
+          ]}
+          onPress={() => navigation.goBack()}
         >
-          <Ionicons name="arrow-back" size={24} color="#fff" />
+          <Ionicons name="chevron-back" size={isTablet ? 30 : 26} color="#fff" />
         </TouchableOpacity>
         
-        <Text style={styles.headerTitle}>இன்றைய பஞ்சாங்கம்</Text>
+        <Text style={[
+          styles.headerTitle,
+          isTablet && styles.headerTitleTablet
+        ]}>
+          இன்றைய பஞ்சாங்கம்
+        </Text>
         
-        <TouchableOpacity onPress={onToday} style={styles.headerIconBtn}>
-          <Ionicons name="today-outline" size={22} color="#fff" />
+        <TouchableOpacity 
+          onPress={onToday} 
+          style={[
+            styles.headerIconBtn,
+            isTablet && styles.headerIconBtnTablet
+          ]}
+        >
+          <Ionicons name="today-outline" size={isTablet ? 28 : 22} color="#fff" />
         </TouchableOpacity>
       </View>
 
       <ScrollView 
         style={styles.scrollView}
-        contentContainerStyle={styles.contentContainer}
+        contentContainerStyle={[
+          styles.contentContainer,
+          isTablet && styles.contentContainerTablet,
+          isLandscape && styles.contentContainerLandscape
+        ]}
         showsVerticalScrollIndicator={false}
       >
         {/* PINK HEADER CARD */}
-        <View style={styles.topCard}>
-          <Text style={styles.topSmallTitle}>{headerTopTitle}</Text>
+        <View style={[
+          styles.topCard,
+          isTablet && styles.topCardTablet
+        ]}>
+          <Text style={[
+            styles.topSmallTitle,
+            isTablet && styles.topSmallTitleTablet
+          ]}>
+            {headerTopTitle}
+          </Text>
 
           <View style={styles.topRow}>
-            <TouchableOpacity style={styles.iconBtn} onPress={onPrevDay}>
-              <Ionicons name="chevron-back" size={34} color="#fff" />
+            <TouchableOpacity 
+              style={[
+                styles.iconBtn,
+                isTablet && styles.iconBtnTablet
+              ]} 
+              onPress={onPrevDay}
+            >
+              <Ionicons name="chevron-back" size={isTablet ? 44 : 34} color="#fff" />
             </TouchableOpacity>
 
-            <Text style={styles.topDate}>{dateTitle}</Text>
+            <Text style={[
+              styles.topDate,
+              isTablet && styles.topDateTablet
+            ]}>
+              {dateTitle}
+            </Text>
 
-            <TouchableOpacity style={styles.iconBtn} onPress={onNextDay}>
-              <Ionicons name="chevron-forward" size={34} color="#fff" />
+            <TouchableOpacity 
+              style={[
+                styles.iconBtn,
+                isTablet && styles.iconBtnTablet
+              ]} 
+              onPress={onNextDay}
+            >
+              <Ionicons name="chevron-forward" size={isTablet ? 44 : 34} color="#fff" />
             </TouchableOpacity>
           </View>
 
-          <Text style={styles.topSub}>{headerSubTitle}</Text>
+          <Text style={[
+            styles.topSub,
+            isTablet && styles.topSubTablet
+          ]}>
+            {headerSubTitle}
+          </Text>
         </View>
 
         {/* 3 COLOR TILES */}
-        <View style={styles.tilesRow}>
+        <View style={[
+          styles.tilesRow,
+          isTablet && styles.tilesRowTablet,
+          isLandscape && styles.tilesRowLandscape
+        ]}>
           {/* Tile 1: Month & Weekday */}
-          <View style={[styles.tile, styles.tileGreen]}>
-            <Ionicons name="calendar-outline" size={32} color="#fff" />
-            <Text style={styles.tileText}>{monthTamil(currentDate)}</Text>
-            <Text style={styles.tileText}>{weekdayTamil(currentDate)}</Text>
+          <View style={[
+            styles.tile, 
+            styles.tileGreen,
+            isTablet && styles.tileTablet
+          ]}>
+            <Ionicons name="calendar-outline" size={isTablet ? 42 : 32} color="#fff" />
+            <Text style={[
+              styles.tileText,
+              isTablet && styles.tileTextTablet
+            ]}>
+              {monthTamil(currentDate)}
+            </Text>
+            <Text style={[
+              styles.tileText,
+              isTablet && styles.tileTextTablet
+            ]}>
+              {weekdayTamil(currentDate)}
+            </Text>
           </View>
 
           {/* Tile 2: Naamyogam & Thai */}
-          <View style={[styles.tile, styles.tilePink]}>
-            <Ionicons name="leaf-outline" size={32} color="#fff" />
-            <Text style={styles.tileText}>
+          <View style={[
+            styles.tile, 
+            styles.tilePink,
+            isTablet && styles.tileTablet
+          ]}>
+            <Ionicons name="leaf-outline" size={isTablet ? 42 : 32} color="#fff" />
+            <Text style={[
+              styles.tileText,
+              isTablet && styles.tileTextTablet
+            ]}>
               {(record?.naamyogam && String(record.naamyogam).trim()) ? record.naamyogam : "விசுவாவசு"}
             </Text>
-            <Text style={styles.tileText}>{thaiText || `தை ${currentDate.getDate()}`}</Text>
+            <Text style={[
+              styles.tileText,
+              isTablet && styles.tileTextTablet
+            ]}>
+              {thaiText || `தை ${currentDate.getDate()}`}
+            </Text>
           </View>
 
           {/* Tile 3: Sunrise */}
-          <View style={[styles.tile, styles.tileBlue]}>
-            <Ionicons name="sunny-outline" size={32} color="#fff" />
-            <Text style={styles.tileText}>சூரிய</Text>
-            <Text style={styles.tileText}>உதயம்</Text>
-            <Text style={styles.tileText}>{sunriseText || "06:35"}</Text>
+          <View style={[
+            styles.tile, 
+            styles.tileBlue,
+            isTablet && styles.tileTablet
+          ]}>
+            <Ionicons name="sunny-outline" size={isTablet ? 42 : 32} color="#fff" />
+            <Text style={[
+              styles.tileText,
+              isTablet && styles.tileTextTablet
+            ]}>
+              சூரிய
+            </Text>
+            <Text style={[
+              styles.tileText,
+              isTablet && styles.tileTextTablet
+            ]}>
+              உதயம்
+            </Text>
+            <Text style={[
+              styles.tileText,
+              isTablet && styles.tileTextTablet
+            ]}>
+              {sunriseText || "06:35"}
+            </Text>
           </View>
         </View>
 
         <DashedDivider />
 
         {/* 5 MAIN ROWS */}
-        <View style={styles.infoCard}>
+        <View style={[
+          styles.infoCard,
+          isTablet && styles.infoCardTablet
+        ]}>
           {rows.map((r, idx) => (
             <View key={r.id}>
-              <View style={styles.infoRow}>
-                <View style={[styles.infoIconBox, { backgroundColor: r.iconBg }]}>
-                  <Ionicons name={r.icon} size={20} color="#fff" />
+              <View style={[
+                styles.infoRow,
+                isTablet && styles.infoRowTablet
+              ]}>
+                <View style={[
+                  styles.infoIconBox, 
+                  { backgroundColor: r.iconBg },
+                  isTablet && styles.infoIconBoxTablet
+                ]}>
+                  <Ionicons name={r.icon} size={isTablet ? 24 : 20} color="#fff" />
                 </View>
-                <Text style={styles.infoTitle}>{r.title}</Text>
-                <Text style={styles.infoColon}>:</Text>
-                <Text style={styles.infoValue}>{r.value}</Text>
+                <Text style={[
+                  styles.infoTitle,
+                  isTablet && styles.infoTitleTablet
+                ]}>
+                  {r.title}
+                </Text>
+                <Text style={[
+                  styles.infoColon,
+                  isTablet && styles.infoColonTablet
+                ]}>
+                  :
+                </Text>
+                <Text style={[
+                  styles.infoValue,
+                  isTablet && styles.infoValueTablet
+                ]}>
+                  {r.value}
+                </Text>
               </View>
               {idx !== rows.length - 1 && <DashedDivider />}
             </View>
           ))}
         </View>
 
-        {/* ✅ CORRECTED RASI KATTAM - PERFECT BOX ALIGNMENT, ABSOLUTELY NO GAPS */}
-        <View style={styles.rasiCard}>
+        {/* ✅ CORRECTED RASI KATTAM - PERFECT BOX ALIGNMENT */}
+        <View style={[
+          styles.rasiCard,
+          isTablet && styles.rasiCardTablet
+        ]}>
           <SectionHeader title="ராசி கட்டம்" />
           
           <View style={styles.rasiContainer}>
@@ -401,7 +521,7 @@ export default function DailyPanchangamScreen({ navigation }) {
               </View>
             </View>
 
-            {/* Middle Row - 3 Boxes (Left, Center, Right) */}
+            {/* Middle Row - 3 Boxes */}
             <View style={styles.rasiRow}>
               <View style={[styles.rasiBoxContainer, styles.rasiBoxContainerFlex1]}>
                 <RasiBox text={rasi.midL} isLarge={true} />
@@ -432,50 +552,88 @@ export default function DailyPanchangamScreen({ navigation }) {
           </View>
         </View>
 
-        {/* NALLA NERAM - WITHOUT INNER ICON */}
-        <View style={styles.contentCard}>
+        {/* NALLA NERAM */}
+        <View style={[
+          styles.contentCard,
+          isTablet && styles.contentCardTablet
+        ]}>
           <SectionHeader title="நல்ல நேரம்" compact={true} />
-          <View style={styles.centeredContainer}>
-            <Text style={styles.centeredText}>{nallaNeram}</Text>
+          <View style={[
+            styles.centeredContainer,
+            isTablet && styles.centeredContainerTablet
+          ]}>
+            <Text style={[
+              styles.centeredText,
+              isTablet && styles.centeredTextTablet
+            ]}>
+              {nallaNeram}
+            </Text>
           </View>
         </View>
 
-        {/* KETTA NERAM - WITHOUT INNER ICON */}
-        <View style={styles.contentCard}>
+        {/* KETTA NERAM */}
+        <View style={[
+          styles.contentCard,
+          isTablet && styles.contentCardTablet
+        ]}>
           <SectionHeader title="கெட்ட நேரம்" compact={true} />
-          <View style={styles.centeredContainer}>
-            <Text style={styles.centeredText}>{kettaNeram}</Text>
+          <View style={[
+            styles.centeredContainer,
+            isTablet && styles.centeredContainerTablet
+          ]}>
+            <Text style={[
+              styles.centeredText,
+              isTablet && styles.centeredTextTablet
+            ]}>
+              {kettaNeram}
+            </Text>
           </View>
         </View>
 
-        {/* GOWRI NALLA NERAM - WITHOUT INNER ICON */}
-        <View style={styles.contentCard}>
+        {/* GOWRI NALLA NERAM */}
+        <View style={[
+          styles.contentCard,
+          isTablet && styles.contentCardTablet
+        ]}>
           <SectionHeader title="கௌரி நல்ல நேரம்" compact={true} />
-          <View style={styles.centeredContainer}>
-            <Text style={styles.centeredText}>{gowriNallaNeram}</Text>
+          <View style={[
+            styles.centeredContainer,
+            isTablet && styles.centeredContainerTablet
+          ]}>
+            <Text style={[
+              styles.centeredText,
+              isTablet && styles.centeredTextTablet
+            ]}>
+              {gowriNallaNeram}
+            </Text>
           </View>
         </View>
 
-        {/* OORAI - WITHOUT INNER ICON */}
-        <View style={styles.contentCard}>
+        {/* OORAI */}
+        <View style={[
+          styles.contentCard,
+          isTablet && styles.contentCardTablet,
+          isLandscape && styles.contentCardLandscape
+        ]}>
           <SectionHeader title="ஓரை" compact={true} />
-          <View style={styles.centeredContainer}>
-            <Text style={styles.centeredText}>{oorai}</Text>
+          <View style={[
+            styles.centeredContainer,
+            isTablet && styles.centeredContainerTablet
+          ]}>
+            <Text style={[
+              styles.centeredText,
+              isTablet && styles.centeredTextTablet
+            ]}>
+              {oorai}
+            </Text>
           </View>
         </View>
-
-        {/* Footer Note - Commented out
-        <View style={styles.footerNote}>
-          <Text style={styles.footerText}>
-            * இன்றைய பஞ்சாங்க விபரங்கள் தமிழ் மரபுப்படி கணக்கிடப்பட்டுள்ளது
-          </Text>
-        </View> */}
       </ScrollView>
     </SafeAreaView>
   );
 }
 
-/* ==================== CORRECTED STYLES ==================== */
+/* ==================== RESPONSIVE STYLES ==================== */
 const styles = StyleSheet.create({
   // Container Styles
   safeArea: {
@@ -493,6 +651,16 @@ const styles = StyleSheet.create({
     padding: 14,
     paddingBottom: 30,
   },
+  contentContainerTablet: {
+    padding: 24,
+    paddingBottom: 40,
+    maxWidth: 1000,
+    alignSelf: "center",
+    width: "100%",
+  },
+  contentContainerLandscape: {
+    paddingHorizontal: 30,
+  },
   center: {
     flex: 1,
     alignItems: "center",
@@ -501,20 +669,22 @@ const styles = StyleSheet.create({
 
   // Header Styles
   header: {
-    flexDirection: "row",
+   flexDirection: "row",
     alignItems: "center",
-    justifyContent: "space-between",
-    paddingTop: Platform.OS === "ios" ? 10 : 40,
-    paddingBottom: 16,
-    paddingHorizontal: 14,
-    backgroundColor: "#8B0000",
+    backgroundColor: "#93210A",
+    paddingTop:40,
+    paddingBottom:30,
     borderBottomLeftRadius: 20,
     borderBottomRightRadius: 20,
-    elevation: 6,
-    shadowColor: "#000",
-    shadowOpacity: 0.12,
-    shadowRadius: 10,
-    shadowOffset: { width: 0, height: 4 },
+  },
+  headerTablet: {
+    paddingTop:45,
+    paddingBottom:28,
+    paddingHorizontal: 18,
+  },
+  headerLandscape: {
+    paddingTop: Platform.OS === "ios" ? 10 : 30,
+    paddingBottom: 20,
   },
   headerIconBtn: {
     width: 44,
@@ -523,11 +693,36 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
+  headerIconBtnTablet: {
+    width: 54,
+    height: 54,
+    borderRadius: 27,
+  },
   headerTitle: {
-    fontSize: 17,
-    color: "#fff",
-    fontWeight: "900",
+    flex: 1,
     textAlign: "center",
+    color: "#fff",
+    fontSize: 18,
+    fontWeight: "800",
+    letterSpacing: 0.3,
+  },
+  headerTitleTablet: {
+    fontSize: 22,
+  },
+
+ backButton:{
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: "rgba(255,255,255,0.15)",
+    alignItems: "center",
+    justifyContent: "center",
+    marginLeft:15,
+  },
+  backButtonTablet:{
+    width: 50,
+    height: 50,
+    borderRadius: 25,
   },
 
   // Loading Styles
@@ -551,12 +746,22 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
     shadowOffset: { width: 0, height: 4 },
   },
+  topCardTablet: {
+    borderRadius: 24,
+    paddingVertical: 24,
+    paddingHorizontal: 20,
+    marginBottom: 24,
+  },
   topSmallTitle: {
     color: "#fff",
     fontSize: 16,
     textAlign: "center",
     fontWeight: "900",
     marginBottom: 10,
+  },
+  topSmallTitleTablet: {
+    fontSize: 20,
+    marginBottom: 16,
   },
   topRow: {
     flexDirection: "row",
@@ -570,11 +775,19 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
+  iconBtnTablet: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+  },
   topDate: {
     color: "#fff",
     fontSize: 35,
     fontWeight: "900",
     letterSpacing: 1,
+  },
+  topDateTablet: {
+    fontSize: 48,
   },
   topSub: {
     color: "#ffeaf3",
@@ -583,12 +796,22 @@ const styles = StyleSheet.create({
     fontWeight: "900",
     marginTop: 10,
   },
+  topSubTablet: {
+    fontSize: 18,
+    marginTop: 16,
+  },
 
   // 3 Tiles
   tilesRow: {
     flexDirection: "row",
     justifyContent: "space-between",
     marginBottom: 8,
+  },
+  tilesRowTablet: {
+    marginBottom: 16,
+  },
+  tilesRowLandscape: {
+    marginBottom: 12,
   },
   tile: {
     width: "31.5%",
@@ -601,6 +824,10 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.12,
     shadowRadius: 6,
     shadowOffset: { width: 0, height: 3 },
+  },
+  tileTablet: {
+    borderRadius: 18,
+    paddingVertical: 20,
   },
   tileGreen: {
     backgroundColor: "#2fb86b",
@@ -617,6 +844,10 @@ const styles = StyleSheet.create({
     fontWeight: "900",
     textAlign: "center",
     lineHeight: 22,
+  },
+  tileTextTablet: {
+    fontSize: 16,
+    lineHeight: 28,
   },
 
   // Divider
@@ -640,10 +871,19 @@ const styles = StyleSheet.create({
     shadowRadius: 6,
     shadowOffset: { width: 0, height: 3 },
   },
+  infoCardTablet: {
+    borderRadius: 24,
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    marginBottom: 24,
+  },
   infoRow: {
     flexDirection: "row",
     alignItems: "center",
     paddingVertical: 12,
+  },
+  infoRowTablet: {
+    paddingVertical: 16,
   },
   infoIconBox: {
     width: 27,
@@ -653,11 +893,21 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     marginRight: 12,
   },
+  infoIconBoxTablet: {
+    width: 36,
+    height: 36,
+    borderRadius: 10,
+    marginRight: 16,
+  },
   infoTitle: {
     width: 110,
     fontSize: 14,
     fontWeight: "900",
     color: "#222",
+  },
+  infoTitleTablet: {
+    width: 140,
+    fontSize: 18,
   },
   infoColon: {
     width: 16,
@@ -666,6 +916,10 @@ const styles = StyleSheet.create({
     color: "#222",
     textAlign: "center",
   },
+  infoColonTablet: {
+    width: 20,
+    fontSize: 22,
+  },
   infoValue: {
     flex: 1,
     fontSize: 14,
@@ -673,8 +927,12 @@ const styles = StyleSheet.create({
     color: "#222",
     lineHeight: 24,
   },
+  infoValueTablet: {
+    fontSize: 18,
+    lineHeight: 28,
+  },
 
-  // ✅ CORRECTED Rasi Kattam Styles - ABSOLUTELY NO GAPS
+  // Rasi Kattam Styles
   rasiCard: {
     backgroundColor: "#fff",
     borderRadius: 16,
@@ -685,6 +943,10 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.08,
     shadowRadius: 6,
     shadowOffset: { width: 0, height: 3 },
+  },
+  rasiCardTablet: {
+    borderRadius: 24,
+    marginBottom: 24,
   },
   rasiContainer: {
     padding: 0,
@@ -717,9 +979,7 @@ const styles = StyleSheet.create({
     padding: 6,
     backgroundColor: "#fffcf0",
   },
-  rasiCenterBox: {
-    // No additional styles needed
-  },
+  rasiCenterBox: {},
   rasiText: {
     fontSize: 12,
     fontWeight: "900",
@@ -765,13 +1025,24 @@ const styles = StyleSheet.create({
     shadowRadius: 6,
     shadowOffset: { width: 0, height: 3 },
   },
+  contentCardTablet: {
+    borderRadius: 24,
+    marginBottom: 20,
+  },
+  contentCardLandscape: {
+    marginBottom: 16,
+  },
 
-  // Centered Content Styles - UPDATED: removed neramBadge styles
+  // Centered Content Styles
   centeredContainer: {
     padding: 20,
     alignItems: "center",
     justifyContent: "center",
     minHeight: 100,
+  },
+  centeredContainerTablet: {
+    padding: 30,
+    minHeight: 120,
   },
   centeredText: {
     fontSize: 15,
@@ -780,20 +1051,8 @@ const styles = StyleSheet.create({
     textAlign: "center",
     lineHeight: 28,
   },
-
-  // Footer (commented out)
-  footerNote: {
-    marginTop: 20,
-    padding: 16,
-    backgroundColor: "#f0f0f0",
-    borderRadius: 12,
-    alignItems: "center",
-  },
-  footerText: {
-    fontSize: 14,
-    color: "#666",
-    fontWeight: "600",
-    textAlign: "center",
-    fontStyle: "italic",
+  centeredTextTablet: {
+    fontSize: 18,
+    lineHeight: 32,
   },
 });

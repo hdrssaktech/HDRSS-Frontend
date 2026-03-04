@@ -19,6 +19,7 @@ import {
   fetchReviewsByComplaintId,
   addReview,
 } from "../../Controller/ComplaintController/ComplaintController";
+import Loader from "../Alert/Loader";
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get("window");
 const isTablet = screenWidth >= 600;
@@ -251,12 +252,7 @@ export default function ComplaintPage2({ route, navigation }) {
             </View>
 
             {loading ? (
-              <View style={styles.loadingContainer}>
-                <ActivityIndicator color="#93210A" size={isTablet ? "large" : "small"} />
-                <Text style={[styles.loadingText, isTablet && styles.loadingTextTablet]}>
-                  Loading reviews...
-                </Text>
-              </View>
+            <Loader/>
             ) : reviews.length === 0 ? (
               <View style={styles.noReviewsContainer}>
                 <Ionicons 

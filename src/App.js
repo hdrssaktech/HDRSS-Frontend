@@ -4,6 +4,7 @@ import { createStackNavigator } from "@react-navigation/stack";
 import { AuthContext, AuthProvider } from "./context/AuthContext";
 import { VoteProvider  } from "./context/VoteContext.js";
 import { LocationProvider } from "./context/LocationContext.js";
+import { LoaderProvider, useLoader } from "./context/LoaderContext.js";
 
 import Loginpage from "./pages/AuthPage/LoginPage";
 import Recovery from "./pages/AuthPage/RecoveryPage";
@@ -111,6 +112,14 @@ import IndraiyaPanchangam from "./pages/ElectionCategorysPage/Panchangam/Panchan
 import MaathakaatiPanchangam from "./pages/ElectionCategorysPage/Panchangam/PanchangamRoute/MaathakaatiPanchangam.js";
 import MukiyaThinangal from "./pages/ElectionCategorysPage/Panchangam/PanchangamRoute/MukiyaThinangal.js";
 import GowriPanchangam from "./pages/ElectionCategorysPage/Panchangam/PanchangamRoute/GowriPanchangam.js";
+import DistrictAssemblyPage1 from "./pages/DistrictPage/DistrictAssembley/DistrictAssemblyPage1.js";
+import DistrictAssemblyPage2 from "./pages/DistrictPage/DistrictAssembley/DistrictAssemblyPage2.js";
+import DistrictAssemblyPage3 from "./pages/DistrictPage/DistrictAssembley/DistrictAssemblyPage3.js";
+import NetworkMonitor from "./components/AlertSection/NetworkMonitor.js";
+import DistrictAssemblyPage4 from "./pages/DistrictPage/DistrictAssembley/DistrictAssemblyPage4.js";
+import RootPage from "./pages/AuthPage/RootPage.js";
+
+
 
 
 
@@ -118,23 +127,34 @@ import GowriPanchangam from "./pages/ElectionCategorysPage/Panchangam/Panchangam
 const AuthStack = createStackNavigator();
 const MainStack = createStackNavigator();
 
-// Footer wrapper
-const withFooter = (Component) => (props) => (
-  <>
-    <Component {...props} />
+
+const withFooter = (Component) => (props) => {
+  const { isLoading } = useLoader();
+  
+
+  return (
+    <>
+      <Component {...props} />
+      <Footer /> 
+    </>
+  );
+};
+
+const withHeaderAndFooter = (Component) => (props) => {
+  const { isLoading } = useLoader();
+  
+  return (
+    <>
+      <Component {...props} />
     <Footer />
-  </>
-);
-const withHeaderAndFooter = (Component) => (props) => (
-  <>
-    <Component {...props} />
-    <Footer />
-  </>
-);
+    </>
+  );
+};
 
 function AuthStackScreen() {
   return (
     <AuthStack.Navigator screenOptions={{ headerShown: false }}>
+      <AuthStack.Screen name="Root" component={RootPage} />
       <AuthStack.Screen name="Login" component={Loginpage} />
       <AuthStack.Screen name="Recovery" component={Recovery} />
       <AuthStack.Screen name="Signup" component={SigninPage} />
@@ -240,12 +260,14 @@ function MainStackScreen() {
     <MainStack.Screen name="MaathaKaatiPanchangam" component={withFooter(MaathakaatiPanchangam)}/>
     <MainStack.Screen name="IndraiyaPanchangam" component={withFooter(IndraiyaPanchangam)}/>
     <MainStack.Screen name="MukiyaThinangal" component={withFooter(MukiyaThinangal)}/>
-      <MainStack.Screen name="GowriPanchangam" component={withFooter(GowriPanchangam)}/>
-    
-
+    <MainStack.Screen name="GowriPanchangam" component={withFooter(GowriPanchangam)}/>
     <MainStack.Screen name="Assemblies" component={withFooter(Assemblies)}/>
     <MainStack.Screen name="VotePartiesResult" component={withFooter(PartiesResult)}/>
     <MainStack.Screen name="Vote2023Result" component={withFooter(Election2021Screen)}/>
+    <MainStack.Screen name="DistrictAssembly1" component={withFooter(DistrictAssemblyPage1)}/>
+    <MainStack.Screen name="DistrictAssembly2" component={withFooter(DistrictAssemblyPage2)}/>
+    <MainStack.Screen name="DistrictAssembly3" component={withFooter(DistrictAssemblyPage3)}/>
+     <MainStack.Screen name="DistrictAssembly4" component={withFooter(DistrictAssemblyPage4)}/>
     </MainStack.Navigator>
   );
 }
@@ -255,7 +277,9 @@ function RootNavigator() {
 
   return (
     <NavigationContainer>
+      <NetworkMonitor>
       {isLoggedIn ? <MainStackScreen /> : <AuthStackScreen />}
+      </NetworkMonitor>
     </NavigationContainer>
   );
 }
@@ -265,7 +289,9 @@ export default function App() {
     <AuthProvider>
      <VoteProvider>
       <LocationProvider>
+        <LoaderProvider> 
        <RootNavigator />
+       </LoaderProvider> 
       </LocationProvider>
      </VoteProvider>
     </AuthProvider>

@@ -21,6 +21,7 @@ import * as ImagePicker from "expo-image-picker";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { createMember, uploadImage, sendIdCard } from "../../api/api";
 import { generateIdCard } from "../../pages/generateIdCard/generateIdCard";
+import CustomAlert from "../../components/Alert/CustomAlert";
 
 export default function Membership1() {
   const route = useRoute();
@@ -38,8 +39,7 @@ export default function Membership1() {
   const [bloodGroup, setBloodGroup] = useState("");
   const [address, setAddress] = useState("");          
   const [city, setCity] = useState("");
-  const [taluk, setTaluk] = useState("")
-  ;
+  const [taluk, setTaluk] = useState("");
   const [district, setDistrict] = useState(districtName || "");
   const [pin, setPin] = useState("");
   const [education, setEducation] = useState("");
@@ -51,6 +51,19 @@ export default function Membership1() {
   const [professionalDetails, setProfessionalDetails] = useState("");
   const [designation, setDesignation] = useState("");
   const [experience, setExperience] = useState("");
+
+  // alert 
+  const [alertVisible, setAlertVisible] = useState(false);
+  const [alertType, setAlertType] = useState("success");
+  const [alertTitle, setAlertTitle] = useState("");
+  const [alertMessage, setAlertMessage] = useState("");
+
+  const showCustomAlert = (type, title, message) => {
+  setAlertType(type);
+  setAlertTitle(title);
+  setAlertMessage(message);
+  setAlertVisible(true);
+};
 
   // 📸 Pick Image
   const pickImage = async () => {
@@ -142,7 +155,7 @@ const handleSubmit = async () => {
   console.warn("🔥 HANDLE SUBMIT CLICKED");
 
   if (!photo) {
-    Alert.alert("Error", "Please upload a photo.");
+    showCustomAlert("error", "Error", "Please upload a photo.");
     return;
   }
 
@@ -211,13 +224,14 @@ const handleSubmit = async () => {
     const emailResult = await sendIdCard(pdfUri);
     console.warn("📧 Email result:", emailResult);
 
-    Alert.alert(
+    showCustomAlert(
+      emailResult.success ? "success" : "error",
       emailResult.success ? "Success" : "Failed",
       emailResult.message
     );
   } catch (err) {
     console.error("❌ HANDLE SUBMIT ERROR:", err);
-    Alert.alert("Error", err.message);
+    showCustomAlert("error", "Error", err.message);
   }
 };
   
@@ -469,6 +483,13 @@ const handleSubmit = async () => {
           </TouchableOpacity>
         </ScrollView>
       </KeyboardAvoidingView>
+      <CustomAlert
+        visible={alertVisible}
+        type={alertType}
+        title={alertTitle}
+        message={alertMessage}
+        onConfirm={() => setAlertVisible(false)}
+      />
     </SafeAreaView>
   );
 }

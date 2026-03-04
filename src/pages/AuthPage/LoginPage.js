@@ -1,65 +1,30 @@
 import React, { useState, useContext, useRef, useEffect } from "react";
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Animated, Image } from "react-native";
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  StyleSheet,
+  Animated,
+  Image,
+} from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import { AuthContext } from "../../context/AuthContext";
-import * as Notifications from "expo-notifications";
-import * as Device from "expo-device";
-import { Platform } from "react-native";
-import { handleLogin as handleLoginAPI } from "../../Controller/ComplaintController/ComplaintController"; 
+import { handleLogin as handleLoginAPI } from "../../Controller/ComplaintController/ComplaintController";
+import CustomAlert from "../../components/Alert/CustomAlert"; // Your custom alert
 
 export default function Loginpage() {
   const navigation = useNavigation();
   const { login } = useContext(AuthContext);
-  const [expoPushToken, setExpoPushToken] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [alertVisible, setAlertVisible] = useState(false);
+  const [alertType, setAlertType] = useState("info");
+  const [alertTitle, setAlertTitle] = useState("");
+  const [alertMessage, setAlertMessage] = useState("");
 
-
-
- async function registerForPushNotificationsAsync() {
-  if (!Device.isDevice) {
-    alert("Must use physical device for Push Notifications");
-    return;
-  }
-
-  const { status: existingStatus } = await Notifications.getPermissionsAsync();
-  let finalStatus = existingStatus;
-  if (existingStatus !== "granted") {
-    const { status } = await Notifications.requestPermissionsAsync();
-    finalStatus = status;
-  }
-
-  if (finalStatus !== "granted") {
-    alert("Failed to get push token for notifications!");
-    return;
-  }
-
-  const token = (await Notifications.getExpoPushTokenAsync()).data;
-  setExpoPushToken(token);
-
-  if (Platform.OS === "android") {
-    Notifications.setNotificationChannelAsync("default", {
-      name: "default",
-      importance: Notifications.AndroidImportance.MAX,
-    });
-  }
-  return token;
-}
-
-async function sendLocalNotification() {
-  await Notifications.scheduleNotificationAsync({
-    content: {
-      title: "Login Successful 🎉",
-      body: "Welcome back to HDRSS!",
-    },
-    trigger: null, // triggers immediately
-  });
-}
-  useEffect(() => {
-  registerForPushNotificationsAsync();
-}, []);
   // ✅ Rotation Animation (same as Header)
   const rotateAnim = useRef(new Animated.Value(0)).current;
   useEffect(() => {
@@ -77,25 +42,38 @@ async function sendLocalNotification() {
     outputRange: ["0deg", "360deg"],
   });
 
-
   const onLoginPress = async () => {
     if (!phoneNumber || !password) {
-      alert("Please enter mobile number and password");
+      setAlertType("warning");
+      setAlertTitle("Missing Fields");
+      setAlertMessage("Please enter mobile number and password");
+      setAlertVisible(true);
       return;
     }
+
     try {
-      // Call the imported login API to actually perform login
       const success = await handleLoginAPI(phoneNumber, password);
 
       if (success) {
-        login(phoneNumber, password); 
-        await sendLocalNotification(); 
+        login(phoneNumber, password);
+
+        setAlertType("success");
+        setAlertTitle("Login Successful 🎉");
+        setAlertMessage("Welcome to HDRSS!");
+        setAlertVisible(true);
+        // Navigation will happen after alert closes (see onConfirm below)
       } else {
-        alert("Invalid credentials or token missing");
+        setAlertType("error");
+        setAlertTitle("Login Failed");
+        setAlertMessage("Please try again.");
+        setAlertVisible(true);
       }
     } catch (err) {
       console.log("Login Error:", err);
-      alert("Login failed, please check your details");
+      setAlertType("error");
+      setAlertTitle("Error");
+      setAlertMessage("Login failed, please check your connection");
+      setAlertVisible(true);
     }
   };
 
@@ -124,32 +102,42 @@ async function sendLocalNotification() {
             style={styles.input}
             placeholder="Mobile Number"
             value={phoneNumber}
+            maxLength={10}
             onChangeText={setPhoneNumber}
             keyboardType="phone-pad"
           />
         </View>
 
         {/* Password Input */}
-        <View style={styles.inputRow}>
-          <Ionicons name="lock-closed-outline" size={20} color="#888" style={styles.icon} />
+      <View style={styles.inputRow}>
+        <Ionicons
+          name="lock-closed-outline"
+          size={20}
+          color="#888"
+          style={styles.icon}
+        />
 
-          <TextInput
-            style={styles.input}
-            placeholder="Password"
-            secureTextEntry={!showPassword}
-            value={password}
-            onChangeText={setPassword}
+        <TextInput
+          style={styles.input}
+          placeholder="Enter 6 digit PIN"
+          secureTextEntry={!showPassword}
+          value={password}
+          keyboardType="number-pad"
+          maxLength={8}
+          onChangeText={(text) => {
+            const onlyNumbers = text.replace(/[^0-9]/g, "");
+            setPassword(onlyNumbers);
+          }}
+        />
+
+        <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
+          <Ionicons
+            name={showPassword ? "eye-off-outline" : "eye-outline"}
+            size={20}
+            color="#888"
           />
-
-          <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
-            <Ionicons
-              name={showPassword ? "eye-off-outline" : "eye-outline"}
-              size={20}
-              color="#888"
-            />
-          </TouchableOpacity>
+        </TouchableOpacity>
       </View>
-
 
         {/* Forgot Password */}
         <TouchableOpacity
@@ -172,9 +160,24 @@ async function sendLocalNotification() {
           style={styles.signInButton}
           onPress={() => navigation.navigate("Signup")}
         >
-          <Text style={styles.signInText}>SIGN IN</Text>
+          <Text style={styles.signInText}>SIGN UP</Text>
         </TouchableOpacity>
       </View>
+
+      {/* ✅ Custom Alert Component */}
+      <CustomAlert
+        visible={alertVisible}
+        type={alertType}
+        title={alertTitle}
+        message={alertMessage}
+        autoClose={alertType === "success"} 
+        onConfirm={() => {
+          setAlertVisible(false);
+          if (alertType === "success") {
+            navigation.replace("Home"); 
+          }
+        }}
+      />
     </View>
   );
 }
@@ -196,7 +199,7 @@ const styles = StyleSheet.create({
     width: 150,
     height: 150,
     resizeMode: "contain",
-      marginVertical: -20,
+    marginVertical: -20,
   },
   sunCenter: {
     position: "absolute",
@@ -206,12 +209,10 @@ const styles = StyleSheet.create({
   },
   loginTitle: {
     color: "#fff",
-    paddingTop:20,
+    paddingTop: 20,
     fontSize: 20,
     fontWeight: "bold",
     marginVertical: 30,
-    // marginTop:30px
-    // Bottom:4,
   },
   card: {
     backgroundColor: "#fff",

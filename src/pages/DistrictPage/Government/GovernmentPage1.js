@@ -9,10 +9,12 @@ import {
   TouchableOpacity,
   StatusBar,
   useWindowDimensions,
+  Platform,
 } from "react-native";
 import { useRoute, useNavigation } from "@react-navigation/native";
 import { LinearGradient } from "expo-linear-gradient";
 import { Ionicons } from "@expo/vector-icons";
+import Loader from "../../../components/Alert/Loader";
 
 const GovernmentPage = () => {
   const route = useRoute();
@@ -21,10 +23,19 @@ const GovernmentPage = () => {
 
   const { width } = useWindowDimensions();
   const isTablet = width >= 600;
+  const isLargeTablet = width >= 1024;
 
-  const CARD_WIDTH = isTablet
-    ? width / 3 - 28
-    : width / 2 - 22;
+  // Responsive columns
+  const numColumns = isLargeTablet ? 4 : (isTablet ? 3 : 2);
+
+  // Responsive card width calculation
+  const CARD_WIDTH = () => {
+    const padding = isTablet ? 20 : 10; // horizontal padding from columnWrapper
+    const gap = isTablet ? 20 : 12;
+    const totalGap = gap * (numColumns - 1);
+    const availableWidth = width - (padding * 2);
+    return (availableWidth - totalGap) / numColumns;
+  };
 
   const [governments, setGovernments] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -54,18 +65,17 @@ const GovernmentPage = () => {
     fetchGovernments();
   }, [districtId]);
 
+  const renderEmptyState = () => (
+    <View style={styles.emptyContainer}>
+      <Ionicons name="business-outline" size={isTablet ? 80 : 60} color="#93210A" />
+      <Text style={[styles.emptyText, isTablet && styles.emptyTextTablet]}>
+        No governments found
+      </Text>
+    </View>
+  );
+
   if (loading) {
-    return (
-      <LinearGradient
-        colors={["#FBE9E7", "#FFF8F8"]}
-        style={styles.loaderContainer}
-      >
-        <ActivityIndicator size="large" color="#93210A" />
-        <Text style={styles.loadingText}>
-          Fetching Government Data...
-        </Text>
-      </LinearGradient>
-    );
+    return <Loader />;
   }
 
   return (
@@ -73,21 +83,31 @@ const GovernmentPage = () => {
       colors={["#FFF8F8", "#FCEEEE"]}
       style={styles.container}
     >
-      <StatusBar barStyle="dark-content" backgroundColor="#FFF8F8" />
+      <StatusBar barStyle="light-content" backgroundColor="#93210A" />
 
       {/* ================= HEADER ================= */}
-      <View style={styles.headerBox}>
+      <View style={[
+        styles.headerBox,
+        isTablet && styles.headerBoxTablet,
+      ]}>
         <TouchableOpacity
-       
-  style={isTablet ? styles.backButtonTablet : styles.backButtonMobile}
-  onPress={() => navigation.goBack()}
->
-  <Ionicons
-    name="chevron-back"
-    size={isTablet ? 32 : 26}
-    color="#fff"
-  />
-</TouchableOpacity>
+          style={[
+            styles.backButton,
+            isTablet && styles.backButtonTablet,
+            { 
+              width: isTablet ? 50 : 40,
+              height: isTablet ? 50 : 40,
+              borderRadius: isTablet ? 25 : 20,
+            }
+          ]}
+          onPress={() => navigation.goBack()}
+        >
+          <Ionicons
+            name="chevron-back"
+            size={isTablet ? 30 : 26}
+            color="#fff"
+          />
+        </TouchableOpacity>
 
         <View style={styles.headerTextBox}>
           <Text
@@ -98,79 +118,110 @@ const GovernmentPage = () => {
           >
             Governments
           </Text>
-          <Text style={styles.headerSubtitle}>
-            Select a government to explore available services
-          </Text>
+         
         </View>
       </View>
 
       {/* ================= GRID ================= */}
-      <FlatList
-        data={governments}
-        key={isTablet ? "tablet" : "mobile"}
-        numColumns={isTablet ? 3 : 2}
-        keyExtractor={(item, index) =>
-          item?._id ? item._id.toString() : index.toString()
-        }
-        columnWrapperStyle={{
-          justifyContent: "space-between",
-          paddingHorizontal: isTablet ? 20 : 10,
-        }}
-        contentContainerStyle={{ paddingBottom: 20 }}
-        showsVerticalScrollIndicator={false}
-        renderItem={({ item }) => (
-          <TouchableOpacity
-            activeOpacity={0.85}
-            style={[
-              styles.card,
-              { width: CARD_WIDTH },
-              isTablet && styles.cardTablet,
-            ]}
-            onPress={() =>
-              navigation.navigate("GovernmentPage2", {
-                governmentId: item.id,
-              })
+      {governments.length === 0 ? (
+        renderEmptyState()
+      ) : (
+        <FlatList
+          data={governments}
+          key={numColumns}
+          numColumns={numColumns}
+          keyExtractor={(item, index) =>
+            item?._id ? item._id.toString() : index.toString()
+          }
+          columnWrapperStyle={numColumns > 1 ? {
+            justifyContent: "space-between",
+            paddingHorizontal: isTablet ? 20 : 10,
+            marginBottom: isTablet ? 20 : 12,
+          } : null}
+          contentContainerStyle={[
+            styles.listContainer,
+            { 
+              paddingHorizontal: isTablet ? 20 : 10,
+              paddingTop: isTablet ? 20 : 10,
+              paddingBottom: isTablet ? 30 : 20,
             }
-          >
-            <LinearGradient
-              colors={["#93210A", "#B33A1A"]}
-              style={styles.imageContainer}
-            >
-              {item.image ? (
-                <Image
-                  source={{ uri: item.image }}
-                  style={styles.image}
-                />
-              ) : (
-                <Ionicons name="business" size={48} color="#fff" />
-              )}
-            </LinearGradient>
-
-            <View style={styles.cardContent}>
-              <Text
+          ]}
+          showsVerticalScrollIndicator={false}
+          renderItem={({ item, index }) => {
+            const isLastInRow = (index + 1) % numColumns === 0;
+            const gap = isTablet ? 20 : 12;
+            
+            return (
+              <TouchableOpacity
+                activeOpacity={0.85}
                 style={[
-                  styles.title,
-                  isTablet && styles.titleTablet,
+                  styles.card,
+                  {
+                    width: CARD_WIDTH(),
+                    marginRight: !isLastInRow ? gap : 0,
+                  },
+                  isTablet && styles.cardTablet,
                 ]}
-                numberOfLines={2}
+                onPress={() =>
+                  navigation.navigate("GovernmentPage2", {
+                    governmentId: item.id,
+                  })
+                }
               >
-                {item?.title || "Untitled Government"}
-              </Text>
+                <LinearGradient
+                  colors={["#93210A", "#B33A1A"]}
+                  style={[
+                    styles.imageContainer,
+                    isTablet && styles.imageContainerTablet,
+                  ]}
+                >
+                  {item.image ? (
+                    <Image
+                      source={{ uri: item.image }}
+                      style={styles.image}
+                    />
+                  ) : (
+                    <Ionicons 
+                      name="business" 
+                      size={isTablet ? 64 : 48} 
+                      color="#fff" 
+                    />
+                  )}
+                </LinearGradient>
 
-              <View style={styles.iconRow}>
-                <Ionicons
-                  name="chevron-forward-circle"
-                  size={18}
-                  color="#93210A"
-                />
-                <Text style={styles.moreText}>
-                  View Services
-                </Text>
-              </View>
-            </View>
-          </TouchableOpacity>
-        )}
-      />
+                <View style={[
+                  styles.cardContent,
+                  isTablet && styles.cardContentTablet,
+                ]}>
+                  <Text
+                    style={[
+                      styles.title,
+                      isTablet && styles.titleTablet,
+                    ]}
+                    numberOfLines={2}
+                  >
+                    {item?.title || "Untitled Government"}
+                  </Text>
+
+                  <View style={styles.iconRow}>
+                    <Ionicons
+                      name="chevron-forward-circle"
+                      size={isTablet ? 20 : 18}
+                      color="#93210A"
+                    />
+                    <Text style={[
+                      styles.moreText,
+                      isTablet && styles.moreTextTablet,
+                    ]}>
+                      View Services
+                    </Text>
+                  </View>
+                </View>
+              </TouchableOpacity>
+            );
+          }}
+        />
+      )}
     </LinearGradient>
   );
 };
@@ -200,23 +251,54 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
 
-  /* ================= HEADER ================= */
-  headerBox: {
-    backgroundColor: "#93210A",
-    paddingVertical: 40,
-    marginBottom: 18,
-    elevation: 6,
-    shadowColor: "#93210A",
-    shadowOpacity: 0.3,
-    shadowOffset: { width: 0, height: 4 },
-    flexDirection: "row",
+  /* ================= EMPTY STATE ================= */
+  emptyContainer: {
+    flex: 1,
+    justifyContent: "center",
     alignItems: "center",
-    paddingHorizontal: 12,
+    padding: 40,
+  },
+  emptyText: {
+    marginTop: 16,
+    color: "#93210A",
+    fontSize: 16,
+    fontWeight: "600",
+    textAlign: "center",
+  },
+  emptyTextTablet: {
+    fontSize: 18,
+    marginTop: 20,
   },
 
-  backButton: {
-    marginRight: 10,
-    marginTop: 10,
+  /* ================= HEADER ================= */
+  headerBox: {
+   flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#93210A",
+    paddingTop:40,
+    paddingBottom:30,
+    borderBottomLeftRadius: 20,
+    borderBottomRightRadius: 20,
+  },
+  headerBoxTablet: {
+   paddingTop:45,
+    paddingBottom:28,
+    paddingHorizontal: 18,
+  },
+
+  backButton:{
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: "rgba(255,255,255,0.15)",
+    alignItems: "center",
+    justifyContent: "center",
+    marginLeft:15,
+  },
+  backButtonTablet:{
+    width: 50,
+    height: 50,
+    borderRadius: 25,
   },
 
   headerTextBox: {
@@ -224,45 +306,64 @@ const styles = StyleSheet.create({
   },
 
   headerTitle: {
-    fontSize: 22,
-    fontWeight: "bold",
+     flex: 1,
     textAlign: "center",
     color: "#fff",
-    letterSpacing: 1,
+    fontSize: 21,
+    fontWeight: "800",
+    letterSpacing: 0.3,
+    marginRight:55,
   },
-
   headerTitleTablet: {
     fontSize: 26,
   },
 
   headerSubtitle: {
-    fontSize: 14,
+    fontSize: 13,
     color: "#fce4e4",
     textAlign: "center",
     marginTop: 4,
+  },
+  headerSubtitleTablet: {
+    fontSize: 15,
+    marginTop: 6,
+  },
+
+  /* ================= LIST CONTAINER ================= */
+  listContainer: {
+    flexGrow: 1,
   },
 
   /* ================= CARD ================= */
   card: {
     backgroundColor: "#fff",
-    borderRadius: 18,
-    marginBottom: 16,
+    borderRadius: 16,
+    marginBottom: 12,
     shadowColor: "#000",
-    shadowOpacity: 0.2,
+    shadowOpacity: 0.15,
     shadowOffset: { width: 0, height: 4 },
     shadowRadius: 6,
-    elevation: 6,
+    elevation: 5,
     overflow: "hidden",
+    borderWidth: 1,
+    borderColor: "#f0f0f0",
   },
-
   cardTablet: {
-    borderRadius: 22,
+    borderRadius: 20,
+    marginBottom: 16,
+    shadowOpacity: 0.2,
+    shadowOffset: { width: 0, height: 6 },
+    shadowRadius: 8,
+    elevation: 6,
   },
 
   imageContainer: {
-    height: 140,
+    height: 130,
     justifyContent: "center",
     alignItems: "center",
+  },
+  imageContainerTablet: {
+    height: 160,
   },
 
   image: {
@@ -273,16 +374,21 @@ const styles = StyleSheet.create({
   cardContent: {
     padding: 12,
   },
+  cardContentTablet: {
+    padding: 16,
+  },
 
   title: {
     fontSize: 15,
     fontWeight: "700",
     color: "#93210A",
     marginBottom: 6,
+    lineHeight: 20,
   },
-
   titleTablet: {
-    fontSize: 17,
+    fontSize: 18,
+    marginBottom: 8,
+    lineHeight: 24,
   },
 
   iconRow: {
@@ -292,8 +398,12 @@ const styles = StyleSheet.create({
 
   moreText: {
     color: "#93210A",
-    fontSize: 13,
+    fontSize: 12,
     marginLeft: 4,
     fontWeight: "600",
+  },
+  moreTextTablet: {
+    fontSize: 14,
+    marginLeft: 6,
   },
 });

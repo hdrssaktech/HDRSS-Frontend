@@ -9,20 +9,20 @@ import {
   Platform,
   SafeAreaView,
   StatusBar,
-  ActivityIndicator,
   Linking,
   useWindowDimensions,
 } from "react-native";
 import { useRoute, useNavigation } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
+import Loader from "../../../components/Alert/Loader";
 
 const PartiesPage3 = () => {
   const route = useRoute();
   const navigation = useNavigation();
-  const { partyTitle, partyId } = route.params;
-  
+  // Accept both partyTitle/partyId from PartiesPage1 or item from PartiesPage2
+  const { partyTitle, partyId,partyName, item: passedItem } = route.params || {};
+  console.log(partyName)
   const { width, height } = useWindowDimensions();
-  
   const [list, setList] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -37,12 +37,15 @@ const PartiesPage3 = () => {
     return isTablet ? 140 : 100;
   }, [isTablet]);
 
-  // ✅ Responsive padding
-  const contentPadding = useMemo(() => {
-    return isTablet ? 24 : 16;
-  }, [isTablet]);
-
   useEffect(() => {
+    // If we have a passed item directly, use it
+    if (passedItem) {
+      setList([passedItem]);
+      setLoading(false);
+      return;
+    }
+
+    // Otherwise fetch based on partyId and partyTitle
     const fetchData = async () => {
       try {
         setLoading(true);
@@ -69,8 +72,13 @@ const PartiesPage3 = () => {
       }
     };
 
-    fetchData();
-  }, [partyId, partyTitle]);
+    if (partyId && partyTitle) {
+      fetchData();
+    } else {
+      setError("Missing required parameters");
+      setLoading(false);
+    }
+  }, [partyId, partyTitle, passedItem]);
 
   const handleCall = (phoneNumber) => {
     if (phoneNumber) {
@@ -85,39 +93,37 @@ const PartiesPage3 = () => {
     }
   };
 
-  const renderHeader = () => (
-    <View style={[styles.header, isTablet && styles.headerTablet]}>
-      <TouchableOpacity
-        style={[styles.backButton, isTablet && styles.backButtonTablet]}
-        onPress={() => navigation.goBack()}
-        activeOpacity={0.8}
-      >
-        <Ionicons name="chevron-back" size={isTablet ? 30 : 26} color="#fff" />
-      </TouchableOpacity>
-
-      <View style={styles.headerTitleWrap}>
-        <Text 
-          style={[styles.headerTitle, isTablet && styles.headerTitleTablet]} 
-          numberOfLines={1}
+  const renderHeader = () => {
+    // Get the title from passedItem if available, otherwise from partyTitle
+    const headerTitle = passedItem?.title || partyTitle || "Details";
+    
+    return (
+      <View style={[styles.header, isTablet && styles.headerTablet]}>
+        <TouchableOpacity
+          style={[styles.backButton, isTablet && styles.backButtonTablet]}
+          onPress={() => navigation.goBack()}
+          activeOpacity={0.8}
         >
-          {partyTitle}
-        </Text>
+          <Ionicons name="chevron-back" size={isTablet ? 30 : 26} color="#fff" />
+        </TouchableOpacity>
+
+        <View style={styles.headerTitleWrap}>
+          <Text 
+            style={[styles.headerTitle, isTablet && styles.headerTitleTablet]} 
+            numberOfLines={1}
+          >
+            {headerTitle}
+          </Text>
+        </View>
+        
+        <View style={[styles.headerSpacer, isTablet && styles.headerSpacerTablet]} />
       </View>
-      
-      <View style={[styles.headerSpacer, isTablet && styles.headerSpacerTablet]} />
-    </View>
-  );
+    );
+  };
 
   const renderContent = () => {
     if (loading) {
-      return (
-        <View style={[styles.centerContainer, isTablet && styles.centerContainerTablet]}>
-          <ActivityIndicator size={isTablet ? "large" : "large"} color="#8B0000" />
-          <Text style={[styles.loadingText, isTablet && styles.loadingTextTablet]}>
-            Loading details...
-          </Text>
-        </View>
-      );
+      return <Loader />;
     }
 
     if (error) {
@@ -133,7 +139,10 @@ const PartiesPage3 = () => {
           </Text>
           <TouchableOpacity 
             style={[styles.retryButton, isTablet && styles.retryButtonTablet]}
-            onPress={() => setLoading(true)}
+            onPress={() => {
+              setError(null);
+              setLoading(true);
+            }}
           >
             <Text style={[styles.retryButtonText, isTablet && styles.retryButtonTextTablet]}>
               Retry
@@ -161,7 +170,10 @@ const PartiesPage3 = () => {
     return (
       <ScrollView 
         style={styles.scrollView}
-        contentContainerStyle={[styles.scrollViewContent, isTablet && styles.scrollViewContentTablet]}
+        contentContainerStyle={[
+          styles.scrollViewContent, 
+          isTablet && styles.scrollViewContentTablet
+        ]}
         showsVerticalScrollIndicator={false}
       >
         <View style={[styles.listContainer, isTablet && styles.listContainerTablet]}>
@@ -169,7 +181,7 @@ const PartiesPage3 = () => {
             <TouchableOpacity
               key={index}
               activeOpacity={0.85}
-              onPress={() => navigation.navigate("Partiespage4", { 'item': item })}
+              onPress={() => navigation.navigate("Partiespage4", { item: item })}
               style={[styles.cardWrapper, isTablet && styles.cardWrapperTablet]}
             >
               <View style={[styles.card, isTablet && styles.cardTablet]}>
@@ -186,19 +198,20 @@ const PartiesPage3 = () => {
                 
                 {/* Content Container */}
                 <View style={[styles.contentContainer, isTablet && styles.contentContainerTablet]}>
-                  {/* Name - with proper text wrapping */}
-                  <View style={styles.nameContainer}>
+                  {/* Name and Role Section */}
+                  <View style={styles.textSection}>
                     <Text 
                       style={[styles.name, isTablet && styles.nameTablet]} 
                       numberOfLines={2}
                       ellipsizeMode="tail"
                     >
-                      {item.name || item.title || "Unnamed"}
+                      {item.name || "Unnamed"}
+                    </Text>
+                    
+                    <Text style={[styles.role, isTablet && styles.roleTablet]} numberOfLines={1}>
+                      {item.designation || item.title || "State President"}
                     </Text>
                   </View>
-                  
-                  {/* Spacer to push buttons to bottom */}
-                  <View style={styles.spacer} />
                   
                   {/* Buttons Row */}
                   <View style={[styles.buttonsRow, isTablet && styles.buttonsRowTablet]}>
@@ -207,12 +220,12 @@ const PartiesPage3 = () => {
                         style={[styles.callButton, isTablet && styles.callButtonTablet]}
                         activeOpacity={0.7}
                         onPress={(e) => {
-                          e.stopPropagation(); // Prevent navigation when pressing call
+                          e.stopPropagation();
                           handleCall(item.phoneNumber);
                         }}
                       >
                         <Ionicons name="call" size={isTablet ? 18 : 16} color="#fff" />
-                        <Text style={[styles.callButtonText, isTablet && styles.callButtonTextTablet]}>
+                        <Text style={[styles.buttonText, isTablet && styles.buttonTextTablet]}>
                           Call
                         </Text>
                       </TouchableOpacity>
@@ -223,7 +236,7 @@ const PartiesPage3 = () => {
                         style={[styles.directionsButton, isTablet && styles.directionsButtonTablet]}
                         activeOpacity={0.7}
                         onPress={(e) => {
-                          e.stopPropagation(); // Prevent navigation when pressing directions
+                          e.stopPropagation();
                           handleLocationPress(item.location);
                         }}
                       >
@@ -254,8 +267,6 @@ const PartiesPage3 = () => {
   );
 };
 
-export default PartiesPage3;
-
 const styles = StyleSheet.create({
   safe: { 
     flex: 1, 
@@ -274,11 +285,20 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingTop: Platform.OS === "ios" ? 10 : 40,
     paddingBottom: 12,
+    borderBottomLeftRadius: 20,
+    borderBottomRightRadius: 20,
+    elevation: 4,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
   },
   headerTablet: {
     paddingHorizontal: 32,
     paddingTop: Platform.OS === "ios" ? 15 : 45,
     paddingBottom: 15,
+    borderBottomLeftRadius: 30,
+    borderBottomRightRadius: 30,
   },
   backButton: {
     width: 40,
@@ -302,7 +322,6 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontSize: 18,
     fontWeight: "900",
-    marginRight: 40,
     textAlign: "center",
   },
   headerTitleTablet: {
@@ -325,16 +344,6 @@ const styles = StyleSheet.create({
   },
   centerContainerTablet: {
     padding: 40,
-  },
-  loadingText: {
-    marginTop: 12,
-    color: "#8B0000",
-    fontSize: 16,
-    fontWeight: "700",
-  },
-  loadingTextTablet: {
-    fontSize: 18,
-    marginTop: 16,
   },
   errorText: {
     marginTop: 14,
@@ -399,19 +408,19 @@ const styles = StyleSheet.create({
   // List Container
   listContainer: {
     paddingHorizontal: 16,
-    paddingTop: 20,
+    paddingTop: 16,
   },
   listContainerTablet: {
     paddingHorizontal: 32,
-    paddingTop: 30,
+    paddingTop: 20,
   },
 
   // Card Wrapper
   cardWrapper: {
-    marginBottom: 16,
+    marginBottom: 12,
   },
   cardWrapperTablet: {
-    marginBottom: 20,
+    marginBottom: 16,
   },
 
   // Card
@@ -420,18 +429,18 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     flexDirection: "row",
     padding: 12,
-    elevation: 4,
+    elevation: 3,
     shadowColor: "#000",
-    shadowOffset: { width: 0, height: 3 },
+    shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
-    shadowRadius: 6,
+    shadowRadius: 4,
     borderWidth: 1,
     borderColor: "rgba(139, 0, 0, 0.1)",
   },
   cardTablet: {
     borderRadius: 18,
     padding: 16,
-    elevation: 6,
+    elevation: 5,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.15,
     shadowRadius: 8,
@@ -453,44 +462,48 @@ const styles = StyleSheet.create({
   contentContainer: {
     flex: 1,
     justifyContent: "space-between",
-    paddingVertical: 2,
   },
   contentContainerTablet: {
-    paddingVertical: 4,
+    paddingVertical: 2,
   },
 
-  // Name Container
-  nameContainer: {
-    marginBottom: 6,
+  // Text Section
+  textSection: {
+    marginBottom: 8,
   },
   name: {
-    fontSize: 15,
+    fontSize: 16,
     fontWeight: "800",
     color: "#8B0000",
-    lineHeight: 20,
-     marginTop: 8,
-
+    lineHeight: 22,
+    marginBottom: 4,
   },
   nameTablet: {
-    fontSize: 23,
+    fontSize: 18,
     fontWeight: "900",
-    lineHeight: 22,
-    marginTop: 12,
+    lineHeight: 24,
+    marginBottom: 6,
   },
-
-  // Spacer
-  spacer: {
-    flex: 1,
+  role: {
+    fontSize: 13,
+    color: "#666",
+    fontWeight: "500",
+    lineHeight: 18,
+  },
+  roleTablet: {
+    fontSize: 15,
+    lineHeight: 20,
   },
 
   // Buttons Row
   buttonsRow: {
     flexDirection: "row",
     gap: 8,
-    marginTop: 'auto',
+    marginTop: 4,
   },
   buttonsRowTablet: {
     gap: 12,
+    marginTop: 6,
   },
 
   // Call Button
@@ -498,27 +511,28 @@ const styles = StyleSheet.create({
     flex: 1,
     flexDirection: "row",
     backgroundColor: "#8B0000",
-    paddingVertical: 10,
+    paddingVertical: 8,
     paddingHorizontal: 12,
     borderRadius: 8,
     justifyContent: "center",
     alignItems: "center",
     gap: 6,
-    minHeight: 35,
+    minHeight: 36,
   },
   callButtonTablet: {
-    paddingVertical: 12,
+    paddingVertical: 10,
     paddingHorizontal: 16,
     minHeight: 44,
     borderRadius: 10,
+    gap: 8,
   },
-  callButtonText: {
+  buttonText: {
     color: "#fff",
-    fontSize: 12,
-    fontWeight: "800",
+    fontSize: 13,
+    fontWeight: "700",
   },
-  callButtonTextTablet: {
-    fontSize: 16,
+  buttonTextTablet: {
+    fontSize: 15,
   },
 
   // Directions Button
@@ -528,26 +542,29 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(139, 0, 0, 0.05)",
     borderWidth: 1,
     borderColor: "#8B0000",
-    paddingVertical: 10,
+    paddingVertical: 8,
     paddingHorizontal: 12,
     borderRadius: 8,
     justifyContent: "center",
     alignItems: "center",
     gap: 6,
-    minHeight: 35,
+    minHeight: 36,
   },
   directionsButtonTablet: {
-    paddingVertical: 12,
+    paddingVertical: 10,
     paddingHorizontal: 16,
     minHeight: 44,
     borderRadius: 10,
+    gap: 8,
   },
   directionsButtonText: {
     color: "#8B0000",
-    fontSize: 12,
-    fontWeight: "800",
+    fontSize: 13,
+    fontWeight: "700",
   },
   directionsButtonTextTablet: {
-    fontSize: 16,
+    fontSize: 15,
   },
 });
+
+export default PartiesPage3;

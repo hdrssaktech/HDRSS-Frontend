@@ -13,6 +13,7 @@ import {
 } from "react-native";
 import Icon from "react-native-vector-icons/Ionicons";
 import axios from "axios";
+import Loader from "../../../components/Alert/Loader";
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get("window");
 const isTablet = screenWidth >= 600;
@@ -243,12 +244,7 @@ export default function DistrictBusinessPage2({ route, navigation }) {
 
   if (loading) {
     return (
-      <View style={styles.center}>
-        <ActivityIndicator size="large" color="#E37714" />
-        <Text style={[styles.loadingText, isTablet && styles.loadingTextTablet]}>
-          Loading Categories...
-        </Text>
-      </View>
+      <Loader/>
     );
   }
 

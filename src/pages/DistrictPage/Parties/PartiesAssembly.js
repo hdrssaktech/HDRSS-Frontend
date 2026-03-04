@@ -340,7 +340,7 @@ export default function Parties() {
           </Text>
         </View>
       </ScrollView>
-    </SafeAreaView>
+    </SafeAreaView> 
   );
 }
 

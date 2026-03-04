@@ -521,24 +521,28 @@ const styles = StyleSheet.create({
 
   // Header
   header: {
-    backgroundColor: "#8B0000",
-    flexDirection: "row",
+  flexDirection: "row",
     alignItems: "center",
-    paddingHorizontal: 14,
-    paddingTop: Platform.OS === "ios" ? 10 : 40,
-    paddingBottom: 12,
+    backgroundColor: "#93210A",
+    paddingTop:40,
+    paddingBottom:30,
+    borderBottomLeftRadius: 20,
+    borderBottomRightRadius: 20,
   },
   headerTablet: {
-  paddingHorizontal: 24,
-  paddingaddingVertical: 26,
+    paddingTop:45,
+    paddingBottom:28,
+    paddingHorizontal: 18,
   },
   headerBtn: {
-    width: 40,
+   width: 40,
     height: 40,
     borderRadius: 20,
     backgroundColor: "rgba(255,255,255,0.15)",
     alignItems: "center",
     justifyContent: "center",
+    marginLeft:15,
+    
   },
   headerBtnTablet: {
     width: 50,
@@ -546,8 +550,20 @@ const styles = StyleSheet.create({
     borderRadius: 25,
   },
   headerTitleWrap: { flex: 1, alignItems: "center", paddingHorizontal: 10 },
-  headerTitle: { color: "#fff", fontSize: 17, fontWeight: "900", marginRight: 50 },
-  headerTitleTablet: { fontSize: 24, fontWeight: "900" },
+  
+  headerTitle: {   
+    
+    flex: 1,
+    textAlign: "center",
+    color: "#fff",
+    fontSize: 18,
+    fontWeight: "800",
+    letterSpacing: 0.3,
+    marginRight:20,
+    paddingTop:10,
+   },
+  
+    headerTitleTablet: { fontSize: 22 },
 
   scroll: { paddingBottom: 10 },
   scrollTablet: { paddingBottom: 20 },

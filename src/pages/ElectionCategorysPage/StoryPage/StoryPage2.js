@@ -60,9 +60,12 @@ const truncateText = (text, maxLength) => {
 
       {/* 🔹 Header */}
       <View style={[styles.header, isTablet && styles.headerTablet]}>
-        <TouchableOpacity onPress={() => navigation.goBack()}>
-          <Ionicons name="chevron-back" size={isTablet ? 32 : 26} style={{margin:10}} color="#fff"  />
-        </TouchableOpacity>
+        <TouchableOpacity
+        style={[styles.backButton, isTablet && styles.backButtonTablet]}
+        onPress={() => navigation.goBack()}
+      >
+        <Ionicons name="chevron-back" size={isTablet ? 30 : 26} color="#fff" />
+      </TouchableOpacity>
         <Text
           style={[styles.headerTitle, isTablet && styles.headerTitleTablet]}
           numberOfLines={1}
@@ -167,28 +170,46 @@ const styles = StyleSheet.create({
 
  
   header:{
-    alignItemsheader:"center" ,
     flexDirection: "row",
-    padding: 15,
-    marginTop: 32,
+    alignItems: "center",
     backgroundColor: "#93210A",
+    paddingTop:40,
+    paddingBottom:30,
+    borderBottomLeftRadius: 20,
+    borderBottomRightRadius: 20,
   },
   headerTablet: {
-    paddingVertical: 35,
-    paddingHorizontal: 24,
-    marginTop: -3,
+    paddingTop:45,
+    paddingBottom:28,
+    paddingHorizontal: 18,
   },
   headerTitle: {
+     flex: 1,
+    textAlign: "center",
     color: "#fff",
-    fontWeight: "700",
     fontSize: 20,
-    marginLeft: 37,
-    padding:5,
+    fontWeight: "800",
+    letterSpacing: 0.3,
+    
   },
   headerTitleTablet: {
-    fontSize: 28,
-    padding: 8,
-    left: 125,
+    fontSize: 22,
+   
+  },
+
+  backButton:{
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: "rgba(255,255,255,0.15)",
+    alignItems: "center",
+    justifyContent: "center",
+    marginLeft:15,
+  },
+  backButtonTablet:{
+    width: 50,
+    height: 50,
+    borderRadius: 25,
   },
 
   /* 🔹 Main Image */
