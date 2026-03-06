@@ -71,10 +71,10 @@ export default function AboutPage1({ navigation }) {
 
           {/* Title */}
           <Text style={[styles.tamilText, isTablet && styles.tamilTextTablet]}>
-            இந்த தர்ம ரக்ஷ சேனா
+            வீர இந்து தர்ம ரக்ஷ சேனா
           </Text>
           <Text style={[styles.englishText, isTablet && styles.englishTextTablet]}>
-            HINDU DHARMA RAKSHA SENA
+            VEERA HINDU DHARMA RAKSHA SENA
           </Text>
 
           {/* About Section */}

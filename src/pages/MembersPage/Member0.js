@@ -4,117 +4,252 @@ import {
   Text,
   TouchableOpacity,
   StyleSheet,
-  Dimensions,
+  useWindowDimensions,
+  Platform,
+  SafeAreaView,
+  StatusBar,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation, useRoute } from "@react-navigation/native";
 
-const { width } = Dimensions.get("window");
-const isTablet = width >= 600; // ✅ Tablet detection
+// ✅ Custom hook for responsive design
+const useResponsive = () => {
+  const { width, height } = useWindowDimensions();
+  const isTablet = width >= 600;
+  const isLargeTablet = width >= 1024;
+  const isLandscape = width > height;
+
+  // Responsive sizes
+  const sizes = {
+    // Header
+    headerHeight: isTablet ? (isLargeTablet ? 140 : 120) : 100,
+    headerTitleSize: isTablet ? (isLargeTablet ? 32 : 28) :18,
+    headerIconSize: isTablet ? 32 : 20,
+    headerTopPadding: isTablet ? (Platform.OS === 'ios' ? 60 : 50) : (Platform.OS === 'ios' ? 50 : 40),
+    
+    // Buttons
+    buttonPadding: isTablet ? (isLargeTablet ? 28 : 24) : 16,
+    buttonFontSize: isTablet ? (isLargeTablet ? 22 : 20) : 16,
+    buttonIconSize: isTablet ? 32 : 26,
+    buttonRadius: isTablet ? 20 : 14,
+    
+    // Join button
+    joinButtonWidth: isTablet ? (isLargeTablet ? "50%" : "60%") : "85%",
+    joinButtonPadding: isTablet ? (isLargeTablet ? 28 : 24) : 18,
+    joinButtonFontSize: isTablet ? (isLargeTablet ? 24 : 22) : 18,
+    joinButtonIconSize: isTablet ? 36 : 28,
+    
+    // Spacing
+    marginTop: isTablet ? (isLargeTablet ? 80 : 60) : 40,
+    buttonMargin: isTablet ? 12 : 8,
+    containerPadding: isTablet ? (isLargeTablet ? 24 : 20) : 16,
+  };
+
+  return {
+    isTablet,
+    isLargeTablet,
+    isLandscape,
+    sizes,
+    width,
+    height,
+  };
+};
 
 export default function Member0() {
   const navigation = useNavigation();
   const route = useRoute();
+  const responsive = useResponsive();
   // const { districtId, districtName } = route.params || {};
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.safeArea}>
+      <StatusBar backgroundColor="#93210A" barStyle="light-content" />
+      
       {/* 🔹 Header */}
-      <View style={styles.header}>
+      <View style={[
+        styles.header,
+        {
+          paddingTop: responsive.sizes.headerTopPadding,
+          paddingBottom: responsive.isTablet ? 25 : 22,
+        }
+      ]}>
         {/* 🔙 Back Arrow */}
         <TouchableOpacity
           onPress={() => navigation.goBack()}
-          style={styles.backButton}
+          style={[
+            styles.backButton,
+            { top: responsive.isTablet ? 50 : 40 }
+          ]}
         >
-          <Ionicons name="chevron-back" size={28} color="#fff" />
+          <Ionicons 
+            name="chevron-back" 
+            size={responsive.sizes.headerIconSize} 
+            color="#fff" 
+          />
         </TouchableOpacity>
 
-        <Text style={styles.headerTitle}>Leadership Directory</Text>
+        <Text style={[
+          styles.headerTitle,
+          { fontSize: responsive.sizes.headerTitleSize }
+        ]}>
+          Leadership Directory
+        </Text>
       </View>
 
-      {/* 🔹 Buttons */}
-      <View style={styles.buttonRow}>
-        {/* State Level */}
-        <TouchableOpacity
-          style={[styles.mainButton, { backgroundColor: "#93210A" }]}
-          onPress={() =>
-            navigation.navigate("Member", {
-              categoryType: "State",
-            })
+      {/* 🔹 Main Content */}
+      <View style={[
+        styles.content,
+        { paddingHorizontal: responsive.sizes.containerPadding }
+      ]}>
+        {/* 🔹 Buttons Row */}
+        <View style={[
+          styles.buttonRow,
+          { 
+            marginTop: responsive.sizes.marginTop,
+            gap: responsive.sizes.buttonMargin,
           }
-        >
-          <Ionicons name="people-circle-outline" size={26} color="#fff" />
-          <Text style={styles.mainButtonText}>State Level</Text>
-        </TouchableOpacity>
+        ]}>
+          {/* State Level */}
+          <TouchableOpacity
+            style={[
+              styles.mainButton,
+              { 
+                backgroundColor: "#93210A",
+                paddingVertical: responsive.sizes.buttonPadding,
+                borderRadius: responsive.sizes.buttonRadius,
+              }
+            ]}
+            onPress={() =>
+              navigation.navigate("Member", {
+                categoryType: "State",
+              })
+            }
+          >
+            <Ionicons 
+              name="people-circle-outline" 
+              size={responsive.sizes.buttonIconSize} 
+              color="#fff" 
+            />
+            <Text style={[
+              styles.mainButtonText,
+              { fontSize: responsive.sizes.buttonFontSize }
+            ]}>
+              State Level
+            </Text>
+          </TouchableOpacity>
 
-        {/* District Level */}
-        <TouchableOpacity
-          style={[styles.mainButton, { backgroundColor: "#E0A800" }]}
-          onPress={() =>
-            navigation.navigate("Member", {
-              categoryType: "Districts",
-              // districtId,
-              // districtName,
-            })
-          }
-        >
-          <Ionicons name="location-outline" size={26} color="#fff" />
-          <Text style={styles.mainButtonText}>District Level</Text>
-        </TouchableOpacity>
-      </View>
+          {/* District Level */}
+          <TouchableOpacity
+            style={[
+              styles.mainButton,
+              { 
+                backgroundColor: "#E0A800",
+                paddingVertical: responsive.sizes.buttonPadding,
+                borderRadius: responsive.sizes.buttonRadius,
+              }
+            ]}
+            onPress={() =>
+              navigation.navigate("Member", {
+                categoryType: "Districts",
+                // districtId,
+                // districtName,
+              })
+            }
+          >
+            <Ionicons 
+              name="location-outline" 
+              size={responsive.sizes.buttonIconSize} 
+              color="#fff" 
+            />
+            <Text style={[
+              styles.mainButtonText,
+              { fontSize: responsive.sizes.buttonFontSize }
+            ]}>
+              District Level
+            </Text>
+          </TouchableOpacity>
+        </View>
 
-      {/* 🔹 Join Button */}
-      <View style={styles.joinContainer}>
-        <TouchableOpacity
-          style={styles.joinButton}
-          onPress={() => navigation.navigate("Member1")}
-        >
-          <Ionicons name="person-add-outline" size={28} color="#fff" />
-          <Text style={styles.joinButtonText}>Join With Us</Text>
-        </TouchableOpacity>
+        {/* 🔹 Join Button */}
+        <View style={[
+          styles.joinContainer,
+          { marginTop: responsive.sizes.marginTop }
+        ]}>
+          <TouchableOpacity
+            style={[
+              styles.joinButton,
+              {
+                width: responsive.sizes.joinButtonWidth,
+                paddingVertical: responsive.sizes.joinButtonPadding,
+                borderRadius: responsive.isTablet ? 24 : 16,
+              }
+            ]}
+            onPress={() => navigation.navigate("Member1")}
+          >
+            <Ionicons 
+              name="person-add-outline" 
+              size={responsive.sizes.joinButtonIconSize} 
+              color="#fff" 
+            />
+            <Text style={[
+              styles.joinButtonText,
+              { fontSize: responsive.sizes.joinButtonFontSize }
+            ]}>
+              Join With Us
+            </Text>
+          </TouchableOpacity>
+        </View>
       </View>
-    </View>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
+  safeArea: {
     flex: 1,
     backgroundColor: "#fff",
-    paddingHorizontal: isTablet ? -5 : -2, // ✅ Tablet padding
   },
 
   header: {
     backgroundColor: "#93210A",
-    paddingVertical: isTablet ? 35 : 40,
-    marginTop: isTablet ? -3 : -10,
     alignItems: "center",
-    borderRadius: 0,
+    justifyContent: "center",
+    borderBottomLeftRadius: 20,
+    borderBottomRightRadius: 20,
     shadowColor: "#000",
-    shadowOpacity: 0.3,
-    shadowRadius: 6,
-    elevation: 4,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 5,
+    elevation: 5,
     position: "relative",
+    width: "100%",
   },
 
   backButton: {
     position: "absolute",
-    left: 20,
-    top: isTablet ? 40: 50,
-    padding: 6,
+    left: 16,
+    padding: 8,
+    zIndex: 10,
+    backgroundColor: "rgba(255,255,255,0.15)",
+    borderRadius: 25,
   },
 
   headerTitle: {
     color: "#fff",
-    fontSize: isTablet ? 26 : 20,
     fontWeight: "bold",
-    bottom: isTablet ? -5 : -15,
+    textAlign: "center",
+    maxWidth: "80%",
+  },
+
+  content: {
+    flex: 1,
+    backgroundColor: "#fff",
   },
 
   buttonRow: {
     flexDirection: "row",
-    justifyContent: "space-between",
-    marginTop: isTablet ? 50 : 30,
+    justifyContent: "center",
+    alignItems: "center",
   },
 
   mainButton: {
@@ -122,25 +257,24 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    paddingVertical: isTablet ? 22 : 14,
-    borderRadius: 14,
-    marginHorizontal: 8,
     elevation: 3,
     shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.2,
     shadowRadius: 4,
+    minHeight: 50, // Ensure minimum touch target
   },
 
   mainButtonText: {
     color: "#fff",
     fontWeight: "600",
-    fontSize: isTablet ? 18 : 15,
     marginLeft: 8,
+    includeFontPadding: false, // Better text alignment
   },
 
   joinContainer: {
-    marginTop: isTablet ? 70 : 40,
     alignItems: "center",
+    justifyContent: "center",
   },
 
   joinButton: {
@@ -148,19 +282,48 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     backgroundColor: "#0A8754",
-    width: isTablet ? "60%" : "80%",
-    paddingVertical: isTablet ? 22 : 16,
-    borderRadius: 16,
     elevation: 5,
     shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.25,
     shadowRadius: 5,
+    minHeight: 56, // Minimum touch target
   },
 
   joinButtonText: {
     color: "#fff",
     fontWeight: "700",
-    fontSize: isTablet ? 20 : 16,
     marginLeft: 10,
+    includeFontPadding: false, // Better text alignment
   },
 });
+
+// Optional: You can add this for even more granular control
+const additionalStyles = {
+  // Add these to your existing styles if needed
+  
+  // Tablet specific adjustments
+  tabletHeader: {
+    borderBottomLeftRadius: 30,
+    borderBottomRightRadius: 30,
+  },
+  
+  // Landscape specific adjustments
+  landscapeButtonRow: {
+    maxWidth: '80%',
+    alignSelf: 'center',
+  },
+  
+  // Hover effects (web only)
+  webHover: Platform.select({
+    web: {
+      transition: 'all 0.2s ease',
+      cursor: 'pointer',
+      ':hover': {
+        transform: 'scale(1.02)',
+        opacity: 0.95,
+      },
+    },
+    default: {},
+  }),
+};

@@ -980,6 +980,8 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     paddingBottom: 15,
+    borderBottomLeftRadius: 12,
+    borderBottomRightRadius: 12,
   },
 
   backButton: {
@@ -1192,7 +1194,7 @@ const styles = StyleSheet.create({
   /* ================= DETAILS BUTTON ================= */
   detailsButton: {
     backgroundColor: 'transparent',
-    borderWidth: 1.5,
+    borderWidth: 1,
     borderColor: '#93210A',
     flexDirection: 'row',
     alignItems: 'center',
@@ -1203,7 +1205,6 @@ const styles = StyleSheet.create({
     color: '#93210A',
     fontWeight: '600',
   },
-
   /* ================= NO DATA STYLES ================= */
   noDataContainer: {
     alignItems: "center",
@@ -1212,7 +1213,6 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#e0e0e0',
   },
-
   noDataText: {
     fontWeight: "600",
     color: "#4B5563",

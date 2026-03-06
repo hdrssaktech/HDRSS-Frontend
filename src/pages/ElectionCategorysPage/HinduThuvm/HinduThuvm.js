@@ -20,6 +20,7 @@ export default function DetailsScreen({ navigation }) {
   const buttons = [
     { label: "இந்து அமைப்புகள்", route: "HinduSamayam1" },
     { label: "இந்து நூல்கள்", route: "HinduNoolgal1" },
+    { label: "இந்து தலைவர்கள்", route: "HinduLeaders1" },
   ];
 
   // Detect screen size and orientation

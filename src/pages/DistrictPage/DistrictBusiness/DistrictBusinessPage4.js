@@ -195,6 +195,8 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
+    borderBottomLeftRadius: 12,
+    borderBottomRightRadius: 12,
   },
   headerTitle: { color: "#fff", fontSize: 18, fontWeight: "700" },
 

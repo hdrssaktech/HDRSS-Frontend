@@ -395,6 +395,9 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.3,
     shadowRadius: 6,
     zIndex: 1000, // Ensure header stays on top
+    borderBottomLeftRadius: 12,
+    borderBottomRightRadius: 12,
+    paddingBottom: 12,
   },
   // Header - Tablet
   appBarTablet: {

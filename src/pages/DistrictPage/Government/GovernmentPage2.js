@@ -449,7 +449,7 @@ const styles = StyleSheet.create({
   /* ================= ACTIONS ROW ================= */
   actionsRow: {
     flexDirection: "row",
-    justifyContent: "space-between",
+    gap: 12,
     alignItems: "center",
   },
 

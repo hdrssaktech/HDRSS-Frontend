@@ -173,7 +173,7 @@ export default function StoryPage1() {
           <View style={styles.grid}>
             {filteredStories.map((story, index) => {
               const isLastInRow = (index + 1) % numColumns === 0;
-              const gap = isTablet ? 20 : 16;
+              const gap = isTablet ? 11 : 16;
               
               return (
                 <TouchableOpacity

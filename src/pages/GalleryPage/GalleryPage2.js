@@ -10,12 +10,14 @@ import {
   Dimensions,
   StatusBar,
   Platform,
+  Modal,
+  FlatList,
 } from "react-native";
-import Icon from "react-native-vector-icons/MaterialIcons";
 import { Ionicons } from "@expo/vector-icons";
 import YoutubePlayer from "react-native-youtube-iframe";
 import { Video } from "expo-av";
 import { useRoute, useNavigation } from "@react-navigation/native";
+import { LinearGradient } from 'expo-linear-gradient';
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get("window");
 const isTablet = screenWidth >= 600;
@@ -25,13 +27,33 @@ export default function GalleryInformation() {
   const navigation = useNavigation();
   const route = useRoute();
   const { title, mainImage, description, images = [], videoLink } = route.params || {};
+  
   const [currentIndex, setCurrentIndex] = useState(0);
- const [isExpanded, setIsExpanded] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(false);
+  const [modalVisible, setModalVisible] = useState(false);
+  const [selectedImageIndex, setSelectedImageIndex] = useState(0);
 
   const handleNext = () =>
     setCurrentIndex((prevIndex) => (prevIndex === images.length - 1 ? 0 : prevIndex + 1));
   const handlePrev = () =>
     setCurrentIndex((prevIndex) => (prevIndex === 0 ? images.length - 1 : prevIndex - 1));
+
+  const openLightbox = (index) => {
+    setSelectedImageIndex(index);
+    setModalVisible(true);
+  };
+
+  const handleModalNext = () => {
+    if (selectedImageIndex < images.length - 1) {
+      setSelectedImageIndex(selectedImageIndex + 1);
+    }
+  };
+
+  const handleModalPrev = () => {
+    if (selectedImageIndex > 0) {
+      setSelectedImageIndex(selectedImageIndex - 1);
+    }
+  };
 
   // Extract YouTube ID
   const extractYouTubeId = (url) => {
@@ -41,285 +63,597 @@ export default function GalleryInformation() {
 
   const videoId = extractYouTubeId(videoLink);
 
+  const renderGalleryItem = ({ item, index }) => (
+    <TouchableOpacity
+      activeOpacity={0.9}
+      onPress={() => openLightbox(index)}
+      style={styles.galleryItemWrapper}
+    >
+      <Image source={{ uri: item?.url }} style={styles.galleryThumb} />
+      <LinearGradient
+        colors={['transparent', 'rgba(0,0,0,0.3)']}
+        style={styles.galleryOverlay}
+      />
+      <View style={styles.galleryIcon}>
+        <Ionicons name="expand-outline" size={18} color="#fff" />
+      </View>
+    </TouchableOpacity>
+  );
+
   return (
     <SafeAreaView style={styles.container}>
-      <StatusBar barStyle="light-content" backgroundColor="#93210A" />
+      <StatusBar barStyle="light-content" backgroundColor="#8B0000" />
       
-      {/* Header - Separate Mobile and Tablet Styles */}
-      <View style={[styles.header, isTablet && styles.headerTablet]}>
+      {/* Header - Clean Redesign */}
+      <LinearGradient
+        colors={['#8B0000', '#A52A2A']}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 0 }}
+        style={[styles.header, isTablet && styles.headerTablet]}
+      >
         <TouchableOpacity 
           onPress={() => navigation.goBack()} 
           style={[styles.backButton, isTablet && styles.backButtonTablet]}
+          activeOpacity={0.7}
         >
-          <Ionicons 
-            name="chevron-back" 
-            size={isTablet ? (isLargeTablet ? 36 : 34) : 30} 
-            color="white" 
-          />
+         <Ionicons name="chevron-back" size={isTablet ? 30 : 26} color="#fff" />
         </TouchableOpacity>
-        <Text style={[styles.title, isTablet && styles.titleTablet]}>
+        
+        <Text style={[styles.headerTitle, isTablet && styles.headerTitleTablet]} numberOfLines={1}>
           Gallery
         </Text>
-        <View style={{ width: isTablet ? 40 : 30 }} />
-      </View>
+        
+        <View style={{ width: isTablet ? 50 : 40 }} />
+      </LinearGradient>
 
-      <ScrollView showsVerticalScrollIndicator={false}>
-        {/* Content Section */}
-        <View style={[styles.section, isTablet && styles.sectionTablet]}>
-          <Text style={[styles.mainTitle, isTablet && styles.mainTitleTablet]}>
-            {title}
-          </Text>
-          
+      <ScrollView 
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={styles.scrollContent}
+      >
+        {/* Hero Section */}
+        <View style={styles.heroSection}>
           <Image 
             source={mainImage} 
-            style={[styles.mainImage, isTablet && styles.mainImageTablet]} 
+            style={styles.heroImage} 
             resizeMode="cover"
           />
-          
-
-         <Text
-          style={[styles.info, isTablet && styles.infoTablet]}
-          numberOfLines={isExpanded ? undefined : 4}
-        >
-          {description}
-        </Text>
-          {/* read more method */}
-          {description?.length > 120 && (
-            <TouchableOpacity onPress={() => setIsExpanded(!isExpanded)}>
-              <Text style={[styles.readMoreText,isTablet && styles.readMoreTextTablet]}>
-                {isExpanded ? "Read Less" : "Read More"}
-              </Text>
-            </TouchableOpacity>
-          )}
-
-
+          <LinearGradient
+            colors={['transparent', 'rgba(0,0,0,0.7)']}
+            style={styles.heroGradient}
+          />
+          <View style={styles.heroTitleContainer}>
+            <Text style={[styles.heroTitle, isTablet && styles.heroTitleTablet]}>
+              {title}
+            </Text>
+            <View style={styles.titleUnderline} />
+          </View>
         </View>
 
-        {/* Image Slider */}
-        {images.length > 0 && (
-          <View style={[styles.imageRow, isTablet && styles.imageRowTablet]}>
-            <TouchableOpacity onPress={handlePrev}>
-              <Icon 
-                name="chevron-left" 
-                size={isTablet ? (isLargeTablet ? 50 : 55) : 40} 
-                color="#93210A" 
-              />
-            </TouchableOpacity>
+        {/* Content Card */}
+        <View style={[styles.contentCard, isTablet && styles.contentCardTablet]}>
+          
+          {/* Description Section */}
+          <View style={styles.section}>
+            <View style={styles.sectionHeader}>
+              <Ionicons name="information-circle" size={22} color="#8B0000" />
+              <Text style={[styles.sectionTitle, isTablet && styles.sectionTitleTablet]}>
+                About
+              </Text>
+            </View>
             
-            <Image
-              source={{ uri: images[currentIndex]?.url }}
-              style={[styles.sliderImage, isTablet && styles.sliderImageTablet]}
-              resizeMode="cover"
-            />
+            <Text
+              style={[styles.description, isTablet && styles.descriptionTablet]}
+              numberOfLines={isExpanded ? undefined : 4}
+            >
+              {description || "No description available"}
+            </Text>
             
-            <TouchableOpacity onPress={handleNext}>
-              <Icon 
-                name="chevron-right" 
-                size={isTablet ? (isLargeTablet ? 50 : 45) : 40} 
-                color="#93210A" 
-              />
-            </TouchableOpacity>
-          </View>
-        )}
-
-        {/* Video Section */}
-        {videoLink && (
-          <View style={[styles.videoContainer, isTablet && styles.videoContainerTablet]}>
-            {videoId ? (
-              <YoutubePlayer 
-                height={isTablet ? (isLargeTablet ? 370 : 400) : 220} 
-                width={isTablet ? (isLargeTablet ? 800 : 700) : 350} 
-                play={false} 
-                videoId={videoId} 
-              />
-            ) : (
-              <Video
-                source={{ uri: videoLink }}
-                rate={1.0}
-                volume={1.0}
-                isMuted={false}
-                resizeMode="cover"
-                shouldPlay={false}
-                useNativeControls
-                style={[styles.videoPlayer, isTablet && styles.videoPlayerTablet]}
-              />
+            {description?.length > 150 && (
+              <TouchableOpacity 
+                onPress={() => setIsExpanded(!isExpanded)} 
+                style={styles.readMoreBtn}
+                activeOpacity={0.7}
+              >
+                <Text style={styles.readMoreText}>
+                  {isExpanded ? "Show less" : "Read more"}
+                </Text>
+                <Ionicons 
+                  name={isExpanded ? "chevron-up" : "chevron-down"} 
+                  size={14} 
+                  color="#8B0000" 
+                />
+              </TouchableOpacity>
             )}
           </View>
-        )}
+
+          {/* Gallery Section */}
+          {images.length > 0 && (
+            <View style={styles.section}>
+              <View style={styles.sectionHeader}>
+                <Ionicons name="images" size={22} color="#8B0000" />
+                <Text style={[styles.sectionTitle, isTablet && styles.sectionTitleTablet]}>
+                  Gallery ({images.length})
+                </Text>
+              </View>
+              
+              {/* Main Gallery Image */}
+              <View style={styles.mainGalleryContainer}>
+                <TouchableOpacity
+                  activeOpacity={0.9}
+                  onPress={() => openLightbox(currentIndex)}
+                  style={styles.mainImageWrapper}
+                >
+                  <Image
+                    source={{ uri: images[currentIndex]?.url }}
+                    style={styles.mainGalleryImage}
+                    resizeMode="cover"
+                  />
+                  <LinearGradient
+                    colors={['transparent', 'rgba(0,0,0,0.4)']}
+                    style={styles.mainImageGradient}
+                  />
+                  
+                  {/* Navigation Arrows */}
+                  {images.length > 1 && (
+                    <>
+                      <TouchableOpacity 
+                        onPress={handlePrev}
+                        style={[styles.navArrow, styles.navArrowLeft]}
+                        activeOpacity={0.7}
+                      >
+                        <Ionicons name="chevron-back" size={24} color="#fff" />
+                      </TouchableOpacity>
+                      <TouchableOpacity 
+                        onPress={handleNext}
+                        style={[styles.navArrow, styles.navArrowRight]}
+                        activeOpacity={0.7}
+                      >
+                        <Ionicons name="chevron-forward" size={24} color="#fff" />
+                      </TouchableOpacity>
+                    </>
+                  )}
+                  
+                  {/*Image Counter*/}
+                  <View style={styles.imageCounter}>
+                    <Text style={styles.counterText}>
+                      {currentIndex + 1} / {images.length}
+                    </Text>
+                  </View>
+                </TouchableOpacity>
+              </View>
+            </View>
+          )}
+
+          {/* Video Section */}
+          {videoLink && (
+            <View style={styles.section}>
+              <View style={styles.sectionHeader}>
+                <Ionicons name="videocam" size={22} color="#8B0000" />
+                <Text style={[styles.sectionTitle, isTablet && styles.sectionTitleTablet]}>
+                  Video
+                </Text>
+              </View>
+              
+              <View style={styles.videoWrapper}>
+                {videoId ? (
+                  <YoutubePlayer 
+                    height={isTablet ? 400 : 180} 
+                    width="100%" 
+                    play={false} 
+                    videoId={videoId} 
+                  />
+                ) : (
+                  <Video
+                    source={{ uri: videoLink }}
+                    rate={1.0}
+                    volume={1.0}
+                    isMuted={false}
+                    resizeMode="cover"
+                    shouldPlay={false}
+                    useNativeControls
+                    style={styles.videoPlayer}
+                  />
+                )}
+              </View>
+            </View>
+          )}
+        </View>
       </ScrollView>
+
+      {/* Lightbox Modal */}
+      <Modal
+        visible={modalVisible}
+        transparent={true}
+        onRequestClose={() => setModalVisible(false)}
+        animationType="fade"
+      >
+        <View style={styles.modalOverlay}>
+          <TouchableOpacity
+            style={styles.modalCloseBtn}
+            onPress={() => setModalVisible(false)}
+            activeOpacity={0.7}
+          >
+            <Ionicons name="close" size={28} color="#fff" />
+          </TouchableOpacity>
+
+          <FlatList
+            data={images}
+            horizontal
+            pagingEnabled
+            showsHorizontalScrollIndicator={false}
+            initialScrollIndex={selectedImageIndex}
+            onScroll={(event) => {
+              const index = Math.round(event.nativeEvent.contentOffset.x / screenWidth);
+              setSelectedImageIndex(index);
+            }}
+            getItemLayout={(data, index) => ({
+              length: screenWidth,
+              offset: screenWidth * index,
+              index,
+            })}
+            renderItem={({ item }) => (
+              <View style={styles.modalImageContainer}>
+                <Image
+                  source={{ uri: item?.url }}
+                  style={styles.modalImage}
+                  resizeMode="contain"
+                />
+              </View>
+            )}
+            keyExtractor={(item, index) => index.toString()}
+          />
+
+          {images.length > 1 && (
+            <>
+              <TouchableOpacity 
+                style={[styles.modalNavBtn, styles.modalNavLeft]}
+                onPress={handleModalPrev}
+                activeOpacity={0.7}
+              >
+                <Ionicons name="chevron-back" size={30} color="#fff" />
+              </TouchableOpacity>
+              <TouchableOpacity 
+                style={[styles.modalNavBtn, styles.modalNavRight]}
+                onPress={handleModalNext}
+                activeOpacity={0.7}
+              >
+                <Ionicons name="chevron-forward" size={30} color="#fff" />
+              </TouchableOpacity>
+            </>
+          )}
+
+          <View style={styles.modalCounter}>
+            <Text style={styles.modalCounterText}>
+              {selectedImageIndex + 1} / {images.length}
+            </Text>
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  // Container
   container: {
     flex: 1,
-    backgroundColor: "#fff",
+    backgroundColor: "#f8f9fa",
   },
 
-  // Header - Mobile
+  // Header
   header: {
-   flexDirection: "row",
+    flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#93210A",
-    paddingTop:40,
-    paddingBottom:30,
-    borderBottomLeftRadius: 20,
-    borderBottomRightRadius: 20,
+    justifyContent: "space-between",
+    paddingTop: Platform.OS === 'android' ? 40 : 50,
+    paddingBottom: 20,
+    paddingHorizontal: 20,
+    borderBottomLeftRadius: 25,
+    borderBottomRightRadius: 25,
+    elevation: 5,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
   },
-  // Header - Tablet
-   headerTablet: {
-   paddingTop:45,
-    paddingBottom:28,
-    paddingHorizontal: 18
+  headerTablet: {
+    paddingTop: 50,
+    paddingBottom: 25,
+    paddingHorizontal: 30,
+    borderBottomLeftRadius: 30,
+    borderBottomRightRadius: 30,
   },
-
-  // Back Button - Mobile
-  backButton:{
+  backButton: {
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: "rgba(255,255,255,0.15)",
+    backgroundColor: "rgba(255,255,255,0.2)",
     alignItems: "center",
     justifyContent: "center",
-    marginLeft:15,
   },
-  backButtonTablet:{
-    width: 50,
-    height: 50,
-    borderRadius: 25,
+  backButtonTablet: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
   },
-
-  // Title - Mobile
-  title: {
-     flex: 1,
-    textAlign: "center",
+  headerTitle: {
     color: "#fff",
     fontSize: 20,
-    fontWeight: "800",
-    letterSpacing: 0.3,
-    marginRight:30,
+    fontWeight: "700",
+    letterSpacing: 0.5,
   },
-  // Title - Tablet
-  titleTablet: {
-    fontSize: isLargeTablet ? 28 : 24,
+  headerTitleTablet: {
+    fontSize: 24,
   },
 
-  // Section - Mobile
-  section: {
-    padding: 15,
+  // Scroll Content
+  scrollContent: {
+    paddingBottom: 30,
   },
-  // Section - Tablet
-  sectionTablet: {
-    paddingHorizontal: 30,
-    paddingVertical: 25,
+
+  // Hero Section
+  heroSection: {
+    height: screenHeight * 0.35,
+    width: '100%',
+    position: 'relative',
+  },
+  heroImage: {
+    width: '100%',
+    height: '100%',
+  },
+  heroGradient: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    bottom: 0,
+    height: '50%',
+  },
+  heroTitleContainer: {
+    position: 'absolute',
+    bottom: 25,
+    left: 20,
+    right: 20,
+  },
+  heroTitle: {
+    color: '#fff',
+    fontSize: 28,
+    fontWeight: '700',
+    letterSpacing: -0.3,
+  },
+  heroTitleTablet: {
+    fontSize: 36,
+  },
+  titleUnderline: {
+    width: 50,
+    height: 3,
+    backgroundColor: '#fff',
+    marginTop: 8,
+    borderRadius: 2,
+  },
+
+  // Content Card
+  contentCard: {
+    backgroundColor: '#fff',
+    marginTop: 20,
+    marginHorizontal: 16,
+    borderRadius: 25,
+    padding: 20,
+    elevation: 5,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+  },
+  contentCardTablet: {
+    marginHorizontal: 30,
+    padding: 25,
+    borderRadius: 30,
+  },
+
+  // Section
+  section: {
+    marginBottom: 25,
+  },
+  sectionHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f0f0f0',
+    paddingBottom: 8,
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#333',
+    marginLeft: 8,
+  },
+  sectionTitleTablet: {
+    fontSize: 20,
+  },
+
+  // Description
+  description: {
+    fontSize: 15,
+    color: '#555',
+    lineHeight: 22,
+    fontWeight: '400',
+  },
+  descriptionTablet: {
+    fontSize: 16,
+    lineHeight: 24,
+  },
+  readMoreBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    alignSelf: 'flex-end',
+    marginTop: 8,
   },
   readMoreText: {
-  marginTop: 10,
-  color: "#93210A",
-  fontSize: 15,
-  fontWeight: "600",
-  alignSelf: "flex-end",
-},
-readMoreTextTablet: {
-  fontSize: 17,
-},
-
-
-  // Main Title - Mobile
-  mainTitle: {
-    marginTop: 15,
-    fontSize: 24,
-    fontWeight: "600",
-    color: "#93210A",
-    textAlign: "center",
-  },
-  // Main Title - Tablet
-  mainTitleTablet: {
-    fontSize: isLargeTablet ? 30 : 28,
-    marginTop: 20,
+    color: '#8B0000',
+    fontSize: 14,
+    fontWeight: '600',
+    marginRight: 4,
   },
 
-  // Main Image - Mobile
-  mainImage: {
-    width: "110%",
-    height: 220,
-    marginTop: 20,
-    alignSelf: "center",
-   
+  // Gallery
+  mainGalleryContainer: {
+    marginBottom: 15,
   },
-  // Main Image - Tablet
-  mainImageTablet: {
-    width: "95%",
-    height: isLargeTablet ? 280 : 350,
-    marginTop: 25,
-    borderRadius: 16,
+  mainImageWrapper: {
+    width: '100%',
+    height: screenWidth * 0.5,
+    borderRadius: 15,
+    overflow: 'hidden',
+    position: 'relative',
   },
-
-  // Info Text - Mobile
-  info: {
-    marginTop: 35,
-    fontSize: 16,
-    color: "#333",
-    lineHeight: 20,
-    textAlign: "justify",
+  mainGalleryImage: {
+    width: '100%',
+    height: '100%',
   },
-  // Info Text - Tablet
-  infoTablet: {
-    fontSize: isLargeTablet ? 18 : 20,
-    lineHeight: isLargeTablet ? 30 : 28,
-    marginTop: 40,
+  mainImageGradient: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    bottom: 0,
+    height: '30%',
   },
-
-  // Image Row - Mobile
-  imageRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    marginTop: 20,
-    marginHorizontal: 10,
+  navArrow: {
+    position: 'absolute',
+    top: '50%',
+    transform: [{ translateY: -20 }],
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  // Image Row - Tablet
-  imageRowTablet: {
-    marginTop: 30,
-    marginHorizontal: 20,
+  navArrowLeft: {
+    left: 10,
   },
-
-  // Slider Image - Mobile
-  sliderImage: {
-    width: 250,
-    height: 200,
+  navArrowRight: {
+    right: 10,
+  },
+  imageCounter: {
+    position: 'absolute',
+    bottom: 10,
+    right: 10,
+    backgroundColor: 'rgba(0,0,0,0.6)',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
     borderRadius: 12,
-    marginHorizontal: 10,
   },
-  // Slider Image - Tablet
-  sliderImageTablet: {
-    width: isLargeTablet ? 400 : 350,
-    height: isLargeTablet ? 300 : 260,
-    borderRadius: 16,
+  counterText: {
+    color: '#fff',
+    fontSize: 12,
+    fontWeight: '500',
+  },
+  thumbnailList: {
+    paddingVertical: 5,
+    gap: 10,
+  },
+  galleryItemWrapper: {
+    width: 70,
+    height: 70,
+    borderRadius: 10,
+    marginRight: 10,
+    overflow: 'hidden',
+    position: 'relative',
+    borderWidth: 1,
+    borderColor: '#f0f0f0',
+  },
+  galleryThumb: {
+    width: '100%',
+    height: '100%',
+  },
+  galleryOverlay: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    bottom: 0,
+    height: '50%',
+  },
+  galleryIcon: {
+    position: 'absolute',
+    top: 5,
+    right: 5,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    borderRadius: 12,
+    width: 22,
+    height: 22,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 
-  // Video Container - Mobile
-  videoContainer: {
-    alignItems: "center",
-    marginVertical: 20,
+  // Video
+  videoWrapper: {
+    borderRadius: 15,
+    overflow: 'hidden',
+    backgroundColor: '#000',
   },
-  // Video Container - Tablet
-  videoContainerTablet: {
-    marginVertical: 30,
-  },
-
-  // Video Player - Mobile
   videoPlayer: {
-    width: 350,
+    width: '100%',
     height: 220,
-    borderRadius: 12,
   },
-  // Video Player - Tablet
-  videoPlayerTablet: {
-    width: isLargeTablet ? 800 : 600,
-    height: isLargeTablet ? 370 : 300,
-    borderRadius: 16,
+
+  // Modal
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.95)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalCloseBtn: {
+    position: 'absolute',
+    top: 50,
+    right: 20,
+    zIndex: 10,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: 'rgba(255,255,255,0.2)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  modalImageContainer: {
+    width: screenWidth,
+    height: screenHeight,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalImage: {
+    width: screenWidth,
+    height: screenHeight * 0.7,
+  },
+  modalNavBtn: {
+    position: 'absolute',
+    top: '50%',
+    transform: [{ translateY: -20 }],
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: 'rgba(255,255,255,0.2)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  modalNavLeft: {
+    left: 20,
+  },
+  modalNavRight: {
+    right: 20,
+  },
+  modalCounter: {
+    position: 'absolute',
+    bottom: 50,
+    alignSelf: 'center',
+    backgroundColor: 'rgba(0,0,0,0.6)',
+    paddingHorizontal: 15,
+    paddingVertical: 8,
+    borderRadius: 20,
+  },
+  modalCounterText: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: '500',
   },
 });

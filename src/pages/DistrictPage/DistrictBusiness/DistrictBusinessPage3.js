@@ -212,6 +212,8 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     backgroundColor: "#93210A",
+    borderBottomLeftRadius: 12,
+    borderBottomRightRadius: 12,
   },
   appBarTitle: {
     flex: 1,

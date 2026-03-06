@@ -430,12 +430,13 @@ const styles = StyleSheet.create({
 
   /* ================= HEADER STYLES (FIRST) ================= */
   headerContainer: {
-    height: 80,
-    
+    height: 100,
+    borderBottomLeftRadius: 12,
+    borderBottomRightRadius: 12,
   },
   
   headerContainerTablet: {
-    height: 90,
+    height: 120,
   },
   
   headerGradient: {
@@ -466,7 +467,7 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(255,255,255,0.25)",
     padding: 8,
     borderRadius: 12,
-    marginTop:5,
+    marginTop:30,
     position: 'absolute',
     left: 16,
     zIndex: 2,
@@ -475,7 +476,7 @@ const styles = StyleSheet.create({
   backTablet: {
     backgroundColor: "rgba(255,255,255,0.25)",
     padding: 10,
-    marginTop:8,
+    marginTop:20,
     borderRadius: 14,
     position: 'absolute',
     left: 20,

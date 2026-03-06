@@ -144,7 +144,7 @@ export default function TownPage2() {
           } />
 
           <Menu title="Parties" onPress={() =>
-            navigation.navigate("TownPartiesCategory", { townId })
+            navigation.navigate("TownPartiesMember", { townId })
           } />
 
           <Menu title="Complaint" onPress={() =>

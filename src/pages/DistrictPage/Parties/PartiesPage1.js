@@ -39,6 +39,7 @@ const PartiesPage1 = () => {
   const horizontalPadding = 32; // 16 * 2
   const totalGap = (numColumns - 1) * gap;
   const cardWidth = (width - horizontalPadding - totalGap) / numColumns;
+ 
 
   useEffect(() => {
     const fetchParties = async () => {
@@ -57,7 +58,7 @@ const PartiesPage1 = () => {
         const data = await response.json();
         
         if (Array.isArray(data)) {
-          setParties(data);
+           setParties(data.filter(item => item.name === "BJP"));
         } else if (data && typeof data === "object") {
           if (Array.isArray(data.data)) {
             setParties(data.data);
@@ -175,9 +176,10 @@ const PartiesPage1 = () => {
           },
         ]}
         activeOpacity={0.85}
-        onPress={() => navigation.navigate("Partiespage2", { 
+        onPress={() => navigation.navigate("Partiespage3", { 
           partyId: item.id,
-          partyName: item.name 
+          partyName: item.name ,
+          partyImage: item.image
         })}
       >
         <View style={[styles.imageContainer, isTablet && styles.imageContainerTablet]}>
@@ -396,7 +398,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
   },
   errorTextTablet: {
-    fontSize: 18,
+    fontSize: 20,
     lineHeight: 26,
     marginTop: 20,
     maxWidth: 500,

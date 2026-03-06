@@ -21,7 +21,7 @@ const tamilNaduImage = require("../../../../assets/Election/governmentlogo.jpeg"
 const PartiesPage2 = () => {
   const route = useRoute();
   const navigation = useNavigation();
-  const { partyId, partyName } = route.params || {}; 
+  const { partyId, partyName,partyImage } = route.params || {}; 
   
   const { width, height } = useWindowDimensions();
   
@@ -126,7 +126,7 @@ const PartiesPage2 = () => {
           {/* Tamil Nadu Image at Top - Like your image */}
           <View style={styles.imageSection}>
             <Image
-              source={tamilNaduImage}
+              source={partyImage ? { uri: partyImage } : require('../../../../assets/Election/governmentlogo.jpeg')}
               style={[styles.tnImage, isTablet && styles.tnImageTablet]}
               resizeMode="cover"
             />
@@ -388,12 +388,12 @@ const styles = StyleSheet.create({
   },
 
   tnImage: {
-    width: 80,
-    height: 80,
+    width: 100,
+    height:100,
   },
   tnImageTablet: {
-    width: 100,
-    height: 100,
+    width: 150,
+    height: 150,
     borderRadius: 50,
   },
 

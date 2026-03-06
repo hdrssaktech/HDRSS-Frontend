@@ -504,12 +504,14 @@ const styles = StyleSheet.create({
     paddingTop: 50,
     // marginTop: 32,
     backgroundColor: "#93210A",
+    borderBottomRightRadius:20,
+    borderBottomLeftRadius:20,
   },
   headerText: {
     color: "#fff",
     fontSize: 20,
     fontWeight: "bold",
-    marginLeft: 90,
+    margin:'auto'
   },
   formContainer: { padding: 15, paddingBottom: 20 },
   formTitleButton: {

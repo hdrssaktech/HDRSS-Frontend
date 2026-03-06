@@ -208,7 +208,6 @@ const DistrictAssemblyPage4 = () => {
 const styles = StyleSheet.create({
   safe: { 
     flex: 1, 
-    backgroundColor: '#8B0000' 
   },
   container: { 
     flex: 1, 
@@ -223,13 +222,13 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingTop: Platform.OS === 'ios' ? 50 : 40,
     paddingBottom: 16,
-    borderBottomLeftRadius: 20,
-    borderBottomRightRadius: 20,
     elevation: 4,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.2,
     shadowRadius: 4,
+    borderBottomLeftRadius: 20,
+    borderBottomRightRadius: 20,
   },
   headerTablet: {
     paddingHorizontal: 32,
@@ -287,15 +286,15 @@ const styles = StyleSheet.create({
   profileImage: { 
     width: 160, 
     height: 160, 
-    borderRadius: 80, 
-    borderWidth: 4, 
+    borderRadius:20,
+    borderWidth: 2, 
     borderColor: '#8B0000' 
   },
   profileImageTablet: { 
     width: 200, 
     height: 200, 
-    borderRadius: 100,
-    borderWidth: 5 
+    borderRadius: 20,
+    borderWidth: 3
   },
   name: { 
     fontSize: 23, 

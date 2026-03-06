@@ -109,7 +109,7 @@ export default function TownPartiesMemberDetails() {
           onPress={() => navigation.goBack()}
           style={styles.backButton}
         >
-          <Ionicons name="arrow-back" size={24} color="#fff" />
+          <Ionicons name="chevron-back" size={24} color="#fff" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Member Profile</Text>
         <TouchableOpacity 
@@ -223,7 +223,7 @@ const { width, height } = Dimensions.get('window');
 const styles = StyleSheet.create({
   safeArea: { 
     flex: 1, 
-    backgroundColor: "#93210A" 
+    
   },
   
   // Header
@@ -232,8 +232,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: width * 0.04,
-    paddingVertical: height * 0.02,
-    paddingTop: Platform.OS === 'android' ? height * 0.04 : height * 0.02,
+    paddingVertical: height * 0.03,
+    paddingTop: Platform.OS === 'android' ? height * 0.04 : height * 0.07,
     borderBottomLeftRadius: 20,
     borderBottomRightRadius: 20,
   },
@@ -274,8 +274,8 @@ const styles = StyleSheet.create({
   avatar: {
     width: width * 0.28,
     height: width * 0.28,
-    borderRadius: width * 0.14,
-    borderWidth: 4,
+    borderRadius: (width * 0.1) / 2,  
+    borderWidth:2,
     borderColor: '#93210A',
   },
   onlineBadge: {

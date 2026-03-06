@@ -120,21 +120,34 @@ const DistrictAssemblyPage3 = () => {
           </Text>
         )}
 
-        {/* Phone and Location Icons */}
-        <View style={styles.iconRow}>
-          <TouchableOpacity 
-            style={[styles.iconButton, isTablet && styles.iconButtonTablet]}
-            onPress={() => handlePhonePress(item.phoneNumber)}
-          >
-            <Ionicons name="call" size={isTablet ? 22 : 20} color="#8B0000" />
-          </TouchableOpacity>
-          
-          <TouchableOpacity 
-            style={[styles.iconButton, isTablet && styles.iconButtonTablet]}
-            onPress={() => handleLocationPress(item.location)}
-          >
-            <Ionicons name="location" size={isTablet ? 22 : 20} color="#8B0000" />
-          </TouchableOpacity>
+        {/* Buttons Row */}
+        <View style={styles.buttonsRow}>
+
+          {item.phoneNumber && (
+            <TouchableOpacity
+              style={styles.callButton}
+              onPress={(e) => {
+                e.stopPropagation();
+                handlePhonePress(item.phoneNumber);
+              }}
+            >
+              <Ionicons name="call" size={16} color="#fff" />
+              <Text style={styles.buttonText}>Call</Text>
+            </TouchableOpacity>
+          )}
+
+          {item.location && (
+            <TouchableOpacity
+              style={styles.directionButton}
+              onPress={(e) => {
+                e.stopPropagation();
+                handleLocationPress(item.location);
+              }}
+            >
+              <Ionicons name="navigate" size={16} color="#8B0000" />
+              <Text style={styles.directionText}>Directions</Text>
+            </TouchableOpacity>
+          )}
         </View>
       </View>
     </TouchableOpacity>
@@ -363,11 +376,13 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     borderColor: '#8B0000',
   },
+  
   profileImageTablet: {
     width: 110,
     height: 110,
     borderRadius: 16,
   },
+
   detailsContainer: {
     flex: 1,
     marginLeft: 16,
@@ -406,29 +421,46 @@ const styles = StyleSheet.create({
     fontSize: 15,
     marginBottom: 10,
   },
-  iconRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginTop: 4,
-  },
-  iconButton: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: 'rgba(139, 0, 0, 0.1)',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: 12,
-    borderWidth: 1,
-    borderColor: 'rgba(139, 0, 0, 0.2)',
-  },
-  iconButtonTablet: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    marginRight: 16,
-  },
-  
+  buttonsRow:{
+  flexDirection:"row",
+  gap:8
+},
+callButton:{
+  flex:1,
+  flexDirection:"row",
+  backgroundColor:"#8B0000",
+  padding:10,
+  borderRadius:8,
+  justifyContent:"center",
+  alignItems:"center",
+  gap:6
+},
+
+buttonText:{
+  color:"#fff",
+  fontSize:13,
+  fontWeight:"700"
+},
+
+directionButton:{
+  flex:1,
+  flexDirection:"row",
+  borderWidth:1,
+  borderColor:"#8B0000",
+  backgroundColor:"rgba(139,0,0,0.05)",
+  paddingVertical:8,
+  borderRadius:8,
+  justifyContent:"center",
+  alignItems:"center",
+  gap:6
+},
+
+directionText:{
+  color:"#8B0000",
+  fontSize:13,
+  fontWeight:"700"
+ },
+
   // Center States
   centerContainer: { 
     flex: 1, 
@@ -437,6 +469,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     padding: 20,
   },
+
   errorText: { 
     marginTop: 16, 
     color: '#8B0000', 

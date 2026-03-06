@@ -7,7 +7,7 @@ import {
   StyleSheet,
   Image,
   TouchableOpacity,
-  StatusBar,
+  StatusBar,   
   useWindowDimensions,
   Platform,
 } from "react-native";

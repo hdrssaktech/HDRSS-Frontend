@@ -29,7 +29,7 @@ export default function AboutPage2() {
 
   // 📞 Call
   const handleCall = () => {
-    let phoneNumber = "tel:+919876543210"; // change to your number
+    let phoneNumber = "tel:9677717474"; // change to your number
     Linking.openURL(phoneNumber).catch(() =>
       Alert.alert("Error", "Unable to make a call")
     );
@@ -37,7 +37,7 @@ export default function AboutPage2() {
 
   // 💬 WhatsApp
   const handleWhatsApp = () => {
-    let phoneNumber = "+919876543210"; // include country code
+    let phoneNumber = "9677717474"; // include country code
     let message = "Hello, I want to contact you!";
     let url = `whatsapp://send?phone=${phoneNumber}&text=${encodeURIComponent(
       message
@@ -51,7 +51,7 @@ export default function AboutPage2() {
   // 🗺️ Location
   const handleLocation = () => {
     let url =
-      "https://www.google.com/maps/search/?api=1&query=13.0827,80.2707";
+      "https://maps.app.goo.gl/pKvBGNg86uKf27vs6";
     Linking.openURL(url).catch(() =>
       Alert.alert("Error", "Unable to open Google Maps")
     );

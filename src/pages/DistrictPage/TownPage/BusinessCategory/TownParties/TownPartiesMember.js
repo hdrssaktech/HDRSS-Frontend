@@ -3,22 +3,30 @@ import {
   View,
   Text,
   FlatList,
-  ActivityIndicator,
   StyleSheet,
   TouchableOpacity,
   Image,
   SafeAreaView,
   StatusBar,
-  Dimensions,
+  Linking,
+  Platform,
+  Alert,
+  useWindowDimensions,
 } from "react-native";
 import axios from "axios";
-import Ionicons from "react-native-vector-icons/Ionicons";
+import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import Loader from "../../../../../components/Alert/Loader";
 
 export default function TownPartiesMember({ route }) {
-  const { townId, partyName, role } = route.params;
+
+  const { townId} = route.params;
   const navigation = useNavigation();
+
+  const { width, height } = useWindowDimensions();
+  const isTablet = width >= 600;
+
+  const imageSize = isTablet ? 140 : 100;
 
   const [members, setMembers] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -28,14 +36,16 @@ export default function TownPartiesMember({ route }) {
       const res = await axios.get(
         `https://hdrss-backend.onrender.com/api/town-parties/${townId}`
       );
-      const filtered = res.data.data.filter(
-        item => item.parties === partyName
-      );
-      const data = res.data.data || [];
 
-      setMembers(filtered);
+      // const filtered = res.data.data.filter(
+      //   (item) => item.parties === partyName
+      // );
+
+      setMembers(res.data.data);
+
     } catch (err) {
       console.log(err);
+      Alert.alert("Error", "Failed to load members");
     } finally {
       setLoading(false);
     }
@@ -45,289 +55,274 @@ export default function TownPartiesMember({ route }) {
     fetchMembers();
   }, []);
 
-  if (loading) {
-    return (
-      <Loader/>
+  const handleCall = (phoneNumber) => {
+    if (phoneNumber) Linking.openURL(`tel:${phoneNumber}`);
+  };
+
+  const handleLocationPress = (location) => {
+    if (!location) return;
+
+    const encodedLocation = encodeURIComponent(location);
+    Linking.openURL(
+      `https://www.google.com/maps/search/?api=1&query=${encodedLocation}`
     );
-  }
+  };
 
   const renderItem = ({ item }) => (
+
     <TouchableOpacity
-      style={styles.card}
+      style={[styles.card, isTablet && styles.cardTablet]}
+      activeOpacity={0.85}
       onPress={() =>
         navigation.navigate("TownPartiesMemberDetails", {
           member: item,
         })
       }
-      activeOpacity={0.7}
     >
-      {/* IMAGE - 40% width */}
-      <View style={styles.imageContainer}>
+
+      {/* IMAGE */}
+      <View style={[styles.imageContainer, { width: imageSize, height: imageSize }]}>
         <Image
           source={{
-            uri: item.image || "https://via.placeholder.com/150",
+            uri: item.image || "https://cdn-icons-png.flaticon.com/512/3135/3135715.png"
           }}
-          style={styles.avatar}
+          style={styles.image}
           resizeMode="cover"
-          onError={() => console.log("Image failed to load")}
         />
-        <View style={styles.imageOverlay} />
       </View>
 
-      {/* INFO - 60% width */}
-      <View style={styles.infoContainer}>
-        <Text style={styles.name} numberOfLines={2}>
-          {item.name}
-        </Text>
-        <Text style={styles.party} numberOfLines={1}>
-          {item.parties}
-        </Text>
-        <Text style={styles.role} numberOfLines={2}>
-          {item.role}
-        </Text>
+      {/* CONTENT */}
+      <View style={[styles.contentContainer, isTablet && styles.contentContainerTablet]}>
 
-        {/* Icon Row */}
-        <View style={styles.iconRow}>
-          {/* Location Icon */}
-          {item.location && item.location !== "N/A" && (
-            <View style={styles.iconWithText}>
-              <Ionicons name="location-outline" size={16} color="#93210A" />
-              <Text style={styles.iconText} numberOfLines={1}>
-                {item.location}
-              </Text>
-            </View>
-          )}
+        <View style={styles.textSection}>
 
-          {/* Phone Icon */}
-          {item.phoneNumber && item.phoneNumber !== "N/A" && (
-            <View style={styles.iconWithText}>
-              <Ionicons name="call-outline" size={16} color="#93210A" />
-              <Text style={styles.iconText} numberOfLines={1}>
-                {item.phoneNumber}
-              </Text>
-            </View>
-          )}
+          <Text style={[styles.name, isTablet && styles.nameTablet]} numberOfLines={2}>
+            {item.name}
+          </Text>
+          <Text style={[styles.parties, isTablet && styles.partiesTablet]} numberOfLines={1}>
+            {item.parties}
+          </Text>
+
+          <Text style={[styles.role, isTablet && styles.roleTablet]} numberOfLines={1}>
+            {item.role}
+          </Text>
+
+          <Text style={styles.wardText}>
+            Ward No : {item.orderNo}
+          </Text>
+
         </View>
+
+        <View style={[styles.buttonsRow, isTablet && styles.buttonsRowTablet]}>
+
+          {item.phoneNumber && (
+            <TouchableOpacity
+              style={[styles.callButton, isTablet && styles.callButtonTablet]}
+              onPress={(e) => {
+                e.stopPropagation();
+                handleCall(item.phoneNumber);
+              }}
+            >
+              <Ionicons name="call" size={isTablet ? 18 : 16} color="#fff" />
+              <Text style={styles.buttonText}>Call</Text>
+            </TouchableOpacity>
+          )}
+
+          {item.location && (
+            <TouchableOpacity
+              style={[styles.directionsButton, isTablet && styles.directionsButtonTablet]}
+              onPress={(e) => {
+                e.stopPropagation();
+                handleLocationPress(item.location);
+              }}
+            >
+              <Ionicons name="navigate" size={isTablet ? 18 : 16} color="#8B0000" />
+              <Text style={styles.directionsButtonText}>Directions</Text>
+            </TouchableOpacity>
+          )}
+
+        </View>
+
       </View>
+
     </TouchableOpacity>
+
   );
+
+  if (loading) {
+    return <Loader />;
+  }
 
   return (
-    <SafeAreaView style={styles.safeArea}>
-      <StatusBar backgroundColor="#93210A" barStyle="light-content" />
 
-      {/* Header */}
+    <SafeAreaView style={styles.safe}>
+
+      <StatusBar backgroundColor="#8B0000" barStyle="light-content" />
+
+      {/* HEADER */}
+
       <View style={styles.header}>
-        <TouchableOpacity 
+
+        <TouchableOpacity
           onPress={() => navigation.goBack()}
           style={styles.backButton}
-          hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
         >
-          <Ionicons name="chevron-back" size={28} color="#fff" />
+          <Ionicons name="chevron-back" size={26} color="#fff" />
         </TouchableOpacity>
-        <View style={styles.titleContainer}>
-          <Text style={styles.headerTitle} numberOfLines={2}>
-            Members
+
+        <View style={styles.headerTitleWrap}>
+          <Text style={styles.headerTitle}>
+            Town Councilor
           </Text>
         </View>
-        <View style={styles.placeholder} />
+
+        <View style={{ width: 40 }} />
+
       </View>
 
-      {/* Members List */}
-      {members.length === 0 ? (
-        <View style={styles.emptyContainer}>
-          <Ionicons name="people-outline" size={60} color="#ccc" />
-          <Text style={styles.emptyText}>No members found</Text>
-        </View>
-      ) : (
-        <FlatList
-          data={members}
-          keyExtractor={(item, index) => index.toString()}
-          renderItem={renderItem}
-          contentContainerStyle={styles.listContent}
-          showsVerticalScrollIndicator={false}
-          initialNumToRender={10}
-          maxToRenderPerBatch={10}
-          windowSize={5}
-        />
-      )}
+      <FlatList
+        data={members}
+        keyExtractor={(item, index) => index.toString()}
+        renderItem={renderItem}
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ padding: 16 }}
+      />
+
     </SafeAreaView>
+
   );
+
 }
 
-const { width, height } = Dimensions.get('window');
-const isTablet = width >= 768;
-const isSmallDevice = width <= 320;
-
-// Responsive scaling functions
-const scaleWidth = (size) => {
-  const guidelineBaseWidth = 375;
-  return (width / guidelineBaseWidth) * size;
-};
-
-const scaleHeight = (size) => {
-  const guidelineBaseHeight = 812;
-  return (height / guidelineBaseHeight) * size;
-};
-
-const moderateScale = (size, factor = 0.5) => {
-  return size + (scaleWidth(size) - size) * factor;
-};
-
 const styles = StyleSheet.create({
-  safeArea: { 
+
+  safe: {
     flex: 1,
-    backgroundColor: '#f8f9fa',
+    // backgroundColor: "#8B0000"
   },
-  loader: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: '#f8f9fa',
-  },
-  
-  // Header styles
+
   header: {
-    backgroundColor: "#93210A",
-    paddingHorizontal: moderateScale(16),
-    paddingVertical: isTablet ? height * 0.02 : height * 0.015,
+    backgroundColor: "#8B0000",
     flexDirection: "row",
     alignItems: "center",
-    minHeight: isTablet ? height * 0.1 : height * 0.08,
-    elevation: 4,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 3,
-    borderBottomEndRadius: moderateScale(12),
-    borderBottomStartRadius: moderateScale(12),
+    paddingHorizontal: 16,
+    paddingTop: Platform.OS === "ios" ? 10 : 40,
+    paddingBottom: 12,
+    borderBottomLeftRadius: 20,
+    borderBottomRightRadius: 20,
   },
+
   backButton: {
-    paddingRight: moderateScale(10),
-    justifyContent: 'center',
-     paddingTop:30
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: "rgba(255,255,255,0.15)",
+    alignItems: "center",
+    justifyContent: "center",
   },
-  titleContainer: {
+
+  headerTitleWrap: {
     flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  headerTitle: { 
-    color: "#fff", 
-    fontSize: isTablet ? moderateScale(22) : moderateScale(18),
-    fontWeight: "bold",
-    textAlign: 'center',
-    marginBottom: 4,
-    paddingTop:30
-  },
-  subtitle: {
-    color: "rgba(255, 255, 255, 0.9)",
-    fontSize: isTablet ? moderateScale(16) : moderateScale(14),
-    textAlign: 'center',
-  },
-  placeholder: { 
-    width: moderateScale(40),
+    alignItems: "center",
   },
 
-  // List styles
-  listContent: {
-    paddingHorizontal: moderateScale(16),
-    paddingVertical: moderateScale(16),
-    paddingBottom: height * 0.02,
+  headerTitle: {
+    color: "#fff",
+    fontSize: 18,
+    fontWeight: "900",
   },
 
-  // Card styles - Responsive
   card: {
     backgroundColor: "#fff",
-    borderRadius: moderateScale(12),
+    borderRadius: 16,
     flexDirection: "row",
-    marginBottom: moderateScale(12),
+    padding: 12,
+    marginBottom: 12,
     elevation: 3,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    overflow: 'hidden',
-    minHeight: isTablet ? height * 0.15 : height * 0.12,
-    maxHeight: isTablet ? height * 0.2 : height * 0.16,
+    borderWidth: 1,
+    borderColor: "rgba(139,0,0,0.1)"
   },
 
-  // Image container - 40%
   imageContainer: {
-    width: '40%',
-    position: 'relative',
-  },
-  avatar: {
-    width: '100%',
-    height: '100%',
-  },
-  imageOverlay: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    bottom: 0,
-    height: '30%',
-    backgroundColor: 'rgba(0, 0, 0, 0.1)',
+    borderRadius: 12,
+    overflow: "hidden",
+    backgroundColor: "#f5f5f5",
+    marginRight: 12
   },
 
-  // Info container - 60%
-  infoContainer: {
-    width: '60%',
-    padding: moderateScale(12),
-    justifyContent: 'space-between',
+  image: {
+    width: "100%",
+    height: "100%"
   },
-  name: { 
-    fontSize: isTablet ? moderateScale(18) : moderateScale(16),
-    fontWeight: "bold", 
-    color: "#333",
-    marginBottom: moderateScale(4),
-    lineHeight: moderateScale(20),
+
+  contentContainer: {
+    flex: 1,
+    justifyContent: "space-between"
   },
-  party: { 
-    color: "#93210A", 
-    fontSize: isTablet ? moderateScale(16) : moderateScale(14),
-    fontWeight: '600',
-    marginBottom: moderateScale(2),
+
+  textSection: {
+    marginBottom: 8
   },
+
+  name: {
+    fontSize: 16,
+    fontWeight: "800",
+    color: "#8B0000",
+    marginBottom: 4
+  },
+
   role: {
-    color: "#666",
-    fontSize: isTablet ? moderateScale(14) : moderateScale(12),
-    marginBottom: moderateScale(8),
-    fontStyle: 'italic',
-    lineHeight: moderateScale(16),
+    fontSize: 13,
+    color: "#666"
+  },
+  parties:{
+    fontSize: 15,
+    color: "#990f0f"
   },
 
-  // Icon row styles
-  iconRow: {
-    flexDirection: "column",
-    gap: moderateScale(6),
+  wardText: {
+    fontSize: 12,
+    color: "#888"
   },
-  iconWithText: {
+
+  buttonsRow: {
     flexDirection: "row",
-    alignItems: "center",
-    gap: moderateScale(8),
-  },
-  iconText: {
-    fontSize: isTablet ? moderateScale(14) : moderateScale(12),
-    color: "#555",
-    flex: 1,
+    gap: 8
   },
 
-  // Empty state
-  emptyContainer: {
+  callButton: {
     flex: 1,
+    flexDirection: "row",
+    backgroundColor: "#8B0000",
+    paddingVertical: 8,
+    borderRadius: 8,
     justifyContent: "center",
     alignItems: "center",
-    paddingBottom: height * 0.1,
+    gap: 6
   },
-  emptyText: {
-    fontSize: moderateScale(16),
-    color: "#999",
-    marginTop: moderateScale(16),
-    textAlign: 'center',
+
+  directionsButton: {
+    flex: 1,
+    flexDirection: "row",
+    borderWidth: 1,
+    borderColor: "#8B0000",
+    paddingVertical: 8,
+    borderRadius: 8,
+    justifyContent: "center",
+    alignItems: "center",
+    gap: 6
   },
+
+  buttonText: {
+    color: "#fff",
+    fontSize: 13,
+    fontWeight: "700"
+  },
+
+  directionsButtonText: {
+    color: "#8B0000",
+    fontSize: 13,
+    fontWeight: "700"
+  }
+
 });
-
-
-
-

@@ -41,12 +41,8 @@ import StoryPage1 from "./pages/ElectionCategorysPage/StoryPage/StoryPage1";
 import StoryPage2 from "./pages/ElectionCategorysPage/StoryPage/StoryPage2";
 import PoojaPage1 from "./pages/ElectionCategorysPage/PoojaPage/PoojaPage1";
 import PoojaPage2 from "./pages/ElectionCategorysPage/PoojaPage/PoojaPage2l";
-import LeaderPage1 from "./pages/ElectionCategorysPage/LeaderPage/LeaderPage1";
-import LeaderPage2 from "./pages/ElectionCategorysPage/LeaderPage/LeaderPage2";
-import LeaderPage3 from "./pages/ElectionCategorysPage/LeaderPage/LeaderPage3";
 import TourismPage1 from "./pages/ElectionCategorysPage/TourismPage/TourismPage1";
 import TourismPage2 from "./pages/ElectionCategorysPage/TourismPage/TourismPage2";
-import VaasthuPage from "./pages/ElectionCategorysPage/VaasthuPage/VaasthuPage";
 import ElectionVotePage1 from "./pages/ElectionCategorysPage/ElectionVotePage/ElectionVotePage1";
 import ElectionVotePage2 from "./pages/ElectionCategorysPage/ElectionVotePage/ElectionVotePage2";
 import AstrologyPage1 from "./pages/ElectionCategorysPage/AstrologyPage/AstrologyPage1";
@@ -118,6 +114,12 @@ import DistrictAssemblyPage3 from "./pages/DistrictPage/DistrictAssembley/Distri
 import NetworkMonitor from "./components/AlertSection/NetworkMonitor.js";
 import DistrictAssemblyPage4 from "./pages/DistrictPage/DistrictAssembley/DistrictAssemblyPage4.js";
 import RootPage from "./pages/AuthPage/RootPage.js";
+import SloganPage1 from "./pages/ElectionCategorysPage/SloganPage/SloganPage1.js";
+import SloganPage2 from "./pages/ElectionCategorysPage/SloganPage/SloganPage2.js";
+import SloganPage3 from "./pages/ElectionCategorysPage/SloganPage/SloganPage3.js";
+import DivinePage1 from "./pages/ElectionCategorysPage/Divine/DivinePage1.js";
+import DivinePage2 from "./pages/ElectionCategorysPage/Divine/DivinePage2.js";
+import DivinePage3 from "./pages/ElectionCategorysPage/Divine/DivinePage3.js";
 
 
 
@@ -192,15 +194,18 @@ function MainStackScreen() {
     <MainStack.Screen name="HistoryPage1" component={withFooter(HistoryPage1)}/>
     <MainStack.Screen name="HistoryPage2" component={withFooter(HistoryPage2)}/>
     <MainStack.Screen name="HistoryPage3" component={withFooter(HistoryPage3)}/>
+    <MainStack.Screen name="SloganPage1" component={withFooter(SloganPage1)}/>
+    <MainStack.Screen name="SloganPage2" component={withFooter(SloganPage2)}/>
+    <MainStack.Screen name="SloganPage3" component={withFooter(SloganPage3)}/>
+    <MainStack.Screen name="DivinePage1" component={withFooter(DivinePage1)}/>
+    <MainStack.Screen name="DivinePage2" component={withFooter(DivinePage2)}/>
+    <MainStack.Screen name="DivinePage3" component={withFooter(DivinePage3)}/>
     <MainStack.Screen name="StoryPage1" component={withFooter(StoryPage1)}/>
     <MainStack.Screen name="StoryPage2" component={withFooter(StoryPage2)}/>
     <MainStack.Screen name="PoojaPage1" component={withFooter(PoojaPage1)}/>
     <MainStack.Screen name="PoojaPage2" component={withFooter(PoojaPage2)}/>
     <MainStack.Screen name="Poojacategory" component={withFooter(PoojaCategory)}/>
     <MainStack.Screen name="PoojaDetails" component={withFooter(PoojaDetails)}/>
-    <MainStack.Screen name="LeaderPage1" component={withFooter(LeaderPage1)}/> 
-    <MainStack.Screen name="LeaderPage2" component={withFooter(LeaderPage2)}/>
-    <MainStack.Screen name="LeaderPage3" component={withFooter(LeaderPage3)}/>
     <MainStack.Screen name="TourismPage1" component={withFooter(TourismPage1)}/>
     <MainStack.Screen name="TourismPage2" component={withFooter(TourismPage2)}/>
     <MainStack.Screen name="TourismPage3" component={withFooter(TourismPage3)}/>

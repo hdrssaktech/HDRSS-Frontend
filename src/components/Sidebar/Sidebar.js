@@ -19,8 +19,8 @@ export default function Sidebar({ closeSidebar }) {
     { label: "About", icon: "info", screen: "AboutPage1" },
     { label: "Charities", icon: "volunteer-activism", screen: "CharitiePage1" },
     { label: "HDRSS Leader", icon: "person", screen: "Member0" },
-     { label: "Membership Form", icon: "person", screen: "Member1" },
-   
+    { label: "Membership Form", icon: "person", screen: "Member1" },
+    { label: "2026 Election Survey", icon: "how-to-vote", screen: "Assemblies" },
   ];
 
   const navigation = useNavigation();
