@@ -1,8 +1,8 @@
 {
   "expo": {
-    "name": "HDRSS",
+    "name": "KAAVI",
     "slug": "hdrssfrontent",
-    "owner": "akhdrss",
+    "owner": "hdrss-expo",
     "version": "1.0.1",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
@@ -18,7 +18,7 @@
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
       "googleServicesFile": "./google-services.json",
-      "package": "com.aktech.hdrss",
+      "package": "com.aktechnologies.hdrss",
       "versionCode": 3,
       "networkSecurityConfig": "./network_security_config.xml",
       "permissions": [
@@ -51,7 +51,7 @@
     },
     "extra": {
       "eas": {
-        "projectId": "24d6cf57-4668-4ea7-9c33-5358b6a9f983"
+        "projectId": "5e8a1431-48c4-4a8d-b3fe-b34cd2788887"
       }
     }
   }

@@ -49,7 +49,10 @@ const HinduSamayam1 = () => {
       const res = await axios.get(
         "https://hdrss-backend.onrender.com/api/hindu-samayam/category"
       );
-      setCategories(res.data || []);
+      const sortedData = [...(res.data || [])].sort((a, b) => 
+      (a.orderNo ?? Infinity) - (b.orderNo ?? Infinity)
+    );
+      setCategories(sortedData || []);
       setError(null);
     } catch (e) {
       console.error("API Error:", e);
@@ -58,7 +61,6 @@ const HinduSamayam1 = () => {
       setLoading(false);
     }
   };
-
   // Responsive columns: Mobile 2, Tablet 3
   const numColumns = width < 600 ? 2 : 3;
 
