@@ -54,17 +54,8 @@ export default function NewsPage2({ navigation, route }) {
         </TouchableOpacity>
 
         <Text style={styles.headerTitle} numberOfLines={1}>
-          {news.type || "News"}
+           செய்தி விவரங்கள்
         </Text>
-
-        {/* <View style={styles.headerIcons}>
-          <TouchableOpacity style={styles.iconBtn}>
-            <Ionicons name="bookmark-outline" size={22} color="#fff" />
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.iconBtn}>
-            <Ionicons name="share-social-outline" size={22} color="#fff" />
-          </TouchableOpacity>
-        </View> */}
       </View>
 
       {/* 🔹 Content */}
@@ -80,6 +71,7 @@ export default function NewsPage2({ navigation, route }) {
         {/* 🔹 Text */}
         <View style={styles.textContainer}>
           <Text style={styles.newsTitle}>{news.title}</Text>
+          <Text style={styles.newdate}>தேதி: {news.date}</Text>
           <Text style={styles.newsText}>
             {news.description || "No detailed content available."}
           </Text>
@@ -141,13 +133,13 @@ const getStyles = (isTablet, screenWidth) =>
     headerBar: {
        flexDirection: "row",
       alignItems: "center",
-      paddingVertical: isTablet ? 23 : 18,
+      paddingVertical: isTablet ? 23 : 26,
       paddingHorizontal: 16,
       paddingTop: 40,
       backgroundColor: "#93210A",
       elevation: 4,
-      borderBottomLeftRadius: 20,
-      borderBottomRightRadius: 20,
+      borderBottomLeftRadius: 18,
+      borderBottomRightRadius: 18,
     },
 
     headerTitle: {
@@ -198,6 +190,13 @@ const getStyles = (isTablet, screenWidth) =>
       color: "#93210A",
       marginVertical: 14,
       right:isTablet ? 25 : 10,
+    },
+    newdate:{
+      fontSize: isTablet ? 18 :14,
+      fontWeight: "bold",
+      color: "#93210A",
+      textAlign:'center',
+      marginBottom:isTablet ? 25 : 10,
     },
 
     newsText: {

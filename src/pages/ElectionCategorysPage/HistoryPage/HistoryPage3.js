@@ -14,6 +14,7 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import YoutubePlayer from "react-native-youtube-iframe";
+import Hyperlink from 'react-native-hyperlink';
 
 export default function HistoryPage3() {
   const navigation = useNavigation();
@@ -164,8 +165,13 @@ export default function HistoryPage3() {
           {mixedBlocks.map((block) => {
             if (block.type === "text") {
               return (
+                 
                 <View key={block.key} style={styles.textBlock}>
+                <Hyperlink 
+                linkDefault={true} 
+                linkStyle={{ color: '#8B0000', textDecorationLine: 'underline' }}>
                   <Text style={[styles.description, isTablet && styles.descTablet]}>{block.value}</Text>
+                  </Hyperlink>
                 </View>
               );
             }

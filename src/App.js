@@ -120,6 +120,12 @@ import SloganPage3 from "./pages/ElectionCategorysPage/SloganPage/SloganPage3.js
 import DivinePage1 from "./pages/ElectionCategorysPage/Divine/DivinePage1.js";
 import DivinePage2 from "./pages/ElectionCategorysPage/Divine/DivinePage2.js";
 import DivinePage3 from "./pages/ElectionCategorysPage/Divine/DivinePage3.js";
+import JobPage1 from "./pages/JobPage/JobPage1.js";
+import JobPage2 from "./pages/JobPage/JobPage2.js";
+import EventMonthHistory from "./components/Events/EventHistory/EventMonthHistory.js";
+import EventMonth from "./components/Events/EventHistory/EventMonth.js";
+import NewsMonthHistory from "./pages/NewsPage/NewsHistory/NewsMonthHistory.js";
+import NewsMonth from "./pages/NewsPage/NewsHistory/NewsMonth.js";
 
 
 
@@ -174,8 +180,12 @@ function MainStackScreen() {
     <MainStack.Screen name="Member1" component={withFooter(Membership1)}/>
     <MainStack.Screen name="NewsPage1" component={withFooter(NewsPage1)}/>
     <MainStack.Screen name="Newspage2" component={withFooter(NewsPage2)}/>
+    <MainStack.Screen name="NewsMonthHistory" component={withFooter(NewsMonthHistory)}/>
+    <MainStack.Screen name="NewsMonth" component={withFooter(NewsMonth)}/>
     <MainStack.Screen name="DistrictPage2" component={withFooter(DistrictList)}/>
     <MainStack.Screen name="EventPage2" component={withFooter(EventPage2)}/>
+    <MainStack.Screen name="EventMonth" component={withFooter(EventMonth)}/>
+    <MainStack.Screen name="EventMonthHistory" component={withFooter(EventMonthHistory)}/>
     <MainStack.Screen name="GalleryPage2" component={withFooter(Gallery)}/>
     <MainStack.Screen name="Galleryfull" component={withFooter(GalleryFull)}/>
     <MainStack.Screen name="CharitiePage1" component={withFooter(charities1)}/>
@@ -272,7 +282,9 @@ function MainStackScreen() {
     <MainStack.Screen name="DistrictAssembly1" component={withFooter(DistrictAssemblyPage1)}/>
     <MainStack.Screen name="DistrictAssembly2" component={withFooter(DistrictAssemblyPage2)}/>
     <MainStack.Screen name="DistrictAssembly3" component={withFooter(DistrictAssemblyPage3)}/>
-     <MainStack.Screen name="DistrictAssembly4" component={withFooter(DistrictAssemblyPage4)}/>
+    <MainStack.Screen name="DistrictAssembly4" component={withFooter(DistrictAssemblyPage4)}/>
+    <MainStack.Screen name="JobPage1" component={withFooter(JobPage1)}/>
+    <MainStack.Screen name="JobPage2" component={withFooter(JobPage2)}/>
     </MainStack.Navigator>
   );
 }

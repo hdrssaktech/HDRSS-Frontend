@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   TouchableWithoutFeedback,
   Dimensions,
+  Linking,
 } from "react-native";
 import Icon from "react-native-vector-icons/MaterialIcons";
 import { useNavigation } from "@react-navigation/native";
@@ -13,47 +14,72 @@ import { useNavigation } from "@react-navigation/native";
 const { width: screenWidth } = Dimensions.get('window');
 const isTablet = screenWidth >= 600;
 
+const YOUTUBE_CHANNEL_URL = "https://www.youtube.com/@hdrsssandilyan"; 
+
 export default function Sidebar({ closeSidebar }) {
   const items = [
     { label: "Home", icon: "home", screen: "HomePage" },
     { label: "About", icon: "info", screen: "AboutPage1" },
     { label: "Charities", icon: "volunteer-activism", screen: "CharitiePage1" },
-    { label: "HDRSS Leader", icon: "person", screen: "Member0" },
-    { label: "Membership Form", icon: "person", screen: "Member1" },
+    { label: "HDRSS Leader", icon: "person", screen: "Member" },
+    { label: "Membership Form", icon: "assignment", screen: "Member1" },
     { label: "2026 Election Survey", icon: "how-to-vote", screen: "Assemblies" },
+    { label: "Job Opportunities", icon: "work", screen: "JobPage1" },
+    { label: "Events History", icon: "history", screen: "EventMonth" },
+    { label: "News History", icon: "newspaper", screen: "NewsMonth" },
   ];
 
   const navigation = useNavigation();
 
   const handlePress = (screen) => {
     navigation.navigate(screen);
-    if (closeSidebar) closeSidebar(); // closes sidebar after click
+    if (closeSidebar) closeSidebar();
+  };
+
+  const handleYouTube = () => {
+    Linking.openURL(YOUTUBE_CHANNEL_URL);
+    if (closeSidebar) closeSidebar();
   };
 
   return (
     <View style={styles.overlay}>
-      {/* Transparent background that closes sidebar when tapped */}
       <TouchableWithoutFeedback onPress={closeSidebar}>
         <View style={styles.background} />
       </TouchableWithoutFeedback>
 
-      {/* Sidebar content */}
       <View style={styles.sidebar}>
-        {items.map((item, index) => (
+        {/* Menu Items */}
+        <View style={styles.menuList}>
+          {items.map((item, index) => (
+            <TouchableOpacity
+              key={index}
+              style={styles.menuItem}
+              onPress={() => handlePress(item.screen)}
+            >
+              <Icon
+                name={item.icon}
+                size={isTablet ? 28 : 24}
+                color="#E65100"
+                style={styles.icon}
+              />
+              <Text style={styles.label}>{item.label}</Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+
+        {/* YouTube Button — pinned to bottom */}
+        <View style={styles.youtubeContainer}>
+          <View style={styles.divider} />
           <TouchableOpacity
-            key={index}
-            style={styles.menuItem}
-            onPress={() => handlePress(item.screen)}
+            style={styles.youtubeButton}
+            onPress={handleYouTube}
+            activeOpacity={0.8}
           >
-            <Icon
-              name={item.icon}
-              size={isTablet ? 28 : 24}
-              color="#E65100"
-              style={styles.icon}
-            />
-            <Text style={styles.label}>{item.label}</Text>
+            {/* YouTube SVG-style icon using Text fallback */}
+            <Icon name="smart-display" size={isTablet ? 24 : 22} color="#fff" style={styles.ytIcon} />
+            <Text style={styles.youtubeText}>Watch on YouTube</Text>
           </TouchableOpacity>
-        ))}
+        </View>
       </View>
     </View>
   );
@@ -65,51 +91,69 @@ const styles = StyleSheet.create({
     flexDirection: "row",
   },
   background: {
-    flex: 1, // fills remaining space, acts as outside touch area
-    backgroundColor: "rgba(0,0,0,0.3)", // dim background
-    // Tablet adjustments
-    ...(isTablet && {
-      backgroundColor: "rgba(0,0,0,0.4)",
-    })
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.3)",
+    ...(isTablet && { backgroundColor: "rgba(0,0,0,0.4)" }),
   },
   sidebar: {
-    width: 250,
+    width: isTablet ? 280 : 250,
     backgroundColor: "#fff",
-    paddingTop: 60,
+    paddingTop: isTablet ? 70 : 60,
     elevation: 8,
-    // Tablet adjustments
-    ...(isTablet && {
-      width: 250,
-      paddingTop: 70,
- 
-    })
+    flexDirection: "column",
+    justifyContent: "space-between",
+  },
+  menuList: {
+    flex: 1,
   },
   menuItem: {
     flexDirection: "row",
     alignItems: "center",
-    paddingVertical: 16,
-    paddingHorizontal: 20,
+    paddingVertical: isTablet ? 18 : 16,
+    paddingHorizontal: isTablet ? 22 : 20,
     borderBottomWidth: 0.5,
     borderBottomColor: "#ddd",
-    // Tablet adjustments
-    ...(isTablet && {
-      paddingVertical: 18,
-      paddingHorizontal: 22,
-    })
   },
   icon: {
-    marginRight: 20,
-    // Tablet adjustments
-    ...(isTablet && {
-      marginRight: 22,
-    })
+    marginRight: isTablet ? 22 : 20,
   },
   label: {
-    fontSize: 16,
+    fontSize: isTablet ? 18 : 16,
     color: "#333",
-    // Tablet adjustments
-    ...(isTablet && {
-      fontSize: 18,
-    })
+  },
+
+  // YouTube section
+  youtubeContainer: {
+    paddingHorizontal: 16,
+    paddingBottom: 30,
+    paddingTop: 8,
+  },
+  divider: {
+    height: 1,
+    backgroundColor: "#e5e5e5",
+    marginBottom: 14,
+  },
+  youtubeButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#93210A",
+    borderRadius: 8,
+    paddingVertical: isTablet ? 13 : 12,
+    paddingHorizontal: 16,
+    elevation: 3,
+    shadowColor: "#93210A",
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.35,
+    shadowRadius: 6,
+  },
+  ytIcon: {
+    marginRight: 10,
+  },
+  youtubeText: {
+    fontSize: isTablet ? 16 : 15,
+    fontWeight: "700",
+    color: "#fff",
+    letterSpacing: 0.2,
   },
 });

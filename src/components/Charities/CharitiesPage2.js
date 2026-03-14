@@ -24,7 +24,7 @@ export default function CharitiesPage2() {
 
   /* ================= PAYMENT ================= */
   const openGPay = () => {
-    const url = `upi://pay?pa=9876543210@upi&pn=Manager&am=50&cu=INR`;
+    const url = `upi://pay?pa=hdrss.in-1@oksbi&pn=Manager&am=50&cu=INR`;
     Linking.openURL(url).catch(() =>
       alert("Please install a UPI app")
     );

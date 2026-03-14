@@ -348,11 +348,15 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     paddingTop: Platform.OS === "ios" ? 10 : 40,
     paddingBottom: 12,
+    borderBottomLeftRadius: 18,
+    borderBottomRightRadius: 18,
   },
   headerTablet: {
     paddingHorizontal: 24,
     paddingTop: Platform.OS === "ios" ? 15 : 45,
     paddingBottom: 15,
+    borderBottomLeftRadius: 22,
+    borderBottomRightRadius: 22,
   },
   headerBtn: {
     width: 40,

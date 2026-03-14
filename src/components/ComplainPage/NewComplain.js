@@ -20,6 +20,7 @@ import * as ImagePicker from "expo-image-picker";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { createComplaint } from "../../Controller/ComplaintController/ComplaintController";
 import CustomAlert from "../../components/Alert/CustomAlert"; // Import your CustomAlert component
+import axios from 'axios';
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get("window");
 const isTablet = screenWidth >= 600;
@@ -48,26 +49,51 @@ export default function ComplaintPage3({ navigation, route }) {
     setDate(currentDate);
   };
 
-  // 📸 Pick images
-  const pickImages = async () => {
-    const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (!permission.granted) {
-      showAlert("error", "Permission Denied", "You need to allow gallery access to upload images");
-      return;
-    }
 
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsMultipleSelection: true,
-      quality: 1,
-    });
+    const pickImages = async () => {
+  const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+  if (!permission.granted) {
+    showAlert("error", "Permission Denied", "You need to allow gallery access to upload images");
+    return;
+  }
 
-    if (!result.canceled) {
-      const uris = result.assets.map((a) => a.uri);
-      setImages(uris);
-      showAlert("success", "Success", `${uris.length} image(s) selected successfully`);
-    }
-  };
+  const result = await ImagePicker.launchImageLibraryAsync({
+    mediaTypes: ImagePicker.MediaTypeOptions.Images,
+    allowsMultipleSelection: true,
+    quality: 1,
+  });
+
+  if (!result.canceled) {
+    showAlert("success", "Uploading", "Uploading images please wait...");
+
+    const uploadedUrls = await Promise.all(
+      result.assets.map(async (asset) => {
+        const formData = new FormData();
+        formData.append("file", {
+          uri: asset.uri,       
+          type: "image/jpeg",
+          name: asset.fileName || "complaint.jpg"
+        });
+
+        try {
+          const res = await axios.post("https://hdrss-backend.onrender.com/api/upload", formData, {
+            headers: { "Content-Type": "multipart/form-data" },
+          });
+          return res.data.fileUrl || null;
+        } catch (err) {
+          console.error("Image upload failed:", err);
+          return null;
+        }
+      })
+    );
+
+    // filter out any failed uploads
+    const validUrls = uploadedUrls.filter(url => url !== null);
+    setImages(validUrls); // now stores http:// URLs not file:// paths
+
+    showAlert("success", "Success", `${validUrls.length} image(s) uploaded successfully`);
+  }
+};
 
   // Show custom alert
   const showAlert = (type, title, message) => {
@@ -336,6 +362,8 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.2,
     shadowRadius: 4,
+    borderBottomLeftRadius:18,
+    borderBottomRightRadius:18
   },
   backButton: {
     padding: 5,

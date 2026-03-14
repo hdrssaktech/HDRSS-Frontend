@@ -24,6 +24,7 @@ export default function TownPartiesMemberDetails() {
   const navigation = useNavigation();
   const { width } = Dimensions.get('window');
   const isTablet = width >= 600;
+  const [isExpant,setIsExpant]=useState(false)
 
   // Extract YouTube ID from URL
   const getYoutubeId = (url) => {
@@ -183,14 +184,27 @@ export default function TownPartiesMemberDetails() {
           </TouchableOpacity>
         </View>
 
-        {/* About Section */}
         {member.about && (
           <View style={styles.aboutCard}>
+            
             <View style={styles.aboutHeader}>
               <Ionicons name="information-circle" size={24} color="#93210A" />
               <Text style={styles.cardTitle}>About</Text>
             </View>
-            <Text style={styles.aboutText}>{member.about}</Text>
+
+            <Text
+              style={styles.aboutText}
+              numberOfLines={isExpant ? undefined : 4}
+            >
+              {member.about}
+            </Text>
+
+            <TouchableOpacity onPress={() => setIsExpant(!isExpant)}>
+              <Text style={styles.readMore}>
+                {isExpant ? "Read Less" : "Read More"}
+              </Text>
+            </TouchableOpacity>
+
           </View>
         )}
 
@@ -294,6 +308,11 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#333',
     marginBottom: height * 0.01,
+  },
+  readMore:{
+    color:"#93210A",
+    fontWeight:"600",
+    textAlign:'right'
   },
   partyBadge: {
     flexDirection: 'row',

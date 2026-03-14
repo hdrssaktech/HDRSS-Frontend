@@ -14,8 +14,9 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import { fetchNews } from "../../Controller/NewsController/NewsController";
-
 import Loader from "../../components/Alert/Loader";
+
+
 
 /* 🔹 Card Component */
 const ListCard = ({ item, onPress, styles }) => (
@@ -23,6 +24,7 @@ const ListCard = ({ item, onPress, styles }) => (
     <Image source={{ uri: item.image }} style={styles.listCardImage1} />
     <View style={styles.listCardContent1}>
       <Text style={styles.listCardCategory}>{item.type}</Text>
+      <Text style={styles.listCardCategory}>தேதி: {item.date}</Text>
       <Text style={styles.listCardTitle1} numberOfLines={2}>
         {item.title}
       </Text>
@@ -77,10 +79,10 @@ export default function NewsPage1() {
 
       {/* 🔹 Loader */}
       {loading ? (
-        <Loader/>
+      <Loader/>
       ) : (
         <ScrollView showsVerticalScrollIndicator={false}>
-          {news.map((item) => (
+          {news.slice(0,10).map((item) => (
             <ListCard
               key={item.id}
               item={item}

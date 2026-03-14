@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   View,
   Text,
@@ -11,191 +11,240 @@ import {
   Linking,
   Alert,
   SafeAreaView,
-  SectionList
+  SectionList,
+  ScrollView,
 } from 'react-native';
 import { useRoute, useNavigation } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import axios from 'axios';
 import Loader from '../../../components/Alert/Loader';
 
+const PRIMARY      = '#8B0000';
+const PRIMARY_SOFT = 'rgba(139,0,0,0.08)';
+const GOLD         = '#C8922A';
+const BG           = '#F4F1EE';
+
 const DistrictAssemblyPage3 = () => {
-  const route = useRoute();
+  const route      = useRoute();
   const navigation = useNavigation();
-  const { districtId, role, districtName } = route.params || {};
-  const { width } = useWindowDimensions();
-  
-  const [leaders, setLeaders] = useState([]);
-  const [sections, setSections] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const { districtId } = route.params || {};
+  const { width }  = useWindowDimensions();
+  const isTablet   = width >= 600;
 
-  const isTablet = width >= 600;
+  const [allSections,      setAllSections]      = useState([]);
+  const [filteredSections, setFilteredSections] = useState([]);
+  const [activeFilter,     setActiveFilter]     = useState('All');
+  const [loading,          setLoading]          = useState(true);
+  const [error,            setError]            = useState(null);
 
-  useEffect(() => {
-    getLeaders();
-  }, [districtId]);
+  const listRef = useRef(null);
 
-  const getLeaders = async () => {
+  useEffect(() => { fetchLeaders(); }, [districtId]);
+
+  const fetchLeaders = async () => {
     try {
       setLoading(true);
-      const response = await axios.get(`https://hdrss-backend.onrender.com/api/districtAssembly/${districtId}`);
-      
-      if (response.data.success && Array.isArray(response.data.data)) {
-        const leadersData = response.data.data;
-        setLeaders(leadersData);
-        
-        // Group by role
+      setError(null);
+      const res = await axios.get(
+        `https://hdrss-backend.onrender.com/api/districtAssembly/${districtId}`
+      );
+      if (res.data.success && Array.isArray(res.data.data)) {
         const grouped = {};
-        leadersData.forEach(item => {
-          const roleName = item.role || 'Other';
-          if (!grouped[roleName]) {
-            grouped[roleName] = [];
-          }
-          grouped[roleName].push(item);
+        res.data.data.forEach((item) => {
+          const role = item.role || 'Other';
+          if (!grouped[role]) grouped[role] = [];
+          grouped[role].push(item);
         });
-        
-        // Convert to sections
-        const sectionsData = Object.keys(grouped).map(roleName => ({
-          title: roleName,
-          data: grouped[roleName]
+        const sections = Object.keys(grouped).map((role) => ({
+          title: role,
+          data: grouped[role],
         }));
-        setSections(sectionsData);
+        setAllSections(sections);
+        setFilteredSections(sections);
       } else {
-        setLeaders([]);
-        setSections([]);
+        setAllSections([]);
+        setFilteredSections([]);
       }
-    } catch (err) {
-      console.error('Fetch error:', err);
-      setError('Failed to load leaders');
+    } catch {
+      setError('Failed to load representatives. Please try again.');
     } finally {
       setLoading(false);
     }
   };
 
-  const handlePhonePress = (phoneNumber) => {
-    if (phoneNumber) {
-      Linking.openURL(`tel:${phoneNumber}`);
-    } else {
-      Alert.alert('Info', 'Phone number not available');
-    }
+  const handleFilter = (role) => {
+    setActiveFilter(role);
+    const next = role === 'All' ? allSections : allSections.filter((s) => s.title === role);
+    setFilteredSections(next);
+    try {
+      listRef.current?.scrollToLocation({ sectionIndex: 0, itemIndex: 0, animated: true });
+    } catch (_) {}
   };
 
-  const handleLocationPress = (location) => {
-    if (location) {
-      const encodedLocation = encodeURIComponent(location);
-      Linking.openURL(`https://maps.google.com/?q=${encodedLocation}`);
-    } else {
-      Alert.alert('Info', 'Location not available');
-    }
-  };
+  const handleCall = (phone) =>
+    phone ? Linking.openURL(`tel:${phone}`) : Alert.alert('Info', 'Phone number not available');
 
-  const handleCardPress = (item) => {
-    navigation.navigate('DistrictAssembly4', { leaderData: item });
-  };
+  const handleDirections = (loc) =>
+    loc
+      ? Linking.openURL(`https://maps.google.com/?q=${encodeURIComponent(loc)}`)
+      : Alert.alert('Info', 'Location not available');
 
-  const renderItem = ({ item }) => (
-    <TouchableOpacity 
-      style={[styles.card, isTablet && styles.cardTablet]}
-      activeOpacity={0.7}
-      onPress={() => handleCardPress(item)}
-    >
-      {/* Left Square Image */}
-      <Image
-        source={{ uri: item.image || 'https://via.placeholder.com/300x300/f0f0f0/8B0000?text=Photo' }}
-        style={[styles.profileImage, isTablet && styles.profileImageTablet]}
-        resizeMode="cover"
-      />
-
-      {/* Right Details */}
-      <View style={styles.detailsContainer}>
-        <Text style={[styles.name, isTablet && styles.nameTablet]} numberOfLines={2}>
-          {item.name || 'Name not available'}
-        </Text>
-        <Text style={[styles.role, isTablet && styles.roleTablet]} numberOfLines={1}>
-          {item.role || 'Role not specified'}
-        </Text>
-        {item.role == "Councilor" && item.Vartu && (
-          <Text style={[styles.wardText, isTablet && styles.wardTextTablet]} numberOfLines={1}>
-            Ward No: {item.Vartu}
-          </Text>
-        )}
-
-        {/* Buttons Row */}
-        <View style={styles.buttonsRow}>
-
-          {item.phoneNumber && (
-            <TouchableOpacity
-              style={styles.callButton}
-              onPress={(e) => {
-                e.stopPropagation();
-                handlePhonePress(item.phoneNumber);
-              }}
-            >
-              <Ionicons name="call" size={16} color="#fff" />
-              <Text style={styles.buttonText}>Call</Text>
-            </TouchableOpacity>
-          )}
-
-          {item.location && (
-            <TouchableOpacity
-              style={styles.directionButton}
-              onPress={(e) => {
-                e.stopPropagation();
-                handleLocationPress(item.location);
-              }}
-            >
-              <Ionicons name="navigate" size={16} color="#8B0000" />
-              <Text style={styles.directionText}>Directions</Text>
-            </TouchableOpacity>
-          )}
-        </View>
+  /* ── Filter Chips ── */
+  const renderFilterBar = () => {
+    const roles = ['All', ...allSections.map((s) => s.title)];
+    return (
+      <View style={styles.filterWrapper}>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.filterBar}
+        >
+          {roles.map((role) => {
+            const active = activeFilter === role;
+            return (
+              <TouchableOpacity
+                key={role}
+                style={[styles.chip, active && styles.chipActive]}
+                onPress={() => handleFilter(role)}
+                activeOpacity={0.75}
+              >
+                {active && <View style={styles.chipDot} />}
+                <Text style={[styles.chipText, active && styles.chipTextActive]}>
+                  {role}
+                </Text>
+              </TouchableOpacity>
+            );
+          })}
+        </ScrollView>
       </View>
-    </TouchableOpacity>
-  );
+    );
+  };
 
-  const renderSectionHeader = ({ section: { title } }) => (
+  /* ── Card ── */
+  const renderItem = ({ item }) => {
+    const imgSize = isTablet ? 120 : 95;
+    return (
+      <TouchableOpacity
+        style={[styles.card, isTablet && styles.cardTablet]}
+        activeOpacity={0.85}
+        onPress={() => navigation.navigate('DistrictAssembly4', { leaderData: item })}
+      >
+        {/* Photo */}
+        <View style={[styles.photoWrap, { width: imgSize, height: imgSize, borderRadius: 14 }]}>
+          <Image
+            source={{
+              uri: item.image || 'https://via.placeholder.com/300x300/f0f0f0/8B0000?text=Photo',
+            }}
+            style={{ width: imgSize, height: imgSize, borderRadius: 14 }}
+            resizeMode="cover"
+          />
+        </View>
+        
+        {/* Info */}
+        <View style={styles.info}>
+          <View style={styles.roleBadge}>
+            <Text style={styles.roleBadgeText} numberOfLines={1}>
+              {item.role || 'Member'}
+            </Text>
+          </View>
+
+          <Text style={[styles.name, isTablet && styles.nameTablet]} numberOfLines={2}>
+            {item.name || 'Name not available'}
+          </Text>
+
+          {item.role === 'Councilor' && item.Vartu ? (
+            <View style={styles.wardRow}>
+              <Ionicons name="location-outline" size={12} color={GOLD} />
+              <Text style={styles.wardText}>Ward No: {item.Vartu}</Text>
+            </View>
+          ) : null}
+
+          <View style={styles.actions}>
+            {item.phoneNumber ? (
+              <TouchableOpacity
+                style={styles.callBtn}
+                onPress={(e) => { e.stopPropagation(); handleCall(item.phoneNumber); }}
+                activeOpacity={0.8}
+              >
+                <Ionicons name="call" size={12} color="#fff" />
+                <Text style={styles.callBtnText}>Call</Text>
+              </TouchableOpacity>
+            ) : null}
+
+            {item.location ? (
+              <TouchableOpacity
+                style={styles.dirBtn}
+                onPress={(e) => { e.stopPropagation(); handleDirections(item.location); }}
+                activeOpacity={0.8}
+              >
+                <Ionicons name="navigate-outline" size={12} color={PRIMARY} />
+                <Text style={styles.dirBtnText}>Directions</Text>
+              </TouchableOpacity>
+            ) : null}
+          </View>
+        </View>
+
+        {/* Chevron */}
+        <Ionicons
+          name="chevron-forward"
+          size={16}
+          color="rgba(139,0,0,0.25)"
+          style={styles.chevron}
+        />
+      </TouchableOpacity>
+    );
+  };
+
+  /* ── Section Header ── */
+  const renderSectionHeader = ({ section: { title, data } }) => (
     <View style={[styles.sectionHeader, isTablet && styles.sectionHeaderTablet]}>
-      <View style={[styles.line, isTablet && styles.lineTablet]} />
+      <View style={styles.sectionAccent} />
       <Text style={[styles.sectionTitle, isTablet && styles.sectionTitleTablet]}>
         {title}
       </Text>
-      <View style={[styles.line, isTablet && styles.lineTablet]} />
     </View>
   );
 
-  const renderHeader = () => (
-    <View style={[styles.header, isTablet && styles.headerTablet]}>
-      <TouchableOpacity
-        style={[styles.backButton, isTablet && styles.backButtonTablet]}
-        onPress={() => navigation.goBack()}
-        activeOpacity={0.8}
-      >
-        <Ionicons name="chevron-back" size={isTablet ? 30 : 26} color="#fff" />
-      </TouchableOpacity>
+  /* ── Top Header ── */
+  const renderHeader = () => {
+    // const totalMembers = allSections.reduce((acc, s) => acc + s.data.length, 0);
+    return (
+      <View style={[styles.header, isTablet && styles.headerTablet]}>
+        <TouchableOpacity
+          style={styles.backBtn}
+          onPress={() => navigation.goBack()}
+          activeOpacity={0.8}
+        >
+          <Ionicons name="chevron-back" size={isTablet ? 28 : 24} color="#fff" />
+        </TouchableOpacity>
 
-      <View style={styles.headerTitleWrap}>
-        <Text style={[styles.headerTitle, isTablet && styles.headerTitleTablet]} numberOfLines={1}>
-          {role || "Elected Representatives"}
-        </Text>
+        <View style={styles.headerCenter}>
+          <Text style={[styles.headerTitle, isTablet && styles.headerTitleTablet]}>
+            Elected Representatives
+          </Text>
+        </View>
+
+        <View style={{ width: isTablet ? 44 : 40 }} />
       </View>
-      
-      <View style={[styles.headerSpacer, isTablet && styles.headerSpacerTablet]} />
-    </View>
-  );
+    );
+  };
 
-  if (loading) {
-    return <Loader />;
-  }
+  /* ── Screens ── */
+  if (loading) return <Loader />;
 
   if (error) {
     return (
       <SafeAreaView style={styles.safe}>
-        <StatusBar backgroundColor="#8B0000" barStyle="light-content" />
-        <View style={styles.centerContainer}>
-          <Ionicons name="alert-circle-outline" size={60} color="#8B0000" />
-          <Text style={styles.errorText}>{error}</Text>
-          <TouchableOpacity style={styles.retryButton} onPress={getLeaders}>
-            <Text style={styles.retryButtonText}>Retry</Text>
+        <StatusBar backgroundColor={PRIMARY} barStyle="light-content" />
+        <View style={styles.center}>
+          <View style={styles.errorIconWrap}>
+            <Ionicons name="alert-circle-outline" size={38} color={PRIMARY} />
+          </View>
+          <Text style={styles.errorTitle}>Something went wrong</Text>
+          <Text style={styles.errorMsg}>{error}</Text>
+          <TouchableOpacity style={styles.retryBtn} onPress={fetchLeaders}>
+            <Ionicons name="refresh" size={15} color="#fff" />
+            <Text style={styles.retryText}>Try Again</Text>
           </TouchableOpacity>
         </View>
       </SafeAreaView>
@@ -204,25 +253,28 @@ const DistrictAssemblyPage3 = () => {
 
   return (
     <SafeAreaView style={styles.safe}>
-      <StatusBar backgroundColor="#8B0000" barStyle="light-content" />
+      <StatusBar backgroundColor={PRIMARY} barStyle="light-content" />
       <View style={styles.container}>
         {renderHeader()}
-        
+        {renderFilterBar()}
+
         <SectionList
-          sections={sections}
+          ref={listRef}
+          sections={filteredSections}
           renderItem={renderItem}
           renderSectionHeader={renderSectionHeader}
-          keyExtractor={(item) => item.id?.toString() || Math.random().toString()}
-          contentContainerStyle={[styles.listContainer, isTablet && styles.listContainerTablet]}
+          keyExtractor={(item) => item.id?.toString() ?? Math.random().toString()}
+          contentContainerStyle={[styles.list, isTablet && styles.listTablet]}
           showsVerticalScrollIndicator={false}
+          stickySectionHeadersEnabled={false}
           ListEmptyComponent={
-            <View style={styles.emptyContainer}>
-              <Ionicons name="people-outline" size={60} color="#ccc" />
-              <Text style={styles.emptyText}>No leaders found</Text>
+            <View style={styles.center}>
+              <Ionicons name="people-outline" size={56} color="#ccc" />
+              <Text style={styles.emptyTitle}>No representatives found</Text>
+              <Text style={styles.emptyMsg}>Try selecting a different role</Text>
             </View>
           }
-          ListFooterComponent={<View style={{ height: isTablet ? 40 : 30 }} />}
-          stickySectionHeadersEnabled={false}
+          ListFooterComponent={<View style={{ height: 40 }} />}
         />
       </View>
     </SafeAreaView>
@@ -230,278 +282,232 @@ const DistrictAssemblyPage3 = () => {
 };
 
 const styles = StyleSheet.create({
-  safe: { 
-    flex: 1, 
-    backgroundColor: "#8B0000",
-  },
-  container: {
-    flex: 1,
-    backgroundColor: "#FFFFFF",
-  },
+  safe:      { flex: 1, backgroundColor: PRIMARY },
+  container: { flex: 1, backgroundColor: BG },
 
-  // Header
+  /* Header */
   header: {
-    backgroundColor: "#8B0000",
-    flexDirection: "row",
-    alignItems: "center",
+    backgroundColor: PRIMARY,
+    flexDirection: 'row',
+    alignItems: 'center',
     paddingHorizontal: 16,
-    paddingTop: Platform.OS === "ios" ? 10 : 40,
-    paddingBottom: 12,
-    borderBottomLeftRadius: 20,
-    borderBottomRightRadius: 20,
-    elevation: 4,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
+    paddingTop: Platform.OS === 'ios' ? 8 : 36,
+    paddingBottom: 16,
+    borderBottomLeftRadius: 24,
+    borderBottomRightRadius: 24,
+    elevation: 6,
+    shadowColor: PRIMARY,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.35,
+    shadowRadius: 8,
   },
   headerTablet: {
     paddingHorizontal: 32,
-    paddingTop: Platform.OS === "ios" ? 15 : 45,
-    paddingBottom: 15,
-    borderBottomLeftRadius: 30,
-    borderBottomRightRadius: 30,
+    paddingTop: Platform.OS === 'ios' ? 12 : 44,
+    paddingBottom: 20,
+    borderBottomLeftRadius: 32,
+    borderBottomRightRadius: 32,
   },
-  backButton: {
+  backBtn: {
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: "rgba(255,255,255,0.15)",
-    alignItems: "center",
-    justifyContent: "center",
+    backgroundColor: 'rgba(255,255,255,0.18)',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  backButtonTablet: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
-  },
-  headerTitleWrap: {
-    flex: 1,
-    alignItems: "center",
-    paddingHorizontal: 10,
-  },
+  headerCenter: { flex: 1, alignItems: 'center', paddingHorizontal: 8 },
   headerTitle: {
-    color: "#fff",
-    fontSize: 18,
-    fontWeight: "900",
-    textAlign: "center",
+    color: '#fff',
+    fontSize: 17,
+    fontWeight: '800',
+    letterSpacing: 0.2,
   },
-  headerTitleTablet: {
-    fontSize: 24,
-  },
-  headerSpacer: {
-    width: 40,
-  },
-  headerSpacerTablet: {
-    width: 50,
+  headerTitleTablet: { fontSize: 22 },
+  headerSub: {
+    color: 'rgba(255,255,255,0.6)',
+    fontSize: 12,
+    fontWeight: '500',
+    marginTop: 2,
   },
 
-  // Section Header Styles - Role name between two lines
+  /* Filter */
+  filterWrapper: {
+    backgroundColor: '#fff',
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(0,0,0,0.06)',
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 3,
+  },
+  filterBar: {
+    flexDirection: 'row',
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    gap: 8,
+  },
+  chip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 14,
+    paddingVertical: 7,
+    borderRadius: 20,
+    backgroundColor: BG,
+    borderWidth: 1.5,
+    borderColor: 'rgba(139,0,0,0.2)',
+    gap: 6,
+  },
+  chipActive:     { backgroundColor: PRIMARY, borderColor: PRIMARY },
+  chipDot:        { width: 6, height: 6, borderRadius: 3, backgroundColor: GOLD },
+  chipText:       { fontSize: 13, fontWeight: '700', color: PRIMARY },
+  chipTextActive: { color: '#fff' },
+
+  /* Section Header */
   sectionHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
     marginTop: 20,
-    marginBottom: 15,
-    paddingHorizontal: 16,
+    marginBottom: 10,
+    marginHorizontal: 16,
+    gap: 10,
   },
-  sectionHeaderTablet: {
-    marginTop: 30,
-    marginBottom: 20,
-    paddingHorizontal: 32,
-  },
-  line: {
-    flex: 1,
-    height: 2,
-    backgroundColor: '#8B0000',
-    opacity: 0.3,
-    borderRadius: 1,
-  },
-  lineTablet: {
-    height: 3,
+  sectionHeaderTablet: { marginHorizontal: 32, marginTop: 28, marginBottom: 14 },
+  sectionAccent: {
+    width: 4,
+    height: 20,
+    borderRadius: 2,
+    backgroundColor: GOLD,
   },
   sectionTitle: {
-    color: '#8B0000',
-    fontSize: 18,
+    flex: 1,
+    fontSize: 12,
     fontWeight: '800',
-    textAlign: 'center',
+    color: '#444',
     textTransform: 'uppercase',
-    paddingHorizontal: 15,
-    backgroundColor: '#fff',
+    letterSpacing: 1.1,
   },
-  sectionTitleTablet: {
-    fontSize: 22,
-    fontWeight: '900',
-    paddingHorizontal: 20,
-  },
+  sectionTitleTablet: { fontSize: 15 },
 
-  // List Container
-  listContainer: { 
-    paddingBottom: 16,
-  },
-  listContainerTablet: {
-    paddingBottom: 32,
-  },
-  
-  // Card
+
+  /* List */
+  list:       { paddingBottom: 16 },
+  listTablet: { paddingBottom: 32 },
+
+  /* Card */
   card: {
     flexDirection: 'row',
+    alignItems: 'center',
     backgroundColor: '#fff',
-    marginBottom: 12,
     marginHorizontal: 16,
-    borderRadius: 16,
-    padding: 12,
-    elevation: 3,
+    marginBottom: 10,
+    borderRadius: 18,
+    padding: 14,
+    elevation: 2,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    borderWidth: 1,
-    borderColor: 'rgba(139, 0, 0, 0.1)',
+    shadowOpacity: 0.07,
+    shadowRadius: 6,
   },
   cardTablet: {
     marginHorizontal: 32,
-    padding: 16,
-    marginBottom: 16,
-    borderRadius: 18,
-    elevation: 5,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.15,
-    shadowRadius: 8,
-  },
-  profileImage: {
-    width: 90,
-    height: 90,
-    borderRadius: 12,
-    borderWidth: 2,
-    borderColor: '#8B0000',
-  },
-  
-  profileImageTablet: {
-    width: 110,
-    height: 110,
-    borderRadius: 16,
-  },
-
-  detailsContainer: {
-    flex: 1,
-    marginLeft: 16,
-    justifyContent: 'space-around',
-  },
-  name: {
-    fontSize: 16,
-    fontWeight: '800',
-    color: '#8B0000',
-    marginBottom: 4,
-    lineHeight: 22,
-  },
-  nameTablet: {
-    fontSize: 18,
-    lineHeight: 24,
-    marginBottom: 6,
-    fontWeight: '900',
-  },
-  role: {
-    fontSize: 14,
-    color: '#666',
-    fontWeight: '600',
-    marginBottom: 4,
-  },
-  roleTablet: {
-    fontSize: 16,
-    marginBottom: 6,
-  },
-  wardText: {
-    fontSize: 13,
-    color: '#8B0000',
-    fontWeight: '500',
-    marginBottom: 8,
-  },
-  wardTextTablet: {
-    fontSize: 15,
-    marginBottom: 10,
-  },
-  buttonsRow:{
-  flexDirection:"row",
-  gap:8
-},
-callButton:{
-  flex:1,
-  flexDirection:"row",
-  backgroundColor:"#8B0000",
-  padding:10,
-  borderRadius:8,
-  justifyContent:"center",
-  alignItems:"center",
-  gap:6
-},
-
-buttonText:{
-  color:"#fff",
-  fontSize:13,
-  fontWeight:"700"
-},
-
-directionButton:{
-  flex:1,
-  flexDirection:"row",
-  borderWidth:1,
-  borderColor:"#8B0000",
-  backgroundColor:"rgba(139,0,0,0.05)",
-  paddingVertical:8,
-  borderRadius:8,
-  justifyContent:"center",
-  alignItems:"center",
-  gap:6
-},
-
-directionText:{
-  color:"#8B0000",
-  fontSize:13,
-  fontWeight:"700"
- },
-
-  // Center States
-  centerContainer: { 
-    flex: 1, 
-    justifyContent: 'center', 
-    alignItems: 'center', 
-    backgroundColor: '#fff',
-    padding: 20,
-  },
-
-  errorText: { 
-    marginTop: 16, 
-    color: '#8B0000', 
-    fontSize: 16, 
-    textAlign: 'center', 
-    paddingHorizontal: 40,
-    fontWeight: '500',
-  },
-  retryButton: { 
-    marginTop: 24, 
-    backgroundColor: '#8B0000', 
-    paddingHorizontal: 30, 
-    paddingVertical: 12, 
-    borderRadius: 25,
+    padding: 18,
+    marginBottom: 14,
+    borderRadius: 22,
     elevation: 3,
   },
-  retryButtonText: { 
-    color: '#fff', 
-    fontSize: 16, 
-    fontWeight: '600' 
+
+  /* Photo */
+  photoWrap: { position: 'relative', overflow: 'hidden' },
+
+  /* Info */
+  info: { flex: 1, marginLeft: 14, gap: 5 },
+  roleBadge: {
+    alignSelf: 'flex-start',
+    backgroundColor: PRIMARY_SOFT,
+    borderRadius: 6,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
   },
-  emptyContainer: { 
-    alignItems: 'center', 
-    justifyContent: 'center', 
-    paddingTop: 100 
+  roleBadgeText: {
+    fontSize: 10,
+    fontWeight: '800',
+    color: PRIMARY,
+    textTransform: 'uppercase',
+    letterSpacing: 0.6,
   },
-  emptyText: { 
-    marginTop: 16, 
-    fontSize: 16, 
-    color: '#999',
-    textAlign: 'center',
+  name: {
+    fontSize: 15,
+    fontWeight: '800',
+    color: '#1A1A1A',
+    lineHeight: 21,
   },
+  nameTablet:  { fontSize: 18, lineHeight: 26 },
+  wardRow:     { flexDirection: 'row', alignItems: 'center', gap: 4 },
+  wardText:    { fontSize: 12, color: '#888', fontWeight: '600' },
+
+  /* Buttons */
+  actions:     { flexDirection: 'row', gap: 8, marginTop: 4 },
+  callBtn: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: PRIMARY,
+    paddingVertical: 8,
+    borderRadius: 10,
+    gap: 5,
+  },
+  callBtnText: { color: '#fff', fontSize: 12, fontWeight: '700' },
+  dirBtn: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1.5,
+    borderColor: PRIMARY,
+    backgroundColor: PRIMARY_SOFT,
+    paddingVertical: 8,
+    borderRadius: 10,
+    gap: 5,
+  },
+  dirBtnText:  { color: PRIMARY, fontSize: 12, fontWeight: '700' },
+  chevron:     { marginLeft: 4 },
+
+  /* States */
+  center: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingTop: 100,
+    paddingHorizontal: 32,
+  },
+  errorIconWrap: {
+    width: 72,
+    height: 72,
+    borderRadius: 36,
+    backgroundColor: PRIMARY_SOFT,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  errorTitle:  { fontSize: 17, fontWeight: '800', color: '#1A1A1A', marginBottom: 6 },
+  errorMsg:    { fontSize: 14, color: '#777', textAlign: 'center', lineHeight: 20 },
+  retryBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 24,
+    backgroundColor: PRIMARY,
+    paddingHorizontal: 28,
+    paddingVertical: 12,
+    borderRadius: 25,
+    gap: 8,
+    elevation: 3,
+  },
+  retryText:   { color: '#fff', fontSize: 14, fontWeight: '700' },
+  emptyTitle:  { fontSize: 16, fontWeight: '800', color: '#555', marginTop: 16, marginBottom: 4 },
+  emptyMsg:    { fontSize: 13, color: '#aaa', textAlign: 'center' },
 });
 
 export default DistrictAssemblyPage3;

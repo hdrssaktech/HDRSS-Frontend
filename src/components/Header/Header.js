@@ -326,9 +326,9 @@ const styles = StyleSheet.create({
     regNo1: {
     position: "absolute",
     bottom: 12, // Position below the sun logo
-    fontSize: 9,
+    fontSize: 12,
     fontWeight: "bold",
-    color: "#000",
+    color: "#ffffff",
     // backgroundColor: "rgba(255,255,255,0.8)",
     paddingHorizontal: 6,
     paddingVertical: 2,
@@ -338,7 +338,7 @@ const styles = StyleSheet.create({
   
   regNoTablet1: {
     bottom: 13,
-    fontSize: 12,
+    fontSize: 16,
     paddingHorizontal: 8,
     paddingVertical: 3,
     borderRadius: 6,

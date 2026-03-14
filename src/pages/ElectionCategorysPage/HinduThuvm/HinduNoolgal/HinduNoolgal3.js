@@ -14,6 +14,7 @@ import {
 } from "react-native";
 import { Ionicons, MaterialIcons } from "@expo/vector-icons";
 import YoutubePlayer from "react-native-youtube-iframe";
+import Hyperlink from 'react-native-hyperlink';
 
 /* ✅ Extract YouTube ID (watch / short / embed) */
 const getYouTubeId = (url) => {
@@ -344,17 +345,22 @@ export default function HinduNoolgal3({ route, navigation }) {
 
               <View style={[styles.quoteBox, isTablet && styles.quoteBoxTablet]}>
                 <Ionicons 
-                  name="quote" 
+                  name="musical-note" 
                   size={isTablet ? 22 : 18} 
                   color="#8B0000" 
                   style={[styles.quoteIcon, isTablet && styles.quoteIconTablet]} 
                 />
+               <Hyperlink 
+                linkDefault={true} 
+                linkStyle={{ color: '#8B0000', textDecorationLine: 'underline' }}
+              >
                 <Text
                   style={[styles.quoteText, isTablet && styles.quoteTextTablet]}
                   numberOfLines={padalExpanded ? undefined : 6}
                 >
                   {nool.padal}
                 </Text>
+              </Hyperlink>
               </View>
 
               {padalIsLong && (

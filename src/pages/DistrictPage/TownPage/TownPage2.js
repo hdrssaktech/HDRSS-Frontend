@@ -152,7 +152,7 @@ export default function TownPage2() {
           } />
 
           <Menu title="HDRSS" onPress={() =>
-            navigation.navigate("Member0", { districtId, districtName })
+            navigation.navigate("Member", { districtId, districtName })
           } />
         </View>
 

@@ -208,20 +208,9 @@ export default function HomePage() {
           }
           ListFooterComponent={
             <>
-              {/* 🎥 INTERVIEW VIDEOS */}
-              {/* <FlatList
-                data={INTERVIEW_DATA.slice(0, 1)}
-                keyExtractor={(item) => item.id.toString()}
-                renderItem={({ item }) => (
-                  <InterviewVideos video={item} data={interviewData} />
-                )}
-                scrollEnabled={false}
-              /> */}
               <InterviewVideos/>
-
               {/* 📰 NEWS SECTION */}
               <Text style={styles.heading}>Latest News</Text>
-
               {news.length === 0 ? (
                 <Text style={styles.noDataText}>No news available</Text>
               ) : (
@@ -243,6 +232,7 @@ export default function HomePage() {
                         <Image source={{ uri: item.image }} style={styles.newsImage} />
                         <View style={styles.newsContent}>
                           <Text style={styles.newsCategory}>{item.type}</Text>
+                          <Text style={styles.newsDate}>தேதி: {item.date}</Text>
                           <Text style={styles.newsTitle} numberOfLines={2}>
                             {item.title}
                           </Text>
@@ -410,6 +400,11 @@ const getStyles = (isTablet) =>
     newsCategory: {
       fontSize: isTablet ? 18 : 13,
       color: "#93210A",
+      fontWeight: "bold",
+    },
+    newsDate:{
+    fontSize: isTablet ? 16 : 11,
+      color: "#000000",
       fontWeight: "bold",
     },
 

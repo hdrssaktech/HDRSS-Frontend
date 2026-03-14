@@ -237,19 +237,6 @@ export const getComplaints = async (token) => {
 
 
 
-// // members
-// export const getMembers = async () => {
-//   try {
-//    const response = await axios.get(`${BASE_URL}/members`);
-
-//     return response.data; // assuming API returns array of members
-//   } catch (error) {
-//     console.error("Error fetching members:", error);
-//     return [];
-//   }
-// };
-//import axios from "axios";
-//const BASE_URL = "https://hdrss-backend.onrender.com/api";
 
 // ✅ Get all members
 
@@ -440,6 +427,17 @@ export const getHomeAdsApi = async () => {
     return null;
   }
 };
+
+// job 
+export const fetchJobs = async()=>{
+   try{
+    const res = await axios.get (`${BASE_URL}/jobs`);
+    return res.data;
+   }catch(err){
+    console.error("API error (fetchJobs):", err);
+    return [];
+   }
+}
 
 
 

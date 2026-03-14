@@ -98,17 +98,7 @@ export default function Membership1() {
     }
   };
 
-  // 💸 GPay Payment
-  const openGPay = () => {
-    const upiId = "9345339088@upi";
-    const name = "ManagerName";
-    const amount = categoryType === "District" ? "100" : "500";
-    const url = `upi://pay?pa=${upiId}&pn=${name}&am=${amount}&cu=INR`;
 
-    Linking.openURL(url).catch(() => {
-      alert("Please install a UPI payment app to proceed.");
-    });
-  };
 
   const handleAadhaarChange = (text) => {
     const cleaned = text.replace(/\D/g, "");
@@ -152,12 +142,51 @@ const handleAddressChange = (text) => {
 
   // ✅ Handle Submit
 const handleSubmit = async () => {
-  console.warn("🔥 HANDLE SUBMIT CLICKED");
 
   if (!photo) {
     showCustomAlert("error", "Error", "Please upload a photo.");
     return;
   }
+    if (!name.trim()) {
+    showCustomAlert("Error", "Name is required");
+    return;
+  }
+
+  if (!fatherName.trim()) {
+    showCustomAlert("Error", "Father / Husband Name is required");
+    return;
+  }
+
+  if (!bloodGroup.trim()) {
+    showCustomAlert("Error", "Blood Group is required");
+    return;
+  }
+
+  if (!dob) {
+    showCustomAlert("Error", "Date of Birth is required");
+    return;
+  }
+
+  if (!address.trim()) {
+    showCustomAlert("Error", "Address is required");
+    return;
+  }
+
+  if (!district.trim()) {
+    showCustomAlert("Error", "District is required");
+    return;
+  }
+
+  if (!contact.trim()) {
+    showCustomAlert("Error", "Contact number is required");
+    return;
+  }
+
+  if (!designation.trim()) {
+    showCustomAlert("Error", "Designation is required");
+    return;
+  }
+  console.warn("🔥 HANDLE SUBMIT CLICKED");
 
   try {
     console.warn("📤 Uploading image");
@@ -306,10 +335,17 @@ const handleSubmit = async () => {
           </View>
 
           {/* Form Inputs */}
-          <Text style={styles.label}>Name:</Text>
+          <Text style={styles.label}>Name:<Text style={styles.star}> * </Text></Text>
           <TextInput style={styles.input} value={name} autoCapitalize="characters" onChangeText={(text)=>setName(text.toUpperCase())} />
+          <Text style={styles.label}>Designation:<Text style={styles.star}> * </Text></Text>
+          <TextInput
+            style={styles.input}
+            value={designation}
+            onChangeText={(text) => setDesignation(text.toUpperCase())}
+            autoCapitalize="characters"
+          />
 
-          <Text style={styles.label}>Father / Husband Name:</Text>
+          <Text style={styles.label}>Father / Husband Name:<Text style={styles.star}> * </Text></Text>
           <TextInput
             style={styles.input}
             value={fatherName}
@@ -317,7 +353,7 @@ const handleSubmit = async () => {
             onChangeText={(text)=>setFatherName(text.toUpperCase())}
           />
 
-          <Text style={styles.label}>Blood Group:</Text>
+          <Text style={styles.label}>Blood Group:<Text style={styles.star}> * </Text></Text>
           <TextInput
             style={styles.input}
             value={bloodGroup}
@@ -325,7 +361,7 @@ const handleSubmit = async () => {
             onChangeText={setBloodGroup}
           />
 
-          <Text style={styles.label}>D O B:</Text>
+          <Text style={styles.label}>D O B:<Text style={styles.star}> * </Text></Text>
           <TouchableOpacity
             style={styles.input}
             onPress={() => setShowDatePicker(true)}
@@ -343,7 +379,7 @@ const handleSubmit = async () => {
             />
           )}
 
-         <Text style={styles.label}>Residential Address:</Text>
+         <Text style={styles.label}>Address:<Text style={styles.star}> * </Text></Text>
           <TextInput
             style={[styles.input, { height: 70, textAlignVertical: "top" }]}
             multiline
@@ -352,7 +388,22 @@ const handleSubmit = async () => {
             placeholder="Door No / Street / Area"
             autoCapitalize="characters"
           />
-
+           <Text style={styles.label}>District:<Text style={styles.star}> * </Text></Text>
+          <TextInput
+            style={styles.input}
+            value={district}
+            
+            onChangeText={setDistrict}
+          />
+        <Text style={styles.label}>Contact Details:<Text style={styles.star}> * </Text></Text>
+        <TextInput
+          style={styles.input}
+          value={contact}
+          onChangeText={handleContactChange}
+          keyboardType="numeric"
+          maxLength={10}
+          placeholder="Enter 10-digit number"
+        />
 
           <Text style={styles.label}>City/Town:</Text>
           <TextInput style={styles.input} value={city} autoCapitalize="characters" onChangeText={(text)=>setCity(text.toUpperCase())} />
@@ -365,13 +416,7 @@ const handleSubmit = async () => {
             autoCapitalize="characters"
           />
 
-          <Text style={styles.label}>District:</Text>
-          <TextInput
-            style={styles.input}
-            value={district}
-            
-            onChangeText={setDistrict}
-          />
+         
           <Text style={styles.label}>Pin:</Text>
           <TextInput
             style={styles.input}
@@ -409,15 +454,7 @@ const handleSubmit = async () => {
             placeholder="example@gmail.com"
           />
 
-        <Text style={styles.label}>Contact Details:</Text>
-        <TextInput
-          style={styles.input}
-          value={contact}
-          onChangeText={handleContactChange}
-          keyboardType="numeric"
-          maxLength={10}
-          placeholder="Enter 10-digit number"
-        />
+
 
           <Text style={styles.label}>Aadhaar No:</Text>
           <TextInput
@@ -434,14 +471,6 @@ const handleSubmit = async () => {
             multiline
             value={professionalDetails}
             onChangeText={(text)=>setProfessionalDetails(text.toLocaleUpperCase())}
-            autoCapitalize="characters"
-          />
-
-          <Text style={styles.label}>Designation:</Text>
-          <TextInput
-            style={styles.input}
-            value={designation}
-            onChangeText={(text) => setDesignation(text.toUpperCase())}
             autoCapitalize="characters"
           />
 
@@ -475,12 +504,6 @@ const handleSubmit = async () => {
             <Text style={styles.sendButtonText}>Send</Text>
           </TouchableOpacity>
 
-          {/* GPay */}
-          <TouchableOpacity style={styles.payButton} onPress={openGPay}>
-            <Text style={styles.amountText}>
-              💰 GPay Amount: ₹{categoryType === "District" ? "100" : "500"}
-            </Text>
-          </TouchableOpacity>
         </ScrollView>
       </KeyboardAvoidingView>
       <CustomAlert
@@ -536,6 +559,10 @@ const styles = StyleSheet.create({
     marginTop: 10,
     color: "#333",
   },
+  star: {
+    color: "#93210A",
+  },
+
   input: {
     borderWidth: 1,
     borderColor: "#93210A",

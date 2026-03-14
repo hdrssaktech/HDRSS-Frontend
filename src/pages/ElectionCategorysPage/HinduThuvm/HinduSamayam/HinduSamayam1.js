@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -9,35 +9,33 @@ import {
   SafeAreaView,
   Dimensions,
   FlatList,
+  Modal,
+  TextInput,
+  Platform,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import axios from "axios";
 import { useNavigation } from "@react-navigation/native";
 import Loader from "../../../../components/Alert/Loader";
 
+const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
+const isTablet = SCREEN_WIDTH >= 600;
+const numColumns = isTablet ? 3 : 2;
+const H_PADDING = isTablet ? 20 : 12;
+const GAP = isTablet ? 14 : 10;
+const CARD_WIDTH = (SCREEN_WIDTH - H_PADDING * 2 - GAP * (numColumns - 1)) / numColumns;
+
+const ALL = "அனைத்தும்";
+
 const HinduSamayam1 = () => {
   const navigation = useNavigation();
-  const [windowDimensions, setWindowDimensions] = useState(Dimensions.get("window"));
-  const { width, height } = windowDimensions;
 
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [isTablet, setIsTablet] = useState(false);
-
-  // Update dimensions on screen resize
-  useEffect(() => {
-    const subscription = Dimensions.addEventListener("change", ({ window }) => {
-      setWindowDimensions(window);
-    });
-    return () => subscription?.remove();
-  }, []);
-
-  // Check for tablet
-  useEffect(() => {
-    const isTabletSize = width >= 600;
-    setIsTablet(isTabletSize);
-  }, [width]);
+  const [activeFilter, setActiveFilter] = useState(ALL);
+  const [modalVisible, setModalVisible] = useState(false);
+  const [modalSearch, setModalSearch] = useState("");
 
   useEffect(() => {
     fetchCategories();
@@ -46,14 +44,14 @@ const HinduSamayam1 = () => {
   const fetchCategories = async () => {
     try {
       setLoading(true);
+      setError(null);
       const res = await axios.get(
         "https://hdrss-backend.onrender.com/api/hindu-samayam/category"
       );
-      const sortedData = [...(res.data || [])].sort((a, b) => 
-      (a.orderNo ?? Infinity) - (b.orderNo ?? Infinity)
-    );
-      setCategories(sortedData || []);
-      setError(null);
+      const sorted = [...(res.data || [])].sort(
+        (a, b) => (a.orderNo ?? Infinity) - (b.orderNo ?? Infinity)
+      );
+      setCategories(sorted);
     } catch (e) {
       console.error("API Error:", e);
       setError("பகுப்புகளை ஏற்ற முடியவில்லை. மீண்டும் முயற்சிக்கவும்.");
@@ -61,138 +59,221 @@ const HinduSamayam1 = () => {
       setLoading(false);
     }
   };
-  // Responsive columns: Mobile 2, Tablet 3
-  const numColumns = width < 600 ? 2 : 3;
 
-  // Responsive spacing - REDUCED PADDING
-  const H_PADDING = useMemo(() => {
-    if (width >= 1024) return 24;
-    if (width >= 600) return 20;
-    if (width >= 480) return 16;
-    return 12;
-  }, [width]);
+  // Unique names for modal list
+  const filterOptions = [ALL, ...new Set(categories.map((c) => c.name).filter(Boolean))];
 
-  const GAP = useMemo(() => {
-    if (width >= 1024) return 16;
-    if (width >= 600) return 14;
-    if (width >= 480) return 12;
-    return 10;
-  }, [width]);
+  // Modal list filtered by search
+  const modalOptions = filterOptions.filter((opt) =>
+    opt.toLowerCase().includes(modalSearch.toLowerCase())
+  );
 
-  // Calculate card width - SMALLER CARDS
-  const cardWidth = useMemo(() => {
-    const totalGap = GAP * (numColumns - 1);
-    const availableWidth = width - (H_PADDING * 2);
-    return (availableWidth - totalGap) / numColumns;
-  }, [width, numColumns, H_PADDING, GAP]);
+  // Main grid filtered by selected name
+  const filteredCategories =
+    activeFilter === ALL
+      ? categories
+      : categories.filter((item) => item.name === activeFilter);
 
+  const handleSelect = (option) => {
+    setActiveFilter(option);
+    setModalVisible(false);
+    setModalSearch("");
+  };
+
+  const openModal = () => {
+    setModalSearch("");
+    setModalVisible(true);
+  };
+
+  /* ── Header ── */
   const renderHeader = () => (
-    <View style={[styles.header, isTablet && styles.headerTablet]}>
-     <TouchableOpacity
-        style={[styles.backButton, isTablet && styles.backButtonTablet]}
+    <View style={styles.header}>
+      <TouchableOpacity
+        style={styles.backButton}
         onPress={() => navigation.goBack()}
+        activeOpacity={0.8}
       >
         <Ionicons name="chevron-back" size={isTablet ? 30 : 26} color="#fff" />
       </TouchableOpacity>
-
-      <Text style={[styles.headerTitle, isTablet && styles.headerTitleTablet]}>
-        இந்து சமயம்
-      </Text>
-      
-      <View style={styles.headerSpacer} />
+      <Text style={styles.headerTitle}>இந்து அமைப்புகள்</Text>
+      <View style={{ width: isTablet ? 50 : 42 }} />
     </View>
   );
 
-  const CategoryCard = ({ item, cardWidth }) => (
+  /* ── Filter Trigger Bar ── */
+  const renderFilterTrigger = () => (
+    <View style={styles.filterTriggerWrapper}>
+      <TouchableOpacity
+        style={styles.filterTrigger}
+        onPress={openModal}
+        activeOpacity={0.8}
+      >
+        <Ionicons name="funnel-outline" size={16} color="#8B0000" />
+        <Text style={styles.filterTriggerText} numberOfLines={1}>
+          {activeFilter}
+        </Text>
+        <Ionicons name="chevron-down" size={16} color="#8B0000" />
+      </TouchableOpacity>
+
+      {/* Show clear button when a filter is active */}
+      {activeFilter !== ALL && (
+        <TouchableOpacity
+          style={styles.clearBtn}
+          onPress={() => setActiveFilter(ALL)}
+          activeOpacity={0.8}
+        >
+          <Ionicons name="close-circle" size={18} color="#8B0000" />
+          <Text style={styles.clearBtnText}>Clear</Text>
+        </TouchableOpacity>
+      )}
+    </View>
+  );
+
+  /* ── Filter Modal ── */
+  const renderModal = () => (
+    <Modal
+      visible={modalVisible}
+      animationType="slide"
+      transparent
+      onRequestClose={() => setModalVisible(false)}
+    >
+      <TouchableOpacity
+        style={styles.modalOverlay}
+        activeOpacity={1}
+        onPress={() => setModalVisible(false)}
+      />
+
+      <View style={styles.modalSheet}>
+        {/* Modal Header */}
+        <View style={styles.modalHeader}>
+          <Text style={styles.modalTitle}>பகுப்பு தேர்ந்தெடுக்கவும்</Text>
+          <TouchableOpacity
+            onPress={() => setModalVisible(false)}
+            style={styles.modalCloseBtn}
+            activeOpacity={0.7}
+          >
+            <Ionicons name="close" size={22} color="#333" />
+          </TouchableOpacity>
+        </View>
+
+        {/* Modal Search */}
+        <View style={styles.modalSearchBar}>
+          <Ionicons name="search" size={17} color="#8B0000" />
+          <TextInput
+            style={styles.modalSearchInput}
+            placeholder="தேடுக..."
+            placeholderTextColor="#aaa"
+            value={modalSearch}
+            onChangeText={setModalSearch}
+            autoCorrect={false}
+          />
+          {modalSearch.length > 0 && (
+            <TouchableOpacity onPress={() => setModalSearch("")} activeOpacity={0.7}>
+              <Ionicons name="close-circle" size={17} color="#aaa" />
+            </TouchableOpacity>
+          )}
+        </View>
+
+        {/* Options List */}
+        <FlatList
+          data={modalOptions}
+          keyExtractor={(item) => item}
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+          contentContainerStyle={styles.modalList}
+          renderItem={({ item }) => {
+            const selected = activeFilter === item;
+            return (
+              <TouchableOpacity
+                style={[styles.modalItem, selected && styles.modalItemActive]}
+                onPress={() => handleSelect(item)}
+                activeOpacity={0.75}
+              >
+                <Text style={[styles.modalItemText, selected && styles.modalItemTextActive]}>
+                  {item}
+                </Text>
+                {selected && (
+                  <Ionicons name="checkmark-circle" size={20} color="#8B0000" />
+                )}
+              </TouchableOpacity>
+            );
+          }}
+          ListEmptyComponent={
+            <View style={styles.modalEmpty}>
+              <Text style={styles.modalEmptyText}>எதுவும் கிடைக்கவில்லை</Text>
+            </View>
+          }
+        />
+      </View>
+    </Modal>
+  );
+
+  /* ── Card ── */
+  const renderItem = ({ item }) => (
     <TouchableOpacity
-      activeOpacity={0.7}
+      activeOpacity={0.8}
       onPress={() =>
         navigation.navigate("HinduSamayam2", {
           categoryId: item.id,
           categoryName: item.name,
         })
       }
-      style={[
-        styles.card,
-        {
-          width: cardWidth,
-        },
-      ]}
+      style={styles.card}
     >
-      <View style={styles.imageContainer}>
-        <Image 
-          source={{ uri: item.image }} 
-          style={styles.image} 
-          resizeMode="cover"
-        />
-      </View>
-
-      <View style={styles.textContainer}>
-        <Text 
-          style={[styles.cardTitle, isTablet && styles.cardTitleTablet]} 
-          numberOfLines={2}
-        >
+      <Image
+        source={{ uri: item.image }}
+        style={styles.image}
+        resizeMode="cover"
+      />
+      <View style={styles.nameBox}>
+        <Text style={styles.cardTitle} numberOfLines={2}>
           {item.name}
         </Text>
       </View>
     </TouchableOpacity>
   );
 
-  const renderContent = () => {
-    if (loading) {
-      return <Loader />;
-    }
-
-    if (error) {
-      return (
-        <View style={styles.centerContainer}>
-          <Ionicons name="alert-circle-outline" size={50} color="#8B0000" />
-          <Text style={styles.errorText}>{error}</Text>
-          <TouchableOpacity style={styles.retryButton} onPress={fetchCategories}>
-            <Text style={styles.retryButtonText}>மீண்டும் முயற்சிக்கவும்</Text>
-          </TouchableOpacity>
-        </View>
-      );
-    }
-
-    if (!categories.length) {
-      return (
-        <View style={styles.centerContainer}>
-          <Ionicons name="folder-open-outline" size={50} color="#999" />
-          <Text style={styles.emptyText}>பகுப்புகள் கிடைக்கவில்லை</Text>
-        </View>
-      );
-    }
-
-    return (
-      <FlatList
-        data={categories}
-        key={`grid-${numColumns}`}
-        keyExtractor={(item) => String(item.id)}
-        numColumns={numColumns}
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={{
-          paddingHorizontal: H_PADDING,
-          paddingTop: isTablet ? 16 : 12,
-          paddingBottom: isTablet ? 20 : 16,
-        }}
-        columnWrapperStyle={numColumns > 1 ? {
-          justifyContent: 'space-between',
-          marginBottom: GAP,
-        } : undefined}
-        renderItem={({ item }) => (
-          <CategoryCard item={item} cardWidth={cardWidth} />
-        )}
-      />
-    );
-  };
+  if (loading) return <Loader />;
 
   return (
     <SafeAreaView style={styles.safe}>
       <StatusBar backgroundColor="#8B0000" barStyle="light-content" />
       <View style={styles.container}>
+
         {renderHeader()}
-        {renderContent()}
+        {!error && renderFilterTrigger()}
+        {renderModal()}
+
+        {error ? (
+          <View style={styles.center}>
+            <Ionicons name="alert-circle-outline" size={50} color="#8B0000" />
+            <Text style={styles.errorText}>{error}</Text>
+            <TouchableOpacity style={styles.retryBtn} onPress={fetchCategories}>
+              <Text style={styles.retryText}>மீண்டும் முயற்சிக்கவும்</Text>
+            </TouchableOpacity>
+          </View>
+        ) : (
+          <FlatList
+            data={filteredCategories}
+            key={`grid-${numColumns}`}
+            keyExtractor={(item) => String(item.id)}
+            numColumns={numColumns}
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={[
+              styles.listContent,
+              filteredCategories.length === 0 && styles.emptyContent,
+            ]}
+            columnWrapperStyle={styles.row}
+            renderItem={renderItem}
+            ListEmptyComponent={
+              <View style={styles.center}>
+                <Ionicons name="folder-open-outline" size={56} color="#ccc" />
+                <Text style={styles.emptyText}>பகுப்புகள் கிடைக்கவில்லை</Text>
+              </View>
+            }
+            ListFooterComponent={<View style={{ height: 24 }} />}
+          />
+        )}
       </View>
     </SafeAreaView>
   );
@@ -201,143 +282,265 @@ const HinduSamayam1 = () => {
 export default HinduSamayam1;
 
 const styles = StyleSheet.create({
-  safe: { 
-    flex: 1, 
-    backgroundColor: "#8B0000",
-  },
-  container: { 
-    flex: 1,
-    backgroundColor: "#F5F5F5",
-  },
+  safe: { flex: 1, backgroundColor: "#8B0000" },
+  container: { flex: 1, backgroundColor: "#F2F2F2" },
 
-  // Header - FIXED POSITIONING
+  /* Header */
   header: {
-   flexDirection: "row",
+    flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#93210A",
-    paddingTop:40,
-    paddingBottom:30,
-    borderBottomLeftRadius: 20,
-    borderBottomRightRadius: 20,
+    backgroundColor: "#8B0000",
+    paddingHorizontal: 16,
+    paddingTop: Platform.OS === "ios" ? 12 : 40,
+    paddingBottom: 18,
+    borderBottomLeftRadius: 28,
+    borderBottomRightRadius: 28,
+    elevation: 6,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
   },
-  headerTablet: {
-    paddingTop:45,
-    paddingBottom:28,
-    paddingHorizontal: 18
-  },
-  
-  backButton:{
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+  backButton: {
+    width: isTablet ? 50 : 42,
+    height: isTablet ? 50 : 42,
+    borderRadius: isTablet ? 25 : 21,
     backgroundColor: "rgba(255,255,255,0.15)",
     alignItems: "center",
     justifyContent: "center",
-    marginLeft:15,
   },
-  backButtonTablet:{
-    width: 50,
-    height: 50,
-    borderRadius: 25,
-  },
-
-
- headerTitle: {
+  headerTitle: {
     flex: 1,
     textAlign: "center",
     color: "#fff",
-    fontSize: 18,
+    fontSize: isTablet ? 24 : 20,
     fontWeight: "800",
     letterSpacing: 0.3,
   },
-  headerTitleTablet: {
-    fontSize: 22,
+
+  /* Filter Trigger Bar */
+  filterTriggerWrapper: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#fff",
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: "rgba(0,0,0,0.06)",
+    gap: 10,
+    elevation: 2,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 3,
   },
-  headerSpacer: {
-    width: 36,
+  filterTrigger: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#FFF0EE",
+    borderRadius: 10,
+    paddingHorizontal: 12,
+    paddingVertical: 9,
+    borderWidth: 1.5,
+    borderColor: "rgba(139,0,0,0.2)",
+    gap: 8,
+  },
+  filterTriggerText: {
+    flex: 1,
+    fontSize: isTablet ? 14 : 13,
+    fontWeight: "700",
+    color: "#8B0000",
+  },
+  clearBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+    borderRadius: 8,
+    backgroundColor: "#FFF0EE",
+    borderWidth: 1.5,
+    borderColor: "rgba(139,0,0,0.2)",
+  },
+  clearBtnText: {
+    fontSize: 12,
+    fontWeight: "700",
+    color: "#8B0000",
   },
 
-  // States
-  centerContainer: {
+  /* Modal */
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.45)",
+  },
+  modalSheet: {
+    position: "absolute",
+    bottom: 0,
+    left: 0,
+    right: 0,
+    height: SCREEN_HEIGHT * 0.65,
+    backgroundColor: "#fff",
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    overflow: "hidden",
+    elevation: 20,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: -4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 12,
+  },
+  modalHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: "rgba(0,0,0,0.07)",
+  },
+  modalTitle: {
+    fontSize: 16,
+    fontWeight: "800",
+    color: "#1A1A1A",
+  },
+  modalCloseBtn: {
+    width: 34,
+    height: 34,
+    borderRadius: 17,
+    backgroundColor: "#F5F5F5",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  modalSearchBar: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#F5F5F5",
+    borderRadius: 12,
+    marginHorizontal: 16,
+    marginVertical: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    gap: 8,
+    borderWidth: 1,
+    borderColor: "rgba(139,0,0,0.15)",
+  },
+  modalSearchInput: {
+    flex: 1,
+    fontSize: 14,
+    color: "#1A1A1A",
+    padding: 0,
+    fontWeight: "500",
+  },
+  modalList: {
+    paddingHorizontal: 16,
+    paddingBottom: 30,
+  },
+  modalItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingVertical: 14,
+    paddingHorizontal: 12,
+    borderRadius: 10,
+    marginBottom: 4,
+    backgroundColor: "#fff",
+  },
+  modalItemActive: {
+    backgroundColor: "rgba(139,0,0,0.06)",
+  },
+  modalItemText: {
+    fontSize: 14,
+    color: "#333",
+    fontWeight: "500",
+    flex: 1,
+  },
+  modalItemTextActive: {
+    color: "#8B0000",
+    fontWeight: "800",
+  },
+  modalEmpty: {
+    alignItems: "center",
+    paddingTop: 40,
+  },
+  modalEmptyText: {
+    fontSize: 14,
+    color: "#aaa",
+    fontWeight: "600",
+  },
+
+  /* List */
+  listContent: {
+    paddingHorizontal: H_PADDING,
+    paddingTop: 16,
+    paddingBottom: 16,
+  },
+  emptyContent: { flexGrow: 1 },
+  row: {
+    justifyContent: "space-between",
+    marginBottom: GAP,
+  },
+
+  /* Card */
+  card: {
+    width: CARD_WIDTH,
+    backgroundColor: "#fff",
+    borderRadius: 14,
+    overflow: "hidden",
+    elevation: 3,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 6,
+  },
+  image: {
+    width: CARD_WIDTH,
+    height: CARD_WIDTH,
+  },
+  nameBox: {
+    paddingHorizontal: 8,
+    paddingVertical: 8,
+    alignItems: "center",
+    justifyContent: "center",
+    minHeight: 44,
+  },
+  cardTitle: {
+    fontSize: isTablet ? 13 : 12,
+    fontWeight: "700",
+    color: "#2B2B2B",
+    textAlign: "center",
+    lineHeight: 17,
+  },
+
+  /* States */
+  center: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    padding: 20,
-    backgroundColor: "#F5F5F5",
+    paddingTop: 80,
+    gap: 12,
+    paddingHorizontal: 32,
   },
   errorText: {
-    marginTop: 12,
     color: "#8B0000",
     fontSize: 15,
     textAlign: "center",
     fontWeight: "500",
     lineHeight: 22,
-    maxWidth: 280,
   },
   emptyText: {
-    marginTop: 12,
-    color: "#666",
     fontSize: 15,
-    fontWeight: "500",
+    color: "#888",
+    fontWeight: "600",
+    textAlign: "center",
   },
-  retryButton: {
-    marginTop: 20,
+  retryBtn: {
+    marginTop: 8,
     backgroundColor: "#8B0000",
     paddingHorizontal: 24,
     paddingVertical: 12,
     borderRadius: 25,
     elevation: 2,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.15,
-    shadowRadius: 3,
   },
-  retryButtonText: {
-    color: "#fff",
-    fontWeight: "600",
-    fontSize: 14,
-  },
-
-  // Card - SMALLER SIZE
-  card: {
-    backgroundColor: "#FFFFFF",
-    borderRadius: 10,
-    overflow: "hidden",
-    elevation: 2,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.08,
-    shadowRadius: 3,
-    borderWidth: 1,
-    borderColor: "#EEEEEE",
-  },
-  imageContainer: {
-    width: "100%",
-    aspectRatio: 1,
-    backgroundColor: "#FAFAFA",
-  },
-  image: {
-    width: "100%",
-    height: "100%",
-  },
-  textContainer: {
-    padding: 8, // Reduced padding
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: "#FFFFFF",
-    minHeight: 48, // Reduced height
-  },
-  cardTitle: {
-    fontSize: 12, // Smaller font
-    fontWeight: "500",
-    color: "#333333",
-    lineHeight: 16,
-    textAlign: "center",
-    letterSpacing: 0.2,
-  },
-  cardTitleTablet: {
-    fontSize: 14, // Smaller for tablet too
-    lineHeight: 18,
-    fontWeight: "500",
-  },
+  retryText: { color: "#fff", fontWeight: "700", fontSize: 14 },
 });

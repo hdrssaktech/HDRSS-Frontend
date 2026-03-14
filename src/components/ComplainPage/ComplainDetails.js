@@ -328,6 +328,8 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.25,
     shadowRadius: 5,
     shadowOffset: { width: 0, height: 3 },
+    borderBottomLeftRadius:18,
+    borderBottomRightRadius:18
   },
   backButton: {
     padding: 5,

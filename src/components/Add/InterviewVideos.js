@@ -113,7 +113,7 @@ export default function InterviewVideos() {
   return (
     <View style={styles.interviewContainer}>
       <Text style={[styles.heading1, isTablet && styles.headingTablet]}>
-        Interview Videos
+        Day Specials
       </Text>
 
       {videos.length === 0 ? (

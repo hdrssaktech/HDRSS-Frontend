@@ -181,10 +181,14 @@ const styles = StyleSheet.create({
     paddingVertical: 20,
     flexDirection: "row",
     alignItems: "center",
+    borderBottomLeftRadius: 18,
+    borderBottomRightRadius: 18,
   },
   headerTablet: {
     paddingHorizontal: 24,
     paddingVertical: 26,
+    borderBottomLeftRadius: 22,
+    borderBottomRightRadius: 22,
   },
 
   backBtn: {
