@@ -15,7 +15,7 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import axios from "axios";
-import { useNavigation } from "@react-navigation/native";
+import { useNavigation, useRoute } from "@react-navigation/native";
 import Loader from "../../../../components/Alert/Loader";
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
@@ -30,13 +30,14 @@ const ALL = "அனைத்தும்";
 
 const HinduNoolgal1 = () => {
   const navigation = useNavigation();
-
+  const route = useRoute();
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [activeFilter, setActiveFilter] = useState(ALL);
   const [modalVisible, setModalVisible] = useState(false);
   const [modalSearch, setModalSearch] = useState("");
+  const categoryTypes = route.params.categoryType;
 
   useEffect(() => {
     fetchCategories();
@@ -49,7 +50,8 @@ const HinduNoolgal1 = () => {
       const res = await axios.get(
         "https://hdrss-backend.onrender.com/api/hindu-noolgal/category"
       );
-      setCategories(res.data || []);
+      const filteredData = res.data.filter((item)=>categoryTypes=="இந்து நூல்கள்"?item.category=="HinduNoolgal":item.category=="Noolgal");
+      setCategories(filteredData || []);
     } catch (e) {
       console.error("API Error:", e);
       setError("பகுப்புகளை ஏற்ற முடியவில்லை. மீண்டும் முயற்சிக்கவும்.");
@@ -137,7 +139,7 @@ const HinduNoolgal1 = () => {
             <Ionicons name="chevron-back" size={isTablet ? 30 : 24} color="#fff" />
           </TouchableOpacity>
           <Text style={[styles.headerTitle, isTablet && styles.headerTitleTablet]}>
-            இந்து நூல்கள்
+            {categoryTypes}
           </Text>
           <View style={[styles.headerSpacer, isTablet && styles.headerSpacerTablet]} />
         </View>

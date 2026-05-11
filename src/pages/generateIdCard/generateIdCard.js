@@ -1,8 +1,6 @@
 // my code 
 import * as Print from "expo-print";
-
 import * as FileSystem from "expo-file-system/legacy";
-
 import { Asset } from "expo-asset";
 import { Alert } from "react-native";
 
@@ -33,6 +31,14 @@ const nextYear = currentYear + 1;
 
 const validity = `${currentMonth} ${currentYear} - ${currentMonth} ${nextYear}`;
 
+const formatDOB = (dob) => {
+  if (!dob) return "";
+
+  const [year, month, day] = dob.split("-");
+  return `${day}-${month}-${year}`;
+};
+
+const formattedDOB = formatDOB(member.dob);
 
 
 
@@ -94,8 +100,8 @@ const profileBase64 = member.image
           margin-top: 10px;
         }
 
-        .header-tamil { font-family: 'Impact'; font-size: 18px; font-weight: bold; margin-top:0px; }
-        .header-hindi { font-family: 'Impact'; font-size: 27px; word-spacing:20px;}
+        .header-tamil { font-family: 'Impact'; font-size: 18px; font-weight: bold; margin-top:5px; }
+        .header-hindi { font-family: 'Impact'; font-size: 27px; word-spacing:5px;}
         .header-eng { font-family: 'Impact'; font-size: 20px;margin-bottom:0px; }
 
         .main {
@@ -123,11 +129,10 @@ const profileBase64 = member.image
         .id-text { font-size: 13px;margin-bottom: 10px;font-family: 'Impact';color: #000000ff;}
 
         .info-box { 
-          width: 90%; 
-          margin-left:14px;
-          font-family:'Impact'; 
-          text-align:left; 
+          display: inline-block;
+          font-family: 'Impact'; 
           color: #000000ff; 
+          text-align: left;
         }
 
         .row { 
@@ -136,17 +141,24 @@ const profileBase64 = member.image
         }
 
         .label { 
-          width: 90px; 
-          font-size: 12px; 
+          width: 82px;
+          min-width: 82px;
+          font-size: 12px;
+          text-align: left;
         }
 
-        /* FIX: Address wraps correctly */
+        .colon {
+          width: 14px;
+          font-size: 12px;
+          text-align: center;
+        }
+    
+
         .value { 
           font-size: 12px;
-          flex: 1;
+          text-align: left;
           word-wrap: break-word;
           white-space: pre-wrap;
-          display: inline-block;
         }
 
         .reg { font-size: 12px;font-family: 'Impact'; color: #000000ff; text-align: left; margin-right: 10px; margin-top:20px; }
@@ -162,7 +174,7 @@ const profileBase64 = member.image
       width: 80px;
       height: 35px;
       position: absolute;   /* overlap */
-      top: -20px;            /* move image above text */
+      top: -30px;            /* move image above text */
       right: 20;
     }
 
@@ -193,13 +205,15 @@ const profileBase64 = member.image
           align-items: center;
         }
 
-        .extra-info {
-          margin-top: 5px;
-          font-family: 'Impact';
-          color: white;
-          width: 80%;
-          text-align:left;
-        }
+      .extra-info {
+        margin-top: 5px;
+        font-family: 'Impact';
+        color: white;
+        text-align: left;
+        width: 220px;
+        margin-left: auto;
+        margin-right: auto;
+      }
 
         .symbol {
           width: 150px;
@@ -207,16 +221,28 @@ const profileBase64 = member.image
           margin-left:42;
           margin-right: auto;
         }
-          .footer-address-value {
-          width: 140px;
+       .footer-address-value {
+          flex: 1;
           white-space: normal;
-          line-height: 13px;
+          word-wrap: break-word;
+          line-height: 14px;
           font-size: 12px;
           color: #ffffff;
         }
 
         .footer-title { font-family: 'Impact'; font-size: 16px;margin-right:15px; }
-        .footer-address { font-size: 11px; margin-top: 3px; line-height: 14px;margin-right:12px; }
+
+        .footer-address {
+        font-size: 11px;
+        line-height: 14px;
+        width: 210px;
+        text-align: center;
+
+        display: -webkit-box;
+        -webkit-line-clamp: 3;     /* limit to 3 lines */
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+      }
         .footer-email { font-size: 11px; margin-top: 3px;margin-right:12px;}
 
       </style>
@@ -241,12 +267,16 @@ const profileBase64 = member.image
           </div>
 
           <div class="id-text">ID NO : ${member.uniqueId || ""}</div>
+
+          <div class="main" style="text-align:center;">
           <div class="info-box">
-            <div class="row"><div class="label">NAME</div><div class="value">: ${member.name}</div></div>
-            <div class="row"><div class="label">S/O</div><div class="value">: ${member.fatherOrHusbandName}</div></div>
-            <div class="row"><div class="label">DESIGNATION</div><div class="value">: ${member.designation}</div></div>
-            <div class="row"><div class="label">DISTRICT</div><div class="value">: ${member.district.toUpperCase()}</div></div>
+            <div class="row"><div class="label">NAME</div><div class="colon">:</div><div class="value">${member.name}</div></div>
+            <div class="row"><div class="label">S/O</div><div class="colon">:</div><div class="value">${member.fatherOrHusbandName}</div></div>
+            <div class="row"><div class="label">DESIGNATION</div><div class="colon">:</div><div class="value">${member.designation}</div></div>
+            <div class="row"><div class="label">DISTRICT</div><div class="colon">:</div><div class="value">${member.district.toUpperCase()}</div></div>
           </div>
+        </div>
+
 
           <div class="reg">Regd. No.: 152 / 2021</div>
 
@@ -259,28 +289,41 @@ const profileBase64 = member.image
         <div class="underline-bar"></div>
 
         <div class="footer">
-          <div class="extra-info">
-
-            <div class="row"><div class="label">Validity</div><div class="value">:${validity}</div></div>
-            <div class="row"><div class="label">Date of Birth</div><div class="value">:23-04-1950</div></div>
-            <div class="row"><div class="label">Blood Group</div><div class="value">: ${member.bloodGroup}</div></div>
-            <div class="row"><div class="label">Contact No</div><div class="value">: ${member.contactDetails}</div></div>
-
-            <!-- UPDATED ADDRESS WRAP SUPPORT -->
-          <div class="row footer-address-row">
-            <div class="label">Address</div>
-            <div class="value footer-address-value">: ${member.residentialAddress}</div>
+          <div  class="extra-info">
+          <div class="row">
+            <div class="label" style="color:white; width:82px; min-width:82px;">Validity</div>
+            <div class="colon" style="color:white;">:</div>
+            <div class="value" style="color:white;">${validity}</div>
           </div>
-
+          <div class="row">
+            <div class="label" style="color:white; width:82px; min-width:82px;">Date of Birth</div>
+            <div class="colon" style="color:white;">:</div>
+            <div class="value" style="color:white;">${formattedDOB}</div>
           </div>
+          <div class="row">
+            <div class="label" style="color:white; width:82px; min-width:82px;">Blood Group</div>
+            <div class="colon" style="color:white;">:</div>
+            <div class="value" style="color:white;">${member.bloodGroup}</div>
+          </div>
+          <div class="row">
+            <div class="label" style="color:white; width:82px; min-width:82px;">Contact No</div>
+            <div class="colon" style="color:white;">:</div>
+            <div class="value" style="color:white;">${member.contactDetails}</div>
+          </div>
+          <div class="row">
+            <div class="label" style="color:white; width:82px; min-width:82px;">Res. Address</div>
+            <div class="colon" style="color:white;">:</div>
+            <div class="value footer-address-value">${member.residentialAddress}</div>
+          </div>
+        </div>
 
           <img src="${sunImage}" class="symbol" />
 
           <div class="footer-title">HINDU DHARMA RAKSHA SENA</div>
 
           <div class="footer-address">
-            2nd Floor, Sunrise Crystal Avenue,<br/>
-             Thadagam Road Somayampalayam,<br/>
+            2nd Floor,Louisons & Sunrise Crystal Complex,
+            Kalappanaicken Palayam Pirivu
             Coimbatore - 641 108.
           </div>
 
@@ -343,4 +386,8 @@ async function convertAssetToBase64(assetModule) {
 
   return `data:${getMimeType(asset.name)};base64,${base64}`;
 }
+
+
+
+
 

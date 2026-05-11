@@ -2,16 +2,20 @@ import React, { useRef, useEffect, useState } from "react";
 import {
   View,
   Image,
+  Text,
   ScrollView,
   StyleSheet,
   ActivityIndicator,
   useWindowDimensions,
+  TouchableOpacity,
 } from "react-native";
 import { fetchHomeAds } from "../../Controller/AdvertisementController/AdvertisementController";
+import { useNavigation } from "@react-navigation/native";
 
 export default function AutoScrollAds() {
   const scrollRef = useRef(null);
   const { width } = useWindowDimensions();
+  const navigation = useNavigation();
 
   const isTablet = width >= 600; // ✅ tablet detection
 
@@ -81,6 +85,24 @@ export default function AutoScrollAds() {
           />
         ))}
       </ScrollView>
+<View style={styles.buttonContainer}>
+<TouchableOpacity
+  style={styles.button}
+  onPress={() => navigation.navigate("PDFViewer")}
+>
+  <Text style={styles.buttonText}>
+    United America
+  </Text>
+</TouchableOpacity>
+  <TouchableOpacity
+    style={[styles.button, styles.secondButton]}
+    onPress={() =>  navigation.navigate("Caucus")}
+    activeOpacity={0.7}
+  >
+    <Text style={styles.buttonText}>Apply Now!</Text>
+  </TouchableOpacity>
+</View>
+
     </View>
   );
 }
@@ -88,27 +110,55 @@ export default function AutoScrollAds() {
 const styles = StyleSheet.create({
   /* 📱 MOBILE */
    adContainer: {
-    height: 200,
+    height: 340,
     marginVertical:5,
   },
   adImage: {
-    height: 200,
+    height: 280,
   },
   loaderContainer: {
-    height: 200,
+    height: 300,
     justifyContent: "center",
     alignItems: "center",
   },
   /* 📲 TABLET */
   adContainerTablet: {
-    height: 400,
+    height: 450,
     marginVertical:20,
   },
   adImageTablet: {
-    height: 350,
+    height: 400,
   },
 
   loaderContainerTablet: {
     height: 300,
   },
+
+  buttonContainer: {
+  flexDirection: "row",
+  justifyContent: "space-between",
+  alignItems: "center",
+  marginTop: 10,
+  paddingHorizontal: 10,
+},
+
+button: {
+  backgroundColor: "#a72828",
+  paddingVertical: 12,
+  paddingHorizontal: 25,
+  borderRadius: 10,
+  // flex: 1,
+  marginHorizontal: 5,
+  alignItems: "center",
+},
+
+secondButton: {
+  backgroundColor: "#a72828",
+},
+
+buttonText: {
+  color: "#fff",
+  fontSize: 16,
+  fontWeight: "600",
+},
 });

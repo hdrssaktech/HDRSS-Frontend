@@ -31,6 +31,12 @@ export default function NewsPage2({ navigation, route }) {
       </View>
     );
   }
+  const formatDate = (date) => {
+  if (!date) return "";
+
+  const [year, month, day] = date.split("-");
+  return `${day}/${month}/${year}`;
+ };
 
   /* 🔹 Extract YouTube videoId */
   let videoId = null;
@@ -71,7 +77,9 @@ export default function NewsPage2({ navigation, route }) {
         {/* 🔹 Text */}
         <View style={styles.textContainer}>
           <Text style={styles.newsTitle}>{news.title}</Text>
-          <Text style={styles.newdate}>தேதி: {news.date}</Text>
+          <Text style={styles.newdate}>
+          தேதி: {formatDate(news.date)}
+        </Text>
           <Text style={styles.newsText}>
             {news.description || "No detailed content available."}
           </Text>

@@ -455,8 +455,8 @@ export default function HinduNoolgal3({ route, navigation }) {
 
               <View style={styles.videoBox}>
                 <YoutubePlayer
-                  height={Math.round((width - CONTENT_PADDING * 2) * 0.56)} // 16:9
-                  width={width - CONTENT_PADDING * 2}
+                  height={Math.round((width - CONTENT_PADDING * 2) * 0.50)} // 16:9
+                  width={width - CONTENT_PADDING * 6}
                   play={playing}
                   videoId={youtubeId}
                   onChangeState={onStateChange}
@@ -734,7 +734,7 @@ const styles = StyleSheet.create({
   videoCard: { paddingBottom: 12 },
   videoBox: {
     width: "100%",
-    borderRadius: 14,
+    borderRadius:5,
     overflow: "hidden",
     backgroundColor: "#000",
   },

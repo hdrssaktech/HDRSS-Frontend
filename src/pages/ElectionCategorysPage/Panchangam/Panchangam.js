@@ -16,6 +16,7 @@ import {
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { useNavigation } from "@react-navigation/native";
+import IndraiyaPanchangam from "./PanchangamRoute/IndraiyaPanchangam"
 
 // Professional color palette
 const COLORS = {
@@ -142,33 +143,33 @@ export default function Panchangam() {
       icon: "calendar-month",
       screen: "MaathaKaatiPanchangam",
     },
-    {
-      id: "3",
-      title: "முக்கிய தினங்கள்",
-      description: "விசேஷ தினங்கள்",
-      bg: COLORS.tiles.blue,
-      iconBg: COLORS.tiles.blueDark,
-      icon: "calendar-star",
-      screen: "MukiyaThinangal",
-    },
-    {
-      id: "4",
-      title: "இன்றைய பஞ்சாங்கம்",
-      description: "இன்றைய விஶேஷங்கள்",
-      bg: COLORS.tiles.purple,
-      iconBg: COLORS.tiles.purpleDark,
-      icon: "zodiac-aries",
-      screen: "IndraiyaPanchangam",
-    },
-    {
-      id: "5",
-      title: "கெளரி பஞ்சாங்கம்",
-      description: "நேரங்காட்டி",
-      bg: COLORS.tiles.lavender,
-      iconBg: COLORS.tiles.lavenderDark,
-      icon: "clock-outline",
-      screen: "GowriPanchangam",
-    },
+    // {
+    //   id: "3",
+    //   title: "முக்கிய தினங்கள்",
+    //   description: "விசேஷ தினங்கள்",
+    //   bg: COLORS.tiles.blue,
+    //   iconBg: COLORS.tiles.blueDark,
+    //   icon: "calendar-star",
+    //   screen: "MukiyaThinangal",
+    // },
+    // {
+    //   id: "4",
+    //   title: "இன்றைய பஞ்சாங்கம்",
+    //   description: "இன்றைய விஶேஷங்கள்",
+    //   bg: COLORS.tiles.purple,
+    //   iconBg: COLORS.tiles.purpleDark,
+    //   icon: "zodiac-aries",
+    //   screen: "IndraiyaPanchangam",
+    // },
+    // {
+    //   id: "5",
+    //   title: "கெளரி பஞ்சாங்கம்",
+    //   description: "நேரங்காட்டி",
+    //   bg: COLORS.tiles.lavender,
+    //   iconBg: COLORS.tiles.lavenderDark,
+    //   icon: "clock-outline",
+    //   screen: "GowriPanchangam",
+    // },
   ];
 
   const handleNavigation = (screen) => {
@@ -273,32 +274,7 @@ export default function Panchangam() {
           </View>
         </LinearGradient>
 
-        {/* View Mode Toggle for Tablet */}
-        {isTablet && viewMode === 'list' && (
-          <View style={styles.listHeader}>
-           
-            <TouchableOpacity
-              onPress={() => setViewMode('grid')}
-              style={styles.switchToGridBtn}
-            >
-              <Ionicons name="grid" size={20} color={COLORS.primary} />
-              <Text style={styles.switchToGridText}>Grid View</Text>
-            </TouchableOpacity>
-          </View>
-        )}
-
-        {isTablet && viewMode === 'grid' && (
-          <View style={styles.gridHeader}>
-           
-            <TouchableOpacity
-              onPress={() => setViewMode('list')}
-              style={styles.switchToListBtn}
-            >
-              <Ionicons name="list" size={20} color={COLORS.primary} />
-              <Text style={styles.switchToListText}>List View</Text>
-            </TouchableOpacity>
-          </View>
-        )}
+  
 
         {/* Tiles - Grid or List View */}
         {viewMode === 'grid' ? (
@@ -341,7 +317,7 @@ export default function Panchangam() {
             ))}
           </View>
         )}
-
+        <IndraiyaPanchangam />
         
       </ScrollView>
     </SafeAreaView>

@@ -69,7 +69,7 @@ export default function Header({ toggleSidebar }) {
             isTablet && styles.tamilTextTablet,
           ]}
         >
-         வீர இந்து தர்ம ரக்ஷ சேனா
+        இந்து தர்ம ரக்ஷ சேனா
         </Text>
 
         <Text
@@ -78,7 +78,7 @@ export default function Header({ toggleSidebar }) {
             isTablet && styles.hinduTextTablet,
           ]}
         >
-          वीरा हिन्दू धर्म रक्षा सेना
+          हिन्दू धर्म रक्षा सेना
         </Text>
 
         <Text
@@ -87,7 +87,7 @@ export default function Header({ toggleSidebar }) {
             isTablet && styles.englishTextTablet,
           ]}
         >
-          VEERA HINDU DHARMA RAKSHA SENA
+          HINDU DHARMA RAKSHA SENA
         </Text>
       </View>
 

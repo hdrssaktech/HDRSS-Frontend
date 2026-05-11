@@ -319,8 +319,8 @@ export default function HinduLeaders3({ route, navigation }) {
 
               <View style={styles.videoBox}>
                 <YoutubePlayer
-                  height={Math.round((width - CONTENT_PADDING * 2) * 0.56)} // 16:9
-                  width={width - CONTENT_PADDING * 2}
+                  height={Math.round((width - CONTENT_PADDING * 2) * 0.50)} // 16:9
+                  width={width - CONTENT_PADDING * 5}
                   play={playing}
                   videoId={youtubeId}
                   onChangeState={onStateChange}

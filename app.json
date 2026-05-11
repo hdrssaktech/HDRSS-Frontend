@@ -3,7 +3,7 @@
     "name": "KAAVI",
     "slug": "hdrssfrontent",
     "owner": "hdrss-expo",
-    "version": "1.0.3",
+    "version": "1.0.4",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "hdrss",
@@ -19,12 +19,14 @@
       "predictiveBackGestureEnabled": false,
       "googleServicesFile": "./google-services.json",
       "package": "com.aktechnologies.hdrss",
-      "versionCode": 5,
+      "versionCode": 6,
       "networkSecurityConfig": "./network_security_config.xml",
       "permissions": [
         "INTERNET",
         "READ_EXTERNAL_STORAGE",
-        "WRITE_EXTERNAL_STORAGE"
+        "WRITE_EXTERNAL_STORAGE",
+        "READ_CALENDAR",   
+        "WRITE_CALENDAR"
       ]
     },
     "web": {
@@ -43,6 +45,12 @@
           }
         }
       ],
+      [
+    "expo-calendar",
+    {
+      "calendarPermission": "Allow $(PRODUCT_NAME) to access your calendar to set event reminders."
+    }
+   ],
       "expo-asset"
     ],
     "experiments": {

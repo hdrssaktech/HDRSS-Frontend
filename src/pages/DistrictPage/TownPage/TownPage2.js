@@ -139,7 +139,7 @@ export default function TownPage2() {
 
         {/* ================= MENU ================= */}
         <View style={styles.menuRow}>
-          <Menu title="Government" onPress={() =>
+          <Menu title="Governments" onPress={() =>
             navigation.navigate("TownGovernmentPage1", { townId })
           } />
 
@@ -151,9 +151,6 @@ export default function TownPage2() {
             navigation.navigate("ComplainPage1", { districtId:districtId, districtName:districtName })
           } />
 
-          <Menu title="HDRSS" onPress={() =>
-            navigation.navigate("Member", { districtId, districtName })
-          } />
         </View>
 
         {/* ================= TEMPLES ================= */}
@@ -389,12 +386,12 @@ const styles = StyleSheet.create({
     flex: 1, 
     marginHorizontal: isTablet ? 16 : 12,
   },
-
   menuRow: { 
     flexDirection: "row", 
     flexWrap: "wrap", 
-    justifyContent: "space-between", 
+    justifyContent: "center", 
     padding: isTablet ? 20 : 16,
+    gap: isTablet ? 20 : 10,
   },
   menuBox: { 
     width: "48%", 
@@ -411,6 +408,10 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     fontSize: isTablet ? 18 : 14,
   },
+  menuSpacer: {
+  width: "48%",
+  marginBottom: isTablet ? 16 : 12,
+},
 
   // Card styles for Temples & Tourism (increased sizes)
   card: {

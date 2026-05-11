@@ -123,7 +123,7 @@ export default function InterviewVideos() {
       ) : (
         <ScrollView 
           horizontal 
-          showsHorizontalScrollIndicator={false}
+          showsHorizontalScrollIndicator={false}  
           contentContainerStyle={styles.scrollContent}
         >
           {videos.map((video) => (

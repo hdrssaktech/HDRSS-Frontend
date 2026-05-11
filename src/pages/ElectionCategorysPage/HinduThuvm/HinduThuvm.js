@@ -21,6 +21,7 @@ export default function DetailsScreen({ navigation }) {
     { label: "இந்து அமைப்புகள்", route: "HinduSamayam1" },
     { label: "இந்து நூல்கள்", route: "HinduNoolgal1" },
     { label: "இந்து தலைவர்கள்", route: "HinduLeaders1" },
+    // { label: "நூல்கள்", route: "HinduNoolgal1" },
   ];
 
   // Detect screen size and orientation
@@ -40,9 +41,9 @@ export default function DetailsScreen({ navigation }) {
     };
   }, []);
 
-  const handlePress = (index, route) => {
+  const handlePress = (index, route, label) => {
     setActive(index);
-    navigation.navigate(route);
+    navigation.navigate(route,{categoryType: label});
   };
 
   return (
@@ -116,7 +117,7 @@ export default function DetailsScreen({ navigation }) {
                   return (
                     <Pressable
                       key={index}
-                      onPress={() => handlePress(index, item.route)}
+                      onPress={() => handlePress(index, item.route, item.label)}
                       style={({ pressed }) => [
                         styles.buttonBase,
                         styles.buttonTablet,
@@ -158,7 +159,7 @@ export default function DetailsScreen({ navigation }) {
                   return (
                     <Pressable
                       key={index}
-                      onPress={() => handlePress(index, item.route)}
+                      onPress={() => handlePress(index, item.route,item.label)}
                       style={({ pressed }) => [
                         styles.buttonBase,
                         styles.buttonMobile,

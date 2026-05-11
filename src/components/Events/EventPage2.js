@@ -1,5 +1,4 @@
-// src/Screens/EventPage2.js
-import React from "react";
+import React, { useState } from "react";
 import {
   View,
   Text,
@@ -11,6 +10,7 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation, useRoute } from "@react-navigation/native";
+import ReminderPicker from '../../Controller/EventController/ReminderPicker';
 
 export default function EventPage2() {
   const navigation = useNavigation();
@@ -21,6 +21,14 @@ export default function EventPage2() {
   const isTablet = width >= 600;
   const styles = getStyles(isTablet);
 
+  const [reminderSet, setReminderSet] = useState(false); // ✅ track reminder state
+
+  const formatDate = (date) => {
+    if (!date) return "";
+    const [year, month, day] = date.split("-");
+    return `${day}/${month}/${year}`;
+  };
+
   if (!event) {
     return (
       <View style={styles.centerContent}>
@@ -29,11 +37,10 @@ export default function EventPage2() {
     );
   }
 
-  // Safely handle highlights - ensure it's an array
-  const highlights = Array.isArray(event.highlights) 
-    ? event.highlights 
-    : event.highlights 
-      ? [String(event.highlights)] 
+  const highlights = Array.isArray(event.highlights)
+    ? event.highlights
+    : event.highlights
+      ? [String(event.highlights)]
       : [];
 
   return (
@@ -46,8 +53,15 @@ export default function EventPage2() {
         <Text style={styles.headerTitle}>Event Details</Text>
       </View>
 
-      {/* 📜 Content */}
       <ScrollView contentContainerStyle={styles.scrollContent}>
+
+        {/* 🔔 REMINDER — TOP (most visible) */}
+        <ReminderPicker
+          event={event}
+          reminderSet={reminderSet}
+          onReminderSet={() => setReminderSet(true)}
+        />
+
         {/* 🖼 Banner */}
         <View style={styles.imageWrapper}>
           <Image source={{ uri: event.image }} style={styles.eventImage} />
@@ -56,8 +70,7 @@ export default function EventPage2() {
         {/* 📌 Info */}
         <View style={styles.infoContainer}>
           <Text style={styles.eventTitle}>{event.name ?? ""}</Text>
-          <Text style={styles.eventDate}>{event.date ?? ""}</Text>
-
+          <Text style={styles.eventDate}>{formatDate(event.date ?? "")}</Text>
           <View style={styles.divider} />
 
           <Text style={styles.eventDescription}>
@@ -69,7 +82,6 @@ export default function EventPage2() {
           {highlights.length > 0 && (
             <View style={styles.highlightBox}>
               <Text style={styles.highlightTitle}>🌟 Highlights</Text>
-
               {highlights.map((item, index) => (
                 <View key={index} style={styles.bulletRow}>
                   <View style={styles.bulletDot} />
@@ -81,11 +93,11 @@ export default function EventPage2() {
             </View>
           )}
         </View>
+
       </ScrollView>
     </View>
   );
 }
-
 /* ================== STYLES ================== */
 
 const getStyles = (isTablet) =>

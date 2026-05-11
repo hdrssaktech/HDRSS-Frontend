@@ -339,7 +339,7 @@ export default function DistrictBusinessPage1() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#fff",
+    backgroundColor: "#e1e1e1",
   },
   center: {
     flex: 1,
@@ -493,7 +493,7 @@ const styles = StyleSheet.create({
   // Card - Mobile (Simple Design)
   card: {
     width: "48%",
-    backgroundColor: "#fff",
+    backgroundColor: "#eaeaea",
     margin: "1%",
     padding: 12,
     borderRadius: 12,

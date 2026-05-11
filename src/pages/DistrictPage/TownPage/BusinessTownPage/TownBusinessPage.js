@@ -109,7 +109,9 @@ export default function TownBusinessPage() {
           `https://hdrss-backend.onrender.com/api/tb/business/category/${town.id}`
         );
         const json = await response.json();
-        setData(json || []);
+        const sortedbyName = json.sort((a, b) => a.title.localeCompare(b.title));
+        setData(sortedbyName || []);
+
       } catch (error) {
         console.log("Fetch error:", error);
       } finally {

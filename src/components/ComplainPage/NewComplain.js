@@ -75,7 +75,7 @@ export default function ComplaintPage3({ navigation, route }) {
           name: asset.fileName || "complaint.jpg"
         });
 
-        try {
+        try { 
           const res = await axios.post("https://hdrss-backend.onrender.com/api/upload", formData, {
             headers: { "Content-Type": "multipart/form-data" },
           });

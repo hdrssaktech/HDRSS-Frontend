@@ -27,13 +27,13 @@ export default function Membership1() {
   const route = useRoute();
   const navigation = useNavigation();
   const { districtName} = route.params || {};
-
+  const [loading, setLoading] = useState(false);
   const [categoryType, setCategoryType] = useState("District");
   const [isChecked, setIsChecked] = useState(false);
   const [photo, setPhoto] = useState(null);
   const [dob, setDob] = useState("");
   const [showDatePicker, setShowDatePicker] = useState(false);
-  const [selectedDate, setSelectedDate] = useState(new Date());
+  const [selectedDate, setSelectedDate] = useState(new Date(2000, 0, 1));
   const [name, setName] = useState("");
   const [fatherName, setFatherName] = useState("");
   const [bloodGroup, setBloodGroup] = useState("");
@@ -89,6 +89,8 @@ export default function Membership1() {
   // 📅 Date Picker
   const onChangeDate = (event, selected) => {
     setShowDatePicker(false);
+      if (event.type === "dismissed") return; // ✅ ADD THIS
+
     if (selected) {
       setSelectedDate(selected);
       const year = selected.getFullYear();
@@ -189,6 +191,7 @@ const handleSubmit = async () => {
   console.warn("🔥 HANDLE SUBMIT CLICKED");
 
   try {
+    setLoading(true);
     console.warn("📤 Uploading image");
 
     const formData = new FormData();
@@ -261,12 +264,24 @@ const handleSubmit = async () => {
   } catch (err) {
     console.error("❌ HANDLE SUBMIT ERROR:", err);
     showCustomAlert("error", "Error", err.message);
+  }finally{
+    setLoading(false)
   }
 };
   
 
   return (
     <SafeAreaView style={styles.container}>
+    {loading && (
+      <View style={styles.blurOverlay}>
+        <View style={styles.loadingBox}>
+          <Text style={styles.loadingText}>⏳ Submitting...</Text>
+          <Text style={styles.loadingSubText}>Please wait while we process your request</Text>
+        </View>
+      </View>
+    )}
+     <View style={{ flex: 1, opacity: loading ? 0.3 : 1 }}
+          pointerEvents={loading ? 'none' : 'auto'}>
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()}>
           <Ionicons name="chevron-back" size={28} color="#fff" />
@@ -373,7 +388,8 @@ const handleSubmit = async () => {
             <DateTimePicker
               value={selectedDate}
               mode="date"
-              display="default"
+              display="spinner"
+              minimumDate={new Date(1900, 0, 1)} 
               maximumDate={new Date()}
               onChange={onChangeDate}
             />
@@ -513,6 +529,7 @@ const handleSubmit = async () => {
         message={alertMessage}
         onConfirm={() => setAlertVisible(false)}
       />
+      </View>
     </SafeAreaView>
   );
 }
@@ -662,4 +679,37 @@ const styles = StyleSheet.create({
   categoryTextSelected: {
     color: "#fff",
   },
+  blurOverlay: {
+  position: 'absolute',
+  top: 0,
+  left: 0,
+  right: 0,
+  bottom: 0,
+  zIndex: 999,
+  justifyContent: 'center',
+  alignItems: 'center',
+},
+loadingBox: {
+  backgroundColor: '#93210A',
+  borderRadius: 12,
+  padding: 24,
+  alignItems: 'center',
+  width: '70%',
+  shadowColor: '#000',
+  shadowOffset: { width: 0, height: 2 },
+  shadowOpacity: 0.3,
+  shadowRadius: 4,
+  elevation: 5,
+},
+loadingText: {
+  color: '#fff',
+  fontSize: 18,
+  fontWeight: 'bold',
+  marginBottom: 8,
+},
+loadingSubText: {
+  color: '#ffcccc',
+  fontSize: 13,
+  textAlign: 'center',
+},
 });

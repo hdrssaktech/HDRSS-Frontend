@@ -272,13 +272,13 @@ export default function ProfilePage() {
             // onPress={() => Alert.alert('Coming Soon', 'Edit phone number feature coming soon!')}
           />
           <MenuItem
-            icon="call-outline"
+            icon="calendar-outline"
             label="Date of Birth"
             value={dob}
             // onPress={() => Alert.alert('Coming Soon', 'Edit phone number feature coming soon!')}
           />
           <MenuItem
-            icon="call-outline"
+            icon="location-outline"
             label="Pincode"
             value={pincode}
             
@@ -320,7 +320,7 @@ export default function ProfilePage() {
             activeOpacity={0.8}
           >
             <LinearGradient
-              colors={[COLORS.error, '#D32F2F']}
+              colors={["#971A01", '#971A01']}
               style={styles.logoutGradient}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 1 }}

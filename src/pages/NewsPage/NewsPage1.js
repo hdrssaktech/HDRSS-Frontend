@@ -17,6 +17,13 @@ import { fetchNews } from "../../Controller/NewsController/NewsController";
 import Loader from "../../components/Alert/Loader";
 
 
+  const formatDate = (date) => {
+  if (!date) return "";
+
+  const [year, month, day] = date.split("-");
+  return `${day}/${month}/${year}`;
+ };
+
 
 /* 🔹 Card Component */
 const ListCard = ({ item, onPress, styles }) => (
@@ -24,7 +31,7 @@ const ListCard = ({ item, onPress, styles }) => (
     <Image source={{ uri: item.image }} style={styles.listCardImage1} />
     <View style={styles.listCardContent1}>
       <Text style={styles.listCardCategory}>{item.type}</Text>
-      <Text style={styles.listCardCategory}>தேதி: {item.date}</Text>
+      <Text style={styles.listCardCategory}>தேதி: {formatDate(item.date)}</Text>
       <Text style={styles.listCardTitle1} numberOfLines={2}>
         {item.title}
       </Text>
@@ -47,17 +54,28 @@ export default function NewsPage1() {
   useEffect(() => {
     const loadNews = async () => {
       const data = await fetchNews();
-      
-      // Sort the data by orderno in ascending order
-      const sortedData = data.sort((a, b) => {
+
+      const today = new Date();
+      const last7Days = new Date();
+      last7Days.setDate(today.getDate() - 7);
+
+  
+      const filteredNews = data.filter(item => {
+        if (!item.date) return false;
+
+        const newsDate = new Date(item.date);
+        return newsDate >= last7Days && newsDate <= today;
+      });
+
+      // 2️⃣ Sort by orderNo
+      const sortedData = filteredNews.sort((a, b) => {
         const orderA = a.orderNo ?? Infinity;
         const orderB = b.orderNo ?? Infinity;
         return orderA - orderB;
       });
-      
+
       setNews(sortedData);
       setLoading(false);
-     
     };
     loadNews();
   }, []);
@@ -74,7 +92,7 @@ export default function NewsPage1() {
           color="#fff"
           onPress={() => navigation.goBack()}
         />
-        <Text style={styles.headerTitle1}>Latest News</Text>
+        <Text style={styles.headerTitle1}> News</Text>
       </View>
 
       {/* 🔹 Loader */}
@@ -82,7 +100,7 @@ export default function NewsPage1() {
       <Loader/>
       ) : (
         <ScrollView showsVerticalScrollIndicator={false}>
-          {news.slice(0,10).map((item) => (
+          {news.map((item) => (
             <ListCard
               key={item.id}
               item={item}
@@ -124,7 +142,7 @@ const getStyles = (isTablet) =>
       color: "white",
       fontWeight: "bold",
       fontSize: isTablet ? 26 : 20,
-      marginLeft: 20,
+      marginLeft: 55,
       left: isTablet ? 200 : 55,
     },
     /* 🔹 News Card */

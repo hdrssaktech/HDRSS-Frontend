@@ -54,6 +54,7 @@ export const loginApi = async (userData) => {
     throw error;
   }
 };
+
 export const forgotPasswordAPI = async (payload) => {
   const response = await fetch(`${BASE_URL}/auth/forgot-password`, {
     method: "POST",

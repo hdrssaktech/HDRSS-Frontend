@@ -55,7 +55,12 @@ export default function DistrictBusinessPage0() {
         const res = await axios.get(url);
 
         if (res.data?.resultData && Array.isArray(res.data.resultData)) {
-          setBusinessList(res.data.resultData);
+          
+        const sortedBusiness = res.data.resultData.sort((a, b) =>
+          (a.name || "").localeCompare(b.name || "")
+        );
+
+          setBusinessList(sortedBusiness);
         } else {
           setBusinessList([]);
         }
@@ -77,6 +82,7 @@ export default function DistrictBusinessPage0() {
 
 
         const res = await axios.get(url);
+
 
         if (res.data && Array.isArray(res.data) && res.data.length > 0) {
           const firstAd = res.data[0];

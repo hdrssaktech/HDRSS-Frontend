@@ -32,11 +32,11 @@ const FEATURES = [
   { id: 3, label: "ஜோதிடம்", image: require("../../../assets/Left Swap/Astrology.webp") },
   { id: 4, label: "கதைகள்", image: require("../../../assets/Left Swap/Story.jpg") },
   { id: 5, label: "பூஜை", image: require("../../../assets/Left Swap/poojai.jpg") },
-  { id: 6, label: "சுற்றுலா", image: require("../../../assets/Left Swap/tourism.jpg") },
+  { id: 6, label: "யாத்திரை", image: require("../../../assets/Left Swap/tourism.jpg") },
   { id: 7, label: "வாஸ்து", image: require("../../../assets/Left Swap/vasthu.jpeg") },
-  { id: 8, label: "முழக்கம்", image: require("../../../assets/home-bg-img/ohm-img.png") },
+  { id: 8, label: "மந்திரம்", image: require("../../../assets/home-bg-img/ohm-img.png") },
   { id: 9, label: "பக்திப் பாடல்கள்", image: require("../../../assets/home-bg-img/ruthurasa-img.png") },
-
+   { id: 10, label: "நூல்கள்", image: require("../../../assets/hinduthua/Noolgal.jpg") }
 ];
 
 const columns = 25; 
@@ -134,6 +134,12 @@ export default function HomePage() {
       </View>
     );
   }
+   const formatDate = (date) => {
+  if (!date) return "";
+
+  const [year, month, day] = date.split("-");
+  return `${day}/${month}/${year}`;
+ };
 
   return (
     <View style={styles.container}>
@@ -177,25 +183,25 @@ export default function HomePage() {
           ListHeaderComponent={
             <>
               {/* 🗳 Election Button */}
-              {/* <Animated.View
+              <Animated.View
                 style={[
                   styles.centerButtonContainer,
                   { transform: [{ translateX: slideAnim }] },
                 ]}
               >
                 <TouchableOpacity
-                  onPress={() => navigation.navigate("Assemblies")}
+                  // onPress={() => navigation.navigate("Assemblies")}
                 >
                   <LinearGradient
                     colors={["#FFD700", "#FF8C00", "#93210A"]}
                     style={styles.gradientButton}
                   >
                     <Text style={styles.gradientButtonText}>
-                      🗳 2026 Election Survey...
+                      CAUCUS 2026...
                     </Text>
                   </LinearGradient>
                 </TouchableOpacity>
-              </Animated.View> */}
+              </Animated.View>
 
               {/* Advertisement Component */}
               <View style={styles.advertisementWrapper}>
@@ -210,7 +216,7 @@ export default function HomePage() {
             <>
               <InterviewVideos/>
               {/* 📰 NEWS SECTION */}
-              <Text style={styles.heading}>Latest News</Text>
+              <Text style={styles.heading}>News</Text>
               {news.length === 0 ? (
                 <Text style={styles.noDataText}>No news available</Text>
               ) : (
@@ -232,7 +238,7 @@ export default function HomePage() {
                         <Image source={{ uri: item.image }} style={styles.newsImage} />
                         <View style={styles.newsContent}>
                           <Text style={styles.newsCategory}>{item.type}</Text>
-                          <Text style={styles.newsDate}>தேதி: {item.date}</Text>
+                          <Text style={styles.newsDate}>தேதி: {formatDate(item.date)}</Text>
                           <Text style={styles.newsTitle} numberOfLines={2}>
                             {item.title}
                           </Text>
@@ -266,11 +272,12 @@ export default function HomePage() {
                         if (item.label === "ஜோதிடம்") navigation.navigate("AstrologyPage1");
                         if (item.label === "கதைகள்") navigation.navigate("StoryPage1");
                         if (item.label === "பூஜை") navigation.navigate("PoojaPage1");
-                        if (item.label === "சுற்றுலா") navigation.navigate("TourismPage1");
+                        if (item.label === "யாத்திரை") navigation.navigate("TourismPage1");
                         if (item.label === "வாஸ்து") navigation.navigate("VaasthuPage");
                         if (item.label === "இந்துத்துவா") navigation.navigate("HinduThuvm");
                         if (item.label === "பஞ்சாங்கம்") navigation.navigate("Panchangam");
-                        if (item.label === "முழக்கம்") navigation.navigate("SloganPage1",{ name: item.label });
+                        if (item.label === "நூல்கள்") navigation.navigate("HinduNoolgal1" ,{ categoryTypes: 'நூல்கள்' });
+                        if (item.label === "மந்திரம்") navigation.navigate("SloganPage1",{ name: item.label });
                         if (item.label === "பக்திப் பாடல்கள்") navigation.navigate("DivinePage1",{ name: item.label });
                       }}
                     >
@@ -303,14 +310,14 @@ const getStyles = (isTablet) =>
       backgroundColor: "#ffffff",
     },
 
-    sidebarOverlay: {
-      position: "absolute",
-      top: 0,
-      left: -140,
-      width: "100%",
-      height: "100%",
-      zIndex: 999,
-    },
+  sidebarOverlay: {
+    position: "absolute",
+    top: 0,
+    left: 0,          // ✅ Always 0 — never offset
+    width: "120%",
+    height: "100%",
+    zIndex: 999,
+  },
 
     sidebarOverlayTablet: {
       left: -440,
@@ -343,13 +350,13 @@ const getStyles = (isTablet) =>
     gradientButton: {
       paddingVertical: isTablet ? 18 : 12,
       paddingHorizontal: isTablet ? 55 : 30,
-      borderRadius: 30,
+      borderRadius: 10,
     },
 
     gradientButtonText: {
       color: "#fff",
-      fontSize: isTablet ? 22 : 16,
-      fontWeight: "bold",
+      fontSize: isTablet ? 22 : 18,
+      fontWeight:"900",
     },
 
     advertisementWrapper: {

@@ -93,17 +93,30 @@ const PartiesPage1 = () => {
     districtName: districtName
   }), [districtName]);
 
+  const hdrssItem = useMemo(() => ({
+  id: 'hdrss-special',
+  name: 'HDRSS',
+  type: 'hdrss',
+  image: require('../../../../assets/hdrss event/hdrss logo.jpeg'), // put your HDRSS logo here
+  districtName: districtName
+}), [districtName]);
+
   // Combine the special item with parties data
   const allItems = useMemo(() => {
-    return [electedRepsItem, ...parties];
-  }, [electedRepsItem, parties]);
+    return [electedRepsItem,hdrssItem, ...parties];
+  }, [electedRepsItem, hdrssItem,parties]);
 
   const renderCard = ({ item, index }) => {
     // Check if it's the last item in the row
     const isLastInRow = (index + 1) % numColumns === 0;
     
     // If it's the Elected Representatives card
-    if (item.type === 'elected-reps') {
+    if (item.type === 'elected-reps' || item.type === 'hdrss') {
+
+      const navigateScreen =
+     item.type === 'elected-reps'
+      ? "DistrictAssembly3"
+      : "HDRSSPage2";
       return (
         <TouchableOpacity
           style={[
@@ -116,10 +129,20 @@ const PartiesPage1 = () => {
             },
           ]}
           activeOpacity={0.85}
-          onPress={() => navigation.navigate("DistrictAssembly3", { 
-            districtId: districtId,
-            districtName: districtName
-          })}
+          onPress={() => {
+          if (item.type === "elected-reps") {
+            navigation.navigate("DistrictAssembly3", {
+              districtId: districtId,
+              districtName: districtName,
+            });
+          } 
+          else if (item.type === "hdrss") {
+            navigation.navigate("HDRSSParties",{
+              districtId: districtId,
+              districtName: districtName,
+            });
+          }
+        }}
         >
           <View style={[styles.imageContainer, isTablet && styles.imageContainerTablet]}>
             <Image
@@ -162,6 +185,8 @@ const PartiesPage1 = () => {
         </TouchableOpacity>
       );
     }
+
+    
     
     // Regular party card
     return (

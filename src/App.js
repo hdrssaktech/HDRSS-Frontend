@@ -6,6 +6,7 @@ import { VoteProvider  } from "./context/VoteContext.js";
 import { LocationProvider } from "./context/LocationContext.js";
 import { LoaderProvider, useLoader } from "./context/LoaderContext.js";
 
+
 import Loginpage from "./pages/AuthPage/LoginPage";
 import Recovery from "./pages/AuthPage/RecoveryPage";
 import SigninPage from "./pages/AuthPage/SigninPage";
@@ -90,7 +91,6 @@ import PoojaDetails from "./pages/ElectionCategorysPage/PoojaPage/PoojaDetails.j
 import BhakthiNoolgal1 from "./pages/ElectionCategorysPage/BhakthiNoolgal.js/BhakthiNoolgal1.js";
 import BhakthiNoolgal2 from "./pages/ElectionCategorysPage/BhakthiNoolgal.js/BhakthiNoolgal2.js";
 import BhakthiNoolgal3 from "./pages/ElectionCategorysPage/BhakthiNoolgal.js/BhakthiNoolgal3.js";
-
 import DetailsScreen from "./pages/ElectionCategorysPage/HinduThuvm/HinduThuvm.js";
 import HinduLeaders1 from "./pages/ElectionCategorysPage/HinduThuvm/HinduLeaders/HinduLeaders1.js";
 import HinduLeaders2 from "./pages/ElectionCategorysPage/HinduThuvm/HinduLeaders/HinduLeaders2.js";
@@ -126,6 +126,12 @@ import EventMonthHistory from "./components/Events/EventHistory/EventMonthHistor
 import EventMonth from "./components/Events/EventHistory/EventMonth.js";
 import NewsMonthHistory from "./pages/NewsPage/NewsHistory/NewsMonthHistory.js";
 import NewsMonth from "./pages/NewsPage/NewsHistory/NewsMonth.js";
+import HdrssParties from "./pages/DistrictPage/Parties/HdrssParties/HdrssParties.js";
+import HdrssMemberEvents from "./pages/DistrictPage/Parties/HdrssParties/HdrssMemberEvents.js";
+import HdrssMemberEventDetails from "./pages/DistrictPage/Parties/HdrssParties/HdrssMemberEventDetails.js";
+import CacusForm from "./components/Caucus/CacusForm.js";
+import PDFViewerScreen from "./components/Caucus/PDFViewerScreen.js";
+import PrinciplesScreen from "./pages/AboutPage/PrinciplesScreen.js";
 
 
 
@@ -178,6 +184,9 @@ function MainStackScreen() {
     <MainStack.Screen name="Profile" component={withFooter(ProfilePage)} />
     <MainStack.Screen name="Member" component={withFooter(Membership)}/>
     <MainStack.Screen name="Member1" component={withFooter(Membership1)}/>
+    <MainStack.Screen name="HDRSSParties" component={withFooter(HdrssParties)}/>
+    <MainStack.Screen name="HDRSSMemberevents" component={withFooter(HdrssMemberEvents)}/>
+       <MainStack.Screen name="HDRSSMembereventsdetails" component={withFooter(HdrssMemberEventDetails)}/>
     <MainStack.Screen name="NewsPage1" component={withFooter(NewsPage1)}/>
     <MainStack.Screen name="Newspage2" component={withFooter(NewsPage2)}/>
     <MainStack.Screen name="NewsMonthHistory" component={withFooter(NewsMonthHistory)}/>
@@ -195,11 +204,11 @@ function MainStackScreen() {
     <MainStack.Screen name="ComplainDetails" component={withFooter(ComplaintScreen)}/>
     <MainStack.Screen name="AboutPage1" component={withFooter(AboutPage1)}/>
     <MainStack.Screen name="AboutPage2" component={withFooter(AboutPage2)}/>
-    <MainStack.Screen name="DistrictCategorysPage0" component={withFooter(DistrictCategorysPage0)}/>
+    {/* <MainStack.Screen name="DistrictCategorysPage0" component={withFooter(DistrictCategorysPage0)}/> */}
     <MainStack.Screen name="DistrictCategorysPage1" component={withFooter(DistrictCategorysPage1)}/>
     <MainStack.Screen name="DistrictCategorysPage2" component={withFooter(DistrictCategorysPage2)}/>
-    <MainStack.Screen name="InterviewPage1" component={withFooter(InterviewPage1)}/>
-    <MainStack.Screen name="InterviewPage2" component={withFooter(InterviewPage2)}/>
+    {/* <MainStack.Screen name="InterviewPage1" component={withFooter(InterviewPage1)}/> */}
+    {/* <MainStack.Screen name="InterviewPage2" component={withFooter(InterviewPage2)}/> */}
     <MainStack.Screen name="ElectionPage" component={withFooter(ElectionPage)}/>
     <MainStack.Screen name="HistoryPage1" component={withFooter(HistoryPage1)}/>
     <MainStack.Screen name="HistoryPage2" component={withFooter(HistoryPage2)}/>
@@ -226,7 +235,7 @@ function MainStackScreen() {
     <MainStack.Screen name="AstrologyPage1" component={withFooter(AstrologyPage1)}/>
     <MainStack.Screen name="AstrologyPage2" component={withFooter(AstrologyPage2)}/>
     <MainStack.Screen name="AstrologyPage3" component={withFooter(AstrologyPage3)}/>
-    <MainStack.Screen name="Member0" component={withFooter(Member0)}/>
+    {/* <MainStack.Screen name="Member0" component={withFooter(Member0)}/> */}
     <MainStack.Screen name="GovernmentPage1" component={withFooter(GovernmentPage)}/>
     <MainStack.Screen name="GovernmentPage2" component={withFooter(GovernmentPage2)}/>
     <MainStack.Screen name="Partiespage1" component={withFooter(PartiesPage1)}/>
@@ -279,12 +288,15 @@ function MainStackScreen() {
     <MainStack.Screen name="Assemblies" component={withFooter(Assemblies)}/>
     <MainStack.Screen name="VotePartiesResult" component={withFooter(PartiesResult)}/>
     <MainStack.Screen name="Vote2023Result" component={withFooter(Election2021Screen)}/>
-    <MainStack.Screen name="DistrictAssembly1" component={withFooter(DistrictAssemblyPage1)}/>
-    <MainStack.Screen name="DistrictAssembly2" component={withFooter(DistrictAssemblyPage2)}/>
+    {/* <MainStack.Screen name="DistrictAssembly1" component={withFooter(DistrictAssemblyPage1)}/> */}
+    {/* <MainStack.Screen name="DistrictAssembly2" component={withFooter(DistrictAssemblyPage2)}/> */}
     <MainStack.Screen name="DistrictAssembly3" component={withFooter(DistrictAssemblyPage3)}/>
     <MainStack.Screen name="DistrictAssembly4" component={withFooter(DistrictAssemblyPage4)}/>
     <MainStack.Screen name="JobPage1" component={withFooter(JobPage1)}/>
     <MainStack.Screen name="JobPage2" component={withFooter(JobPage2)}/>
+    <MainStack.Screen name="Caucus" component={withFooter(CacusForm)}/>
+    <MainStack.Screen name="PDFViewer" component={withFooter(PDFViewerScreen)}/>
+    <MainStack.Screen name="Principles" component={withFooter(PrinciplesScreen)}/>
     </MainStack.Navigator>
   );
 }
@@ -314,5 +326,4 @@ export default function App() {
     </AuthProvider>
   );
 }
-
 
