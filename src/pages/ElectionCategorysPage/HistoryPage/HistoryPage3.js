@@ -120,16 +120,16 @@ export default function HistoryPage3() {
 
   return (
     <SafeAreaView style={styles.safe}>
-      <StatusBar barStyle="light-content" backgroundColor="#8B3A2F" />
+      <StatusBar barStyle="light-content" backgroundColor="#93210A" />
 
-      {/* 🔴 HEADER */}
+      {/* HEADER */}
       <View style={[styles.header, isTablet && styles.headerTablet]}>
         <TouchableOpacity
-        style={[styles.backButton, isTablet && styles.backButtonTablet]}
-        onPress={() => navigation.goBack()}
-      >
-        <Ionicons name="chevron-back" size={isTablet ? 30 : 26} color="#fff" />
-      </TouchableOpacity>
+          style={[styles.backButton, isTablet && styles.backButtonTablet]}
+          onPress={() => navigation.goBack()}
+        >
+          <Ionicons name="chevron-back" size={isTablet ? 30 : 26} color="#fff" />
+        </TouchableOpacity>
 
         <Text style={[styles.headerTitle, isTablet && styles.headerTitleTablet]} numberOfLines={1}>
           {data?.title || "History"}
@@ -139,7 +139,7 @@ export default function HistoryPage3() {
       </View>
 
       <ScrollView contentContainerStyle={styles.scrollBody} showsVerticalScrollIndicator={false}>
-        {/* 🖼 BANNER */}
+        {/* BANNER */}
         {!!data?.bannerImage && (
           <View style={styles.bannerContainer}>
             <Image
@@ -160,17 +160,17 @@ export default function HistoryPage3() {
           </View>
         </View>
 
-        {/* ✅ DESCRIPTION + IMAGES */}
+        {/* DESCRIPTION + IMAGES */}
         <View style={[styles.section, isTablet && styles.sectionTablet]}>
           {mixedBlocks.map((block) => {
             if (block.type === "text") {
               return (
-                 
                 <View key={block.key} style={styles.textBlock}>
-                <Hyperlink 
-                linkDefault={true} 
-                linkStyle={{ color: '#8B0000', textDecorationLine: 'underline' }}>
-                  <Text style={[styles.description, isTablet && styles.descTablet]}>{block.value}</Text>
+                  <Hyperlink 
+                    linkDefault={true} 
+                    linkStyle={{ color: '#93210A', textDecorationLine: 'underline' }}
+                  >
+                    <Text style={[styles.description, isTablet && styles.descTablet]}>{block.value}</Text>
                   </Hyperlink>
                 </View>
               );
@@ -197,7 +197,8 @@ export default function HistoryPage3() {
                 <View style={styles.captionContainer}>
                   <View style={styles.captionLine} />
                   <View style={styles.captionWrapper}>
-                    <Ionicons name="image-outline" size={16} color="#8B3A2F" />
+                    <Ionicons name="image-outline" size={16} color="#93210A" />
+                    <Text style={styles.captionText}>{block.caption}</Text>
                   </View>
                   <View style={styles.captionLine} />
                 </View>
@@ -210,11 +211,17 @@ export default function HistoryPage3() {
           })}
         </View>
 
-        {/* 🎥 VIDEO */}
-        <View style={[styles.section, isTablet && styles.sectionTablet, styles.videoSection]}>
+        {/* VIDEO - FULL WIDTH WITH TAMIL */}
+        <View style={styles.videoSection}>
           <View style={styles.videoHeader}>
             <View style={styles.videoLine} />
-            <Text style={[styles.blockTitle, isTablet && styles.blockTitleTablet]}>Historical Video</Text>
+            <View style={styles.videoTitleContainer}>
+              
+              <Text style={[styles.blockTitle, isTablet && styles.blockTitleTablet]}>
+                வரலாற்று காணொளி
+              </Text>
+            
+            </View>
             <View style={styles.videoLine} />
           </View>
 
@@ -223,8 +230,8 @@ export default function HistoryPage3() {
               <View style={styles.videoFrame}>
                 <YoutubePlayer
                   ref={playerRef}
-                  height={(width * 18) / 30} // Increased height (changed from /16 to /14)
-                  width={width - 40}
+                  height={(width * 9) / 16} // 16:9 aspect ratio for full width
+                  width={width}
                   play={playing}
                   videoId={videoId}
                   onChangeState={onStateChange}
@@ -243,19 +250,34 @@ export default function HistoryPage3() {
                     androidLayerType: Platform.OS === "android" ? "hardware" : undefined,
                   }}
                 />
-                <View pointerEvents="none" style={styles.vintageOverlay} />
+                {!playing && (
+                  <TouchableOpacity
+                    style={styles.videoPlayOverlay}
+                    onPress={() => setPlaying(true)}
+                    activeOpacity={0.8}
+                  >
+                    <View style={styles.videoPlayButton}>
+                      <Ionicons name="play" size={isTablet ? 50 : 40} color="#fff" />
+                    </View>
+                    <Text style={styles.videoPlayText}>காணொளியை இயக்கவும்</Text>
+                  </TouchableOpacity>
+                )}
               </View>
 
               {playerError ? (
-                <Text style={{ marginTop: 10, color: "#8B3A2F", fontStyle: "italic", textAlign: "center" }}>
-                  Video not playable (maybe restricted). Try another video.
-                </Text>
+                <View style={styles.videoErrorContainer}>
+                  <Ionicons name="alert-circle" size={20} color="#93210A" />
+                  <Text style={styles.videoErrorText}>
+                    காணொளி இயக்க முடியவில்லை. மீண்டும் முயற்சிக்கவும்.
+                  </Text>
+                </View>
               ) : null}
             </View>
           ) : (
             <View style={styles.noVideoContainer}>
-              <Ionicons name="videocam-outline" size={40} color="#8B3A2F" />
-              <Text style={styles.noVideo}>No video available</Text>
+              <Ionicons name="videocam-off-outline" size={50} color="#93210A" />
+              <Text style={styles.noVideo}>காணொளி கிடைக்கவில்லை</Text>
+              <Text style={styles.noVideoSubtext}>No video available</Text>
             </View>
           )}
         </View>
@@ -266,24 +288,35 @@ export default function HistoryPage3() {
 
 /* ================= STYLES ================= */
 
-const BORDER = "#8B3A2F";
-const PAPER = "#FDF5E6";
-const VINTAGE = "rgba(139, 58, 47, 0.03)";
+const BORDER = "#93210A";
+const PAPER = "#d4cea6";
+const VINTAGE = "rgba(147, 33, 10, 0.03)";
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: PAPER },
+  safe: { 
+    flex: 1, 
+    backgroundColor: "#d4cea6" 
+  },
 
   header: {
     flexDirection: "row",
     alignItems: "center",
     backgroundColor: "#93210A",
-    paddingTop:40,
-    paddingBottom:30,
+    paddingTop: 40,
+    paddingBottom: 30,
     borderBottomLeftRadius: 20,
     borderBottomRightRadius: 20,
   },
-  headerTablet: { paddingTop: 60, paddingBottom: 30},
-  headerSide: { width: 44, justifyContent: "center", alignItems: "flex-start" },
+  headerTablet: { 
+    paddingTop: 60, 
+    paddingBottom: 30,
+    paddingHorizontal: 18,
+  },
+  headerSide: { 
+    width: 44, 
+    justifyContent: "center", 
+    alignItems: "flex-start" 
+  },
   headerTitle: {
     flex: 1,
     textAlign: "center",
@@ -294,22 +327,25 @@ const styles = StyleSheet.create({
   },
   headerTitleTablet: { fontSize: 22 },
 
-   backButton:{
+  backButton: {
     width: 40,
     height: 40,
     borderRadius: 20,
     backgroundColor: "rgba(255,255,255,0.15)",
     alignItems: "center",
     justifyContent: "center",
-    marginLeft:15,
+    marginLeft: 15,
   },
-  backButtonTablet:{
+  backButtonTablet: {
     width: 50,
     height: 50,
     borderRadius: 25,
   },
 
-  scrollBody: { paddingBottom: 34, backgroundColor: PAPER },
+  scrollBody: { 
+    paddingBottom: 34, 
+    backgroundColor: "#d4cea6" 
+  },
 
   bannerContainer: {
     position: "relative",
@@ -318,10 +354,18 @@ const styles = StyleSheet.create({
     borderBottomColor: BORDER,
   },
   banner: { width: "100%" },
-  bannerOverlay: { ...StyleSheet.absoluteFillObject, backgroundColor: VINTAGE },
+  bannerOverlay: { 
+    ...StyleSheet.absoluteFillObject, 
+    backgroundColor: VINTAGE 
+  },
 
-  section: { marginHorizontal: 16, marginTop: 8 },
-  sectionTablet: { marginHorizontal: 40 },
+  section: { 
+    marginHorizontal: 16, 
+    marginTop: 8 
+  },
+  sectionTablet: { 
+    marginHorizontal: 40 
+  },
 
   titleContainer: {
     flexDirection: "row",
@@ -329,7 +373,12 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     marginTop: 10,
   },
-  titleLine: { flex: 1, height: 2, backgroundColor: BORDER, opacity: 0.3 },
+  titleLine: { 
+    flex: 1, 
+    height: 2, 
+    backgroundColor: BORDER, 
+    opacity: 0.3 
+  },
   title: {
     fontSize: 18,
     fontWeight: "800",
@@ -338,9 +387,18 @@ const styles = StyleSheet.create({
     textTransform: "uppercase",
     letterSpacing: 1,
   },
-  titleTablet: { fontSize: 23, marginHorizontal: 20 },
+  titleTablet: { 
+    fontSize: 23, 
+    marginHorizontal: 20 
+  },
 
-  textBlock: { marginBottom: 15, paddingHorizontal: 5 },
+  textBlock: { 
+    marginBottom: 15, 
+    paddingHorizontal: 5,
+    backgroundColor: "rgba(255,255,255,0.4)",
+    padding: 12,
+    borderRadius: 8,
+  },
   description: {
     fontSize: 14,
     color: "#4A2C1A",
@@ -349,12 +407,15 @@ const styles = StyleSheet.create({
     fontFamily: "System",
     fontWeight: "400",
   },
-  descTablet: { fontSize: 17, lineHeight: 26 },
+  descTablet: { 
+    fontSize: 17, 
+    lineHeight: 26 
+  },
 
   galleryCard: {
     width: "100%",
     alignSelf: "center",
-    backgroundColor: "#F5E6D3",
+    backgroundColor: "rgba(255,255,255,0.6)",
     borderRadius: 8,
     padding: 15,
     position: "relative",
@@ -367,7 +428,10 @@ const styles = StyleSheet.create({
     shadowRadius: 5,
     elevation: 5,
   },
-  galleryCardTablet: { width: "80%", padding: 20 },
+  galleryCardTablet: { 
+    width: "80%", 
+    padding: 20 
+  },
 
   vintagePaper: {
     position: "absolute",
@@ -375,7 +439,7 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
-    backgroundColor: "#F5E6D3",
+    backgroundColor: "rgba(255,255,255,0.3)",
     borderRadius: 8,
     opacity: 0.5,
   },
@@ -398,11 +462,15 @@ const styles = StyleSheet.create({
     backgroundColor: "transparent",
     overflow: "hidden",
   },
-  borderPattern: { flex: 1, backgroundColor: BORDER, opacity: 0.2 },
+  borderPattern: { 
+    flex: 1, 
+    backgroundColor: BORDER, 
+    opacity: 0.2 
+  },
 
   imageWrapper: {
     padding: 8,
-    backgroundColor: "#E8D5B5",
+    backgroundColor: "rgba(255,255,255,0.5)",
     borderRadius: 6,
     borderWidth: 1,
     borderColor: "#C4A484",
@@ -414,9 +482,17 @@ const styles = StyleSheet.create({
     overflow: "hidden",
     position: "relative",
   },
-  galleryImage: { width: "100%", height: 210 },
-  galleryImageTablet: { height: 280 },
-  vintageOverlay: { ...StyleSheet.absoluteFillObject, backgroundColor: "rgba(139, 58, 47, 0.02)" },
+  galleryImage: { 
+    width: "100%", 
+    height: 210 
+  },
+  galleryImageTablet: { 
+    height: 280 
+  },
+  vintageOverlay: { 
+    ...StyleSheet.absoluteFillObject, 
+    backgroundColor: "rgba(147, 33, 10, 0.02)" 
+  },
 
   captionContainer: {
     marginTop: 15,
@@ -424,38 +500,142 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingHorizontal: 5,
   },
-  captionLine: { flex: 1, height: 1, backgroundColor: BORDER, opacity: 0.2 },
+  captionLine: { 
+    flex: 1, 
+    height: 1, 
+    backgroundColor: BORDER, 
+    opacity: 0.2 
+  },
   captionWrapper: {
     flexDirection: "row",
     alignItems: "center",
     paddingHorizontal: 15,
     paddingVertical: 5,
-    backgroundColor: "#E8D5B5",
+    backgroundColor: "rgba(255,255,255,0.6)",
     borderRadius: 15,
     borderWidth: 1,
     borderColor: "#C4A484",
   },
-
-  videoSection: { marginTop: 25 },
-  videoHeader: { flexDirection: "row", alignItems: "center", marginBottom: 20 },
-  videoLine: { flex: 1, height: 2, backgroundColor: BORDER, opacity: 0.2 },
-  blockTitle: { fontSize: 18, fontWeight: "800", color: BORDER, marginHorizontal: 15, letterSpacing: 1 },
-  blockTitleTablet: { fontSize: 22, marginHorizontal: 20 },
- 
-  videoFrame: {
-    overflow: "hidden",
-    position: "relative",
-    marginLeft:-12
+  captionText: {
+    marginLeft: 6,
+    fontSize: 12,
+    color: "#4A2C1A",
+    fontWeight: "600",
   },
+
+  /* VIDEO SECTION - FULL WIDTH */
+  videoSection: { 
+    marginTop: 20,
+    marginHorizontal: 0,
+  },
+  videoHeader: { 
+    flexDirection: "row", 
+    alignItems: "center", 
+    marginBottom: 16,
+    paddingHorizontal: 16,
+  },
+  videoLine: { 
+    flex: 1, 
+    height: 2, 
+    backgroundColor: BORDER, 
+    opacity: 0.2 
+  },
+  videoTitleContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+    marginHorizontal: 15,
+  },
+  blockTitle: { 
+    fontSize: 16, 
+    fontWeight: "800", 
+    color: BORDER, 
+    letterSpacing: 0.5,
+  },
+  blockTitleTablet: { 
+    fontSize: 22, 
+  },
+
+  videoContainer: {
+    backgroundColor: "#000",
+    position: "relative",
+  },
+  videoFrame: {
+    width: "100%",
+    aspectRatio: 16 / 9,
+    backgroundColor: "#000",
+    position: "relative",
+  },
+  videoPlayOverlay: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: "rgba(0,0,0,0.5)",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  videoPlayButton: {
+    width: 70,
+    height: 70,
+    borderRadius: 35,
+    backgroundColor: "rgba(147, 33, 10, 0.85)",
+    alignItems: "center",
+    justifyContent: "center",
+    borderWidth: 3,
+    borderColor: "rgba(255,255,255,0.4)",
+    elevation: 8,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.5,
+    shadowRadius: 8,
+  },
+  videoPlayText: {
+    color: "#fff",
+    marginTop: 16,
+    fontSize: 14,
+    fontWeight: "600",
+    letterSpacing: 1,
+  },
+  videoErrorContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+    padding: 12,
+    backgroundColor: "rgba(255,255,255,0.6)",
+    marginTop: 8,
+    borderRadius: 8,
+    marginHorizontal: 16,
+  },
+  videoErrorText: {
+    color: "#93210A",
+    fontSize: 13,
+    fontStyle: "italic",
+  },
+
   noVideoContainer: {
     alignItems: "center",
     justifyContent: "center",
-    padding: 30,
-    backgroundColor: "#F5E6D3",
-    borderRadius: 12,
-    borderWidth: 1,
+    padding: 40,
+    backgroundColor: "rgba(255,255,255,0.5)",
+    borderRadius: 16,
+    borderWidth: 2,
     borderColor: "#C4A484",
     borderStyle: "dashed",
+    marginHorizontal: 16,
   },
-  noVideo: { marginTop: 10, color: "#8B3A2F", fontStyle: "italic", fontSize: 16 },
+  noVideo: { 
+    marginTop: 12, 
+    color: "#93210A", 
+    fontSize: 18, 
+    fontWeight: "700",
+  },
+  noVideoSubtext: {
+    marginTop: 4,
+    fontSize: 13,
+    color: "#999",
+    fontWeight: "500",
+  },
 });

@@ -1005,7 +1005,7 @@ import axios from "axios";
 import { useNavigation } from "@react-navigation/native";
 import Loader from "../../../../components/Alert/Loader";
 
-const BASE_URL = "http://192.168.1.6:5000/api/v1/panchangam/maathkaati";
+const BASE_URL = "https://hdrss-backend.onrender.com/api/v1/panchangam/maathkaati";
 // Uses:  GET /maathkaati/month/:month/year/:year
 // → If DB has it → returns instantly
 // → If not → Groq AI generates, saves to DB, returns

@@ -28,7 +28,7 @@ export default function DivinePage1() {
   const { name } = route.params || {};
 
   const isTablet = width >= 600;
-  const numColumns = isTablet ? 3 : 2;
+  const numColumns = isTablet ? 4 : 3;
 
   const [types, setTypes] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -51,19 +51,12 @@ export default function DivinePage1() {
     loadData();
   }, []);
 
-  // Unique names for modal list
   const filterOptions = [ALL, ...new Set(types.map((c) => c.name).filter(Boolean))];
-
-  // Modal list filtered by search
   const modalOptions = filterOptions.filter((opt) =>
     opt.toLowerCase().includes(modalSearch.toLowerCase())
   );
-
-  // Main grid filtered by selected name
   const filteredTypes =
-    activeFilter === ALL
-      ? types
-      : types.filter((item) => item.name === activeFilter);
+    activeFilter === ALL ? types : types.filter((item) => item.name === activeFilter);
 
   const handleSelect = (option) => {
     setActiveFilter(option);
@@ -73,10 +66,15 @@ export default function DivinePage1() {
 
   if (loading) return <Loader />;
 
+  const HORIZONTAL_PADDING = 12;
+  const GAP = 8;
+  const cardWidth =
+    (width - HORIZONTAL_PADDING * 2 - GAP * (numColumns - 1)) / numColumns;
+
   const renderItem = ({ item }) => (
     <TouchableOpacity
-      activeOpacity={0.85}
-      style={[styles.card, isTablet && styles.cardTablet]}
+      activeOpacity={0.82}
+      style={[styles.card, { width: cardWidth }]}
       onPress={() =>
         navigation.navigate("DivinePage2", {
           id: item.id,
@@ -85,14 +83,19 @@ export default function DivinePage1() {
         })
       }
     >
-      <View style={styles.imageWrap}>
+      {/* Image */}
+      <View style={styles.imageContainer}>
         <Image source={{ uri: item.image }} style={styles.image} />
       </View>
-      <Text style={[styles.title, isTablet && styles.titleTablet]} numberOfLines={2}>
-        {item.name}
-      </Text>
-      <View style={styles.arrowCircle}>
-        <Ionicons name="chevron-forward" size={16} color="#fff" />
+
+      {/* Full-width dark title bar */}
+      <View style={styles.cardFooter}>
+        <Text style={styles.cardTitle} numberOfLines={2}>
+          {item.name}
+        </Text>
+        <View style={styles.arrowDot}>
+          <Ionicons name="chevron-forward" size={10} color="#87584d" />
+        </View>
       </View>
     </TouchableOpacity>
   );
@@ -101,7 +104,7 @@ export default function DivinePage1() {
     <SafeAreaView style={styles.safe}>
       <StatusBar barStyle="light-content" backgroundColor="#93210A" />
 
-      {/* HEADER — original unchanged */}
+      {/* ── HEADER ── */}
       <View style={[styles.header, isTablet && styles.headerTablet]}>
         <TouchableOpacity
           style={[styles.backButton, isTablet && styles.backButtonTablet]}
@@ -110,38 +113,59 @@ export default function DivinePage1() {
           <Ionicons name="chevron-back" size={isTablet ? 30 : 26} color="#fff" />
         </TouchableOpacity>
         <Text style={[styles.headerTitle, isTablet && styles.headerTitleTablet]}>
-          {name || "Slogan"}
+          {name || "Divine"}
         </Text>
         <View style={styles.headerSide} />
       </View>
 
-      {/* FILTER TRIGGER */}
-      <View style={styles.filterTriggerWrapper}>
-        <TouchableOpacity
-          style={styles.filterTrigger}
-          onPress={() => { setModalSearch(""); setModalVisible(true); }}
-          activeOpacity={0.8}
-        >
-          <Ionicons name="funnel-outline" size={16} color="#93210A" />
-          <Text style={styles.filterTriggerText} numberOfLines={1}>
-            {activeFilter}
-          </Text>
-          <Ionicons name="chevron-down" size={16} color="#93210A" />
-        </TouchableOpacity>
-
-        {activeFilter !== ALL && (
+      {/* ── FILTER BAR ── */}
+      {filterOptions.length > 1 && (
+        <View style={styles.filterBar}>
           <TouchableOpacity
-            style={styles.clearBtn}
-            onPress={() => setActiveFilter(ALL)}
+            style={[
+              styles.filterPill,
+              activeFilter !== ALL && styles.filterPillActive,
+            ]}
+            onPress={() => {
+              setModalSearch("");
+              setModalVisible(true);
+            }}
             activeOpacity={0.8}
           >
-            <Ionicons name="close-circle" size={18} color="#93210A" />
-            <Text style={styles.clearBtnText}>Clear</Text>
+            <Ionicons
+              name="funnel"
+              size={13}
+              color={activeFilter !== ALL ? "#fff" : "#93210A"}
+            />
+            <Text
+              style={[
+                styles.filterPillText,
+                activeFilter !== ALL && styles.filterPillTextActive,
+              ]}
+              numberOfLines={1}
+            >
+              {activeFilter}
+            </Text>
+            <Ionicons
+              name="chevron-down"
+              size={13}
+              color={activeFilter !== ALL ? "#fff" : "#93210A"}
+            />
           </TouchableOpacity>
-        )}
-      </View>
 
-      {/* FILTER MODAL */}
+          {activeFilter !== ALL && (
+            <TouchableOpacity
+              style={styles.clearPill}
+              onPress={() => setActiveFilter(ALL)}
+              activeOpacity={0.8}
+            >
+              <Ionicons name="close" size={13} color="#93210A" />
+            </TouchableOpacity>
+          )}
+        </View>
+      )}
+
+      {/* ── FILTER MODAL ── */}
       <Modal
         visible={modalVisible}
         animationType="slide"
@@ -154,30 +178,35 @@ export default function DivinePage1() {
           onPress={() => setModalVisible(false)}
         />
         <View style={styles.modalSheet}>
+          <View style={styles.modalHandle} />
+
           <View style={styles.modalHeader}>
-            <Text style={styles.modalTitle}>வகையைத் தேர்ந்தெடுக்கவும்</Text>
+            <View>
+              <Text style={styles.modalTitle}>வகையைத் தேர்ந்தெடுக்கவும்</Text>
+              <Text style={styles.modalSubtitle}>Filter by category</Text>
+            </View>
             <TouchableOpacity
               onPress={() => setModalVisible(false)}
               style={styles.modalCloseBtn}
               activeOpacity={0.7}
             >
-              <Ionicons name="close" size={22} color="#333" />
+              <Ionicons name="close" size={18} color="#93210A" />
             </TouchableOpacity>
           </View>
 
           <View style={styles.modalSearchBar}>
-            <Ionicons name="search" size={17} color="#93210A" />
+            <Ionicons name="search-outline" size={16} color="#93210A" />
             <TextInput
               style={styles.modalSearchInput}
               placeholder="தேடுக..."
-              placeholderTextColor="#aaa"
+              placeholderTextColor="#bbb"
               value={modalSearch}
               onChangeText={setModalSearch}
               autoCorrect={false}
             />
             {modalSearch.length > 0 && (
-              <TouchableOpacity onPress={() => setModalSearch("")} activeOpacity={0.7}>
-                <Ionicons name="close-circle" size={17} color="#aaa" />
+              <TouchableOpacity onPress={() => setModalSearch("")}>
+                <Ionicons name="close-circle" size={16} color="#ccc" />
               </TouchableOpacity>
             )}
           </View>
@@ -188,25 +217,40 @@ export default function DivinePage1() {
             showsVerticalScrollIndicator={false}
             keyboardShouldPersistTaps="handled"
             contentContainerStyle={styles.modalList}
+            numColumns={2}
+            key="modal-grid"
+            columnWrapperStyle={styles.modalRow}
             renderItem={({ item }) => {
               const selected = activeFilter === item;
               return (
                 <TouchableOpacity
-                  style={[styles.modalItem, selected && styles.modalItemActive]}
+                  style={[styles.modalChip, selected && styles.modalChipActive]}
                   onPress={() => handleSelect(item)}
                   activeOpacity={0.75}
                 >
-                  <Text style={[styles.modalItemText, selected && styles.modalItemTextActive]}>
+                  {selected && (
+                    <Ionicons
+                      name="checkmark-circle"
+                      size={14}
+                      color="#93210A"
+                      style={{ marginRight: 4 }}
+                    />
+                  )}
+                  <Text
+                    style={[
+                      styles.modalChipText,
+                      selected && styles.modalChipTextActive,
+                    ]}
+                    numberOfLines={2}
+                  >
                     {item}
                   </Text>
-                  {selected && (
-                    <Ionicons name="checkmark-circle" size={20} color="#93210A" />
-                  )}
                 </TouchableOpacity>
               );
             }}
             ListEmptyComponent={
               <View style={styles.modalEmpty}>
+                <Ionicons name="search-outline" size={36} color="#eee" />
                 <Text style={styles.modalEmptyText}>எதுவும் கிடைக்கவில்லை</Text>
               </View>
             }
@@ -214,10 +258,10 @@ export default function DivinePage1() {
         </View>
       </Modal>
 
-      {/* GRID — original unchanged */}
+      {/* ── GRID ── */}
       <FlatList
         data={filteredTypes}
-        key={numColumns}
+        key={`grid-${numColumns}`}
         numColumns={numColumns}
         renderItem={renderItem}
         keyExtractor={(item, idx) => String(item?.id ?? idx)}
@@ -225,12 +269,15 @@ export default function DivinePage1() {
           styles.listContainer,
           filteredTypes.length === 0 && styles.emptyContent,
         ]}
-        columnWrapperStyle={numColumns > 1 ? styles.row : null}
+        columnWrapperStyle={styles.row}
         showsVerticalScrollIndicator={false}
         ListEmptyComponent={
           <View style={styles.center}>
-            <Ionicons name="folder-open-outline" size={56} color="#ccc" />
-            <Text style={styles.emptyText}>எதுவும் கிடைக்கவில்லை</Text>
+            <View style={styles.emptyIconWrap}>
+              <Ionicons name="sparkles-outline" size={40} color="#93210A" />
+            </View>
+            <Text style={styles.emptyTitle}>எதுவும் கிடைக்கவில்லை</Text>
+            <Text style={styles.emptySubtitle}>No items found for this filter</Text>
           </View>
         }
       />
@@ -239,129 +286,243 @@ export default function DivinePage1() {
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: "#fff" },
+  /* safe bg → #d4cea6 */
+  safe: { flex: 1, backgroundColor: "#d4cea6" },
 
-  /* HEADER — original unchanged */
+  /* ── HEADER ── */
   header: {
-    flexDirection: "row", alignItems: "center",
+    flexDirection: "row",
+    alignItems: "center",
     backgroundColor: "#93210A",
-    paddingTop: 40, paddingBottom: 30,
-    borderBottomLeftRadius: 20, borderBottomRightRadius: 20,
+    paddingTop: 40,
+    paddingBottom: 30,
+    borderBottomLeftRadius: 20,
+    borderBottomRightRadius: 20,
   },
-  headerTablet: { paddingTop: 60, paddingBottom: 28, paddingHorizontal: 18 },
+  headerTablet: { paddingTop: 60, paddingBottom: 30, paddingHorizontal: 18 },
   headerSide: { width: 44, justifyContent: "center", alignItems: "flex-start" },
   headerTitle: {
-    flex: 1, textAlign: "center", color: "#fff",
-    fontSize: 19, fontWeight: "800", letterSpacing: 0.5,
+    flex: 1,
+    textAlign: "center",
+    color: "#fff",
+    fontSize: 18,
+    fontWeight: "800",
+    letterSpacing: 0.3,
   },
-  headerTitleTablet: { fontSize: 28 },
+  headerTitleTablet: { fontSize: 22 },
   backButton: {
-    width: 40, height: 40, borderRadius: 20,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
     backgroundColor: "rgba(255,255,255,0.15)",
-    alignItems: "center", justifyContent: "center", marginLeft: 15,
+    alignItems: "center",
+    justifyContent: "center",
+    marginLeft: 15,
   },
   backButtonTablet: { width: 50, height: 50, borderRadius: 25 },
 
-  /* FILTER TRIGGER */
-  filterTriggerWrapper: {
-    flexDirection: "row", alignItems: "center",
-    backgroundColor: "#fff", paddingHorizontal: 16,
-    paddingVertical: 10, borderBottomWidth: 1,
-    borderBottomColor: "rgba(0,0,0,0.06)", gap: 10,
-    elevation: 2, shadowColor: "#000",
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05, shadowRadius: 3,
+  /* ── FILTER BAR bg → rgba(255,255,255,0.5) */
+  filterBar: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    backgroundColor: "rgba(255,255,255,0.5)",
+    gap: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: "rgba(147,33,10,0.08)",
   },
-  filterTrigger: {
-    flex: 1, flexDirection: "row", alignItems: "center",
-    backgroundColor: "#FFF0EE", borderRadius: 10,
-    paddingHorizontal: 12, paddingVertical: 9,
-    borderWidth: 1.5, borderColor: "rgba(147,33,10,0.2)", gap: 8,
-  },
-  filterTriggerText: { flex: 1, fontSize: 13, fontWeight: "700", color: "#93210A" },
-  clearBtn: {
-    flexDirection: "row", alignItems: "center", gap: 4,
-    paddingHorizontal: 10, paddingVertical: 8, borderRadius: 8,
-    backgroundColor: "#FFF0EE", borderWidth: 1.5,
+  filterPill: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    gap: 6,
+    borderRadius: 20,
+    maxWidth: "55%",
+    backgroundColor: "#FFF0EE",
+    borderWidth: 1.5,
     borderColor: "rgba(147,33,10,0.2)",
   },
-  clearBtnText: { fontSize: 12, fontWeight: "700", color: "#93210A" },
+  filterPillActive: {
+    backgroundColor: "#93210A",
+    borderColor: "#93210A",
+  },
+  filterPillText: {
+    fontSize: 12,
+    fontWeight: "700",
+    color: "#93210A",
+    flex: 1,
+  },
+  filterPillTextActive: { color: "#fff" },
+  clearPill: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: "#FFF0EE",
+    alignItems: "center",
+    justifyContent: "center",
+    borderWidth: 1.5,
+    borderColor: "rgba(147,33,10,0.2)",
+  },
 
-  /* MODAL */
-  modalOverlay: { flex: 1, backgroundColor: "rgba(0,0,0,0.45)" },
+  /* ── MODAL ── */
+  modalOverlay: { flex: 1, backgroundColor: "rgba(0,0,0,0.5)" },
   modalSheet: {
-    position: "absolute", bottom: 0, left: 0, right: 0,
-    height: SCREEN_HEIGHT * 0.65, backgroundColor: "#fff",
-    borderTopLeftRadius: 24, borderTopRightRadius: 24,
-    overflow: "hidden", elevation: 20, shadowColor: "#000",
-    shadowOffset: { width: 0, height: -4 },
-    shadowOpacity: 0.15, shadowRadius: 12,
+    position: "absolute",
+    bottom: 0,
+    left: 0,
+    right: 0,
+    height: SCREEN_HEIGHT * 0.68,
+    backgroundColor: "#fff",
+    borderTopLeftRadius: 28,
+    borderTopRightRadius: 28,
+    overflow: "hidden",
+    elevation: 24,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: -6 },
+    shadowOpacity: 0.18,
+    shadowRadius: 16,
+  },
+  modalHandle: {
+    width: 40,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: "#E0D8D7",
+    alignSelf: "center",
+    marginTop: 12,
   },
   modalHeader: {
-    flexDirection: "row", alignItems: "center",
+    flexDirection: "row",
+    alignItems: "flex-start",
     justifyContent: "space-between",
-    paddingHorizontal: 20, paddingVertical: 16,
-    borderBottomWidth: 1, borderBottomColor: "rgba(0,0,0,0.07)",
+    paddingHorizontal: 20,
+    paddingTop: 14,
+    paddingBottom: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: "#F5EFEE",
   },
-  modalTitle: { fontSize: 16, fontWeight: "800", color: "#1A1A1A" },
+  modalTitle: { fontSize: 15, fontWeight: "800", color: "#1A1A1A" },
+  modalSubtitle: { fontSize: 11, color: "#999", fontWeight: "500", marginTop: 2 },
   modalCloseBtn: {
-    width: 34, height: 34, borderRadius: 17,
-    backgroundColor: "#F5F5F5",
-    alignItems: "center", justifyContent: "center",
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: "#FFF0EE",
+    alignItems: "center",
+    justifyContent: "center",
   },
   modalSearchBar: {
-    flexDirection: "row", alignItems: "center",
-    backgroundColor: "#F5F5F5", borderRadius: 12,
-    marginHorizontal: 16, marginVertical: 12,
-    paddingHorizontal: 12, paddingVertical: 10,
-    gap: 8, borderWidth: 1, borderColor: "rgba(147,33,10,0.15)",
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#F8F4F3",
+    borderRadius: 14,
+    marginHorizontal: 16,
+    marginVertical: 10,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    gap: 8,
+    borderWidth: 1.5,
+    borderColor: "rgba(147,33,10,0.12)",
   },
-  modalSearchInput: { flex: 1, fontSize: 14, color: "#1A1A1A", padding: 0, fontWeight: "500" },
-  modalList: { paddingHorizontal: 16, paddingBottom: 30 },
-  modalItem: {
-    flexDirection: "row", alignItems: "center",
-    justifyContent: "space-between",
-    paddingVertical: 14, paddingHorizontal: 12,
-    borderRadius: 10, marginBottom: 4, backgroundColor: "#fff",
+  modalSearchInput: {
+    flex: 1,
+    fontSize: 13,
+    color: "#1A1A1A",
+    padding: 0,
+    fontWeight: "500",
   },
-  modalItemActive: { backgroundColor: "rgba(147,33,10,0.06)" },
-  modalItemText: { fontSize: 14, color: "#333", fontWeight: "500", flex: 1 },
-  modalItemTextActive: { color: "#93210A", fontWeight: "800" },
-  modalEmpty: { alignItems: "center", paddingTop: 40 },
-  modalEmptyText: { fontSize: 14, color: "#aaa", fontWeight: "600" },
+  modalList: { paddingHorizontal: 12, paddingBottom: 36, paddingTop: 4 },
+  modalRow: { gap: 8, marginBottom: 8 },
+  modalChip: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#F8F4F3",
+    borderRadius: 12,
+    paddingVertical: 12,
+    paddingHorizontal: 12,
+    borderWidth: 1.5,
+    borderColor: "transparent",
+    minHeight: 48,
+  },
+  modalChipActive: {
+    backgroundColor: "#FFF0EE",
+    borderColor: "#93210A",
+  },
+  modalChipText: { flex: 1, fontSize: 13, color: "#444", fontWeight: "500" },
+  modalChipTextActive: { color: "#93210A", fontWeight: "800" },
+  modalEmpty: { alignItems: "center", paddingTop: 50, gap: 10 },
+  modalEmptyText: { fontSize: 14, color: "#bbb", fontWeight: "600" },
 
-  /* LIST — original unchanged */
-  listContainer: { padding: 12, paddingBottom: 28 },
+  /* ── GRID ── */
+  listContainer: { padding: 12, paddingBottom: 32 },
   emptyContent: { flexGrow: 1 },
-  row: { justifyContent: "space-between" },
+  row: { gap: 8, marginBottom: 8 },
 
-  /* CARD — original unchanged */
+  /* ── CARD ── */
   card: {
-    width: "48%", backgroundColor: "#fff",
-    borderRadius: 16, padding: 10, marginBottom: 14,
-    elevation: 4, shadowColor: "#000",
-    shadowOpacity: 0.08, shadowRadius: 8,
-    shadowOffset: { width: 0, height: 5 }, overflow: "hidden",
+    backgroundColor: "#FFFDF8",
+    borderRadius: 12,
+    overflow: "hidden",
+    elevation: 4,
+    shadowColor: "#000",
+    shadowOpacity: 0.10,
+    shadowRadius: 6,
+    shadowOffset: { width: 0, height: 3 },
+    flexDirection: "column",
+    justifyContent: "space-between",
   },
-  cardTablet: { width: "31.5%", padding: 12, borderRadius: 18 },
-  imageWrap: {
-    width: "100%", aspectRatio: 1.1,
-    borderRadius: 14, overflow: "hidden", backgroundColor: "#f3f3f3",
+  imageContainer: {
+    width: "100%",
+    aspectRatio: 0.85,
+    backgroundColor: "#1a0a00",
   },
-  image: { width: "100%", height: "100%" },
-  title: {
-    marginTop: 10, fontSize: 13, fontWeight: "700",
-    color: "#111", lineHeight: 18, paddingRight: 30,
+  image: { width: "100%", height: "100%", resizeMode: "cover" },
+  cardFooter: {
+    width: "100%",
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#301913",
+    paddingHorizontal: 8,
+    paddingVertical: 7,
+    gap: 4,
+    minHeight: 32,
+    flexGrow: 1,
   },
-  titleTablet: { fontSize: 16, lineHeight: 22 },
-  arrowCircle: {
-    position: "absolute", right: 10, bottom: 10,
-    width: 20, height: 20, borderRadius: 13,
-    backgroundColor: "#93210A",
-    alignItems: "center", justifyContent: "center",
+  cardTitle: {
+    flex: 1,
+    fontSize: 10,
+    fontWeight: "700",
+    color: "#FFFFFF",
+    lineHeight: 15,
+  },
+  arrowDot: {
+    width: 16,
+    height: 16,
+    borderRadius: 8,
+    backgroundColor: "#FFFFFF",
+    alignItems: "center",
+    justifyContent: "center",
+    flexShrink: 0,
   },
 
-  /* EMPTY */
-  center: { flex: 1, justifyContent: "center", alignItems: "center", paddingTop: 80, gap: 12 },
-  emptyText: { fontSize: 15, color: "#888", fontWeight: "600" },
+  /* ── EMPTY STATE ── */
+  center: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    paddingTop: 80,
+    gap: 12,
+  },
+  emptyIconWrap: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: "#FFF0EE",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  emptyTitle: { fontSize: 16, color: "#555", fontWeight: "800" },
+  emptySubtitle: { fontSize: 12, color: "#aaa", fontWeight: "500" },
 });

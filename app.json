@@ -2,7 +2,6 @@
   "expo": {
     "name": "KAAVI",
     "slug": "hdrssfrontent",
-    "owner": "hdrss-expo",
     "version": "1.0.4",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
@@ -25,8 +24,10 @@
         "INTERNET",
         "READ_EXTERNAL_STORAGE",
         "WRITE_EXTERNAL_STORAGE",
-        "READ_CALENDAR",   
-        "WRITE_CALENDAR"
+        "READ_CALENDAR",
+        "WRITE_CALENDAR",
+        "android.permission.READ_CALENDAR",
+        "android.permission.WRITE_CALENDAR"
       ]
     },
     "web": {
@@ -46,12 +47,13 @@
         }
       ],
       [
-    "expo-calendar",
-    {
-      "calendarPermission": "Allow $(PRODUCT_NAME) to access your calendar to set event reminders."
-    }
-   ],
-      "expo-asset"
+        "expo-calendar",
+        {
+          "calendarPermission": "Allow $(PRODUCT_NAME) to access your calendar to set event reminders."
+        }
+      ],
+      "expo-asset",
+      "expo-video"
     ],
     "experiments": {
       "typedRoutes": true,
@@ -59,7 +61,7 @@
     },
     "extra": {
       "eas": {
-        "projectId": "5e8a1431-48c4-4a8d-b3fe-b34cd2788887"
+        "projectId": "24d6cf57-4668-4ea7-9c33-5358b6a9f983"
       }
     }
   }

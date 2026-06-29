@@ -23,6 +23,8 @@ import Sidebar from "../../components/Sidebar/Sidebar";
 /* DATA */
 import { fetchNews } from "../../Controller/NewsController/NewsController";
 import Loader from "../../components/Alert/Loader";
+import CaucusVideo from "../../components/Add/CaucusVideo";
+import ProductScreen1 from "../../pages/ProductItems/ProductScreen1";
 
 /* ================= FEATURES ================= */
 const FEATURES = [
@@ -36,7 +38,9 @@ const FEATURES = [
   { id: 7, label: "வாஸ்து", image: require("../../../assets/Left Swap/vasthu.jpeg") },
   { id: 8, label: "மந்திரம்", image: require("../../../assets/home-bg-img/ohm-img.png") },
   { id: 9, label: "பக்திப் பாடல்கள்", image: require("../../../assets/home-bg-img/ruthurasa-img.png") },
-   { id: 10, label: "நூல்கள்", image: require("../../../assets/hinduthua/Noolgal.jpg") }
+  { id: 10, label: "நூல்கள்", image: require("../../../assets/hinduthua/Noolgal.jpg") },
+  { id: 11, label: "மேட்ரிமோனி", image: require("../../../assets/hinduthua/matrimony.png") },
+    // { id: 12, label: "குருகுலம்", image: require("../../../assets/hinduthua/gurukulam.png") }
 ];
 
 const columns = 25; 
@@ -208,6 +212,8 @@ export default function HomePage() {
                 <Advertisement data={adsData} />
               </View>
 
+              <CaucusVideo/>
+
               {/* District List */}
               <DistrictList data={districtData} />
             </>
@@ -259,6 +265,9 @@ export default function HomePage() {
               {/* Events Page */}
               <EventsPage data={eventsData} />
 
+              {/* ProductScreen1 */}
+              <ProductScreen1 />
+
               {/* 🔵 EXPLORE MORE */}
               <View style={styles.circleMenuContainer}>
                 <Text style={styles.heading}>Explore More</Text>
@@ -276,9 +285,11 @@ export default function HomePage() {
                         if (item.label === "வாஸ்து") navigation.navigate("VaasthuPage");
                         if (item.label === "இந்துத்துவா") navigation.navigate("HinduThuvm");
                         if (item.label === "பஞ்சாங்கம்") navigation.navigate("Panchangam");
+                        if (item.label === "Matrimony") navigation.navigate("matrimonyBtn");
                         if (item.label === "நூல்கள்") navigation.navigate("HinduNoolgal1" ,{ categoryTypes: 'நூல்கள்' });
                         if (item.label === "மந்திரம்") navigation.navigate("SloganPage1",{ name: item.label });
                         if (item.label === "பக்திப் பாடல்கள்") navigation.navigate("DivinePage1",{ name: item.label });
+                        if (item.label === "குருகுலம்") navigation.navigate("GurukulamPage1",{name: item.label});
                       }}
                     >
                       <View style={styles.circleCardWrapper}>
@@ -369,6 +380,7 @@ const getStyles = (isTablet) =>
       color: "#93210A",
       marginHorizontal: 15,
       marginVertical: 10,
+      
     },
 
     seeMoreContainer: {
@@ -430,7 +442,7 @@ const getStyles = (isTablet) =>
     },
 
     circleMenuContainer: {
-      marginVertical: 20,
+      marginVertical: 3,
     },
 
     circleCardWrapper: {

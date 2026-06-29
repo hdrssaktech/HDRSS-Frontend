@@ -339,13 +339,13 @@ export default function DistrictBusinessPage1() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#e1e1e1",
+    backgroundColor: "#F7F4EF",
   },
   center: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#fff",
+    backgroundColor: "#FED8B1",
   },
   loadingText: {
     marginTop: 12,
@@ -365,7 +365,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#93210A",
+    backgroundColor: "#5C4033",
     justifyContent: "space-between",
     elevation: 6,
     shadowColor: "#93210A",
@@ -493,13 +493,13 @@ const styles = StyleSheet.create({
   // Card - Mobile (Simple Design)
   card: {
     width: "48%",
-    backgroundColor: "#eaeaea",
+    backgroundColor: "#6F4E37",
     margin: "1%",
     padding: 12,
     borderRadius: 12,
     alignItems: "center",
     borderWidth: 1,
-    borderColor: "#f0f0f0",
+    borderColor: "#6F4E37",
   },
   // Card - Tablet (Simple Design)
   cardTablet: {
@@ -514,7 +514,7 @@ const styles = StyleSheet.create({
     width: "100%",
     height: 120,
     borderRadius: 8,
-    backgroundColor: "#f8f8f8",
+    backgroundColor: "#6F4E37",
   },
   // Image - Tablet
   imageTablet: {
@@ -528,7 +528,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     textAlign: "center",
     fontWeight: "600",
-    color: "#222",
+    color: "#ffffff",
     paddingHorizontal: 4,
   },
   // Name - Tablet

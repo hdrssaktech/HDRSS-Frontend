@@ -16,7 +16,7 @@ import axios from "axios";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import Loader from "../../../../components/Alert/Loader";
 
-const BASE_URL = "http://192.168.1.6:5000/api/v1/panchangam/naalkaati";
+const BASE_URL = "https://hdrss-backend.onrender.com/api/v1/panchangam/naalkaati";
 const RANGE_API = `${BASE_URL}/range`;
 const DATE_API  = (date) => `${BASE_URL}/date/${date}`;
 

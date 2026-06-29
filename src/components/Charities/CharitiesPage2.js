@@ -13,6 +13,9 @@ import { Ionicons } from "@expo/vector-icons";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { Video } from "expo-av";
 import YoutubePlayer from "react-native-youtube-iframe";
+import RazorpayCheckout from "react-native-razorpay";
+import { Alert } from "react-native";
+import axios from "axios";
 
 export default function CharitiesPage2() {
   const navigation = useNavigation();
@@ -22,13 +25,86 @@ export default function CharitiesPage2() {
 
   const isTablet = width >= 600;
 
-  /* ================= PAYMENT ================= */
-  const openGPay = () => {
-    const url = `upi://pay?pa=hdrss.in-1@oksbi&pn=Manager&am=50&cu=INR`;
-    Linking.openURL(url).catch(() =>
-      alert("Please install a UPI app")
-    );
+  
+
+  const openRazorpay = async () => {
+
+    try {
+
+      // CALL BACKEND
+      const response = await axios.post(
+        "http://192.168.1.17:5000/create-order",
+        {
+          amount:2,
+        }
+      );
+
+      const order = response.data;
+
+      // RAZORPAY OPTIONS
+      const options = {
+
+        description: "Donation Payment",
+
+        image:
+          "https://hdrss-images.s3.ap-southeast-2.amazonaws.com/1779281301752-logo_hdrss.png",
+
+        currency: "INR",
+
+        key: "rzp_test_SrBt4skoIocACR",
+
+        amount: order.amount,
+
+        order_id: order.id,
+
+        name: "AK Technologies",
+
+        prefill: {
+          email: "hdrss.in@gmail.com",
+          contact: "9677717474",
+          name: "Ak technologies",
+        },
+
+        theme: {
+          color: "#3399cc",
+        },
+      };
+
+      // OPEN RAZORPAY
+      RazorpayCheckout.open(options)
+
+        .then((data) => {
+
+          console.log(data);
+
+          Alert.alert(
+            "Success",
+            "Payment Successful"
+          );
+
+        })
+
+        .catch((error) => {
+
+          console.log(error);
+
+          Alert.alert(
+            "Failed",
+            error.description
+          );
+        });
+
+    } catch (error) {
+
+      console.log(error);
+
+      Alert.alert(
+        "Error",
+        "Something went wrong"
+      );
+    }
   };
+
 
   /* ================= YOUTUBE ================= */
   const getYoutubeId = (url) => {
@@ -205,7 +281,7 @@ export default function CharitiesPage2() {
             style={
               isTablet ? styles.payButtonTablet : styles.payButtonMobile
             }
-            onPress={openGPay}
+            onPress={openRazorpay}
             activeOpacity={0.8}
           >
             <Text

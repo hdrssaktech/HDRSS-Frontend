@@ -1,4 +1,4 @@
-import React, { useEffect, useState ,useMemo} from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import {
   View,
   Text,
@@ -6,11 +6,9 @@ import {
   StyleSheet,
   FlatList,
   TouchableOpacity,
-  ActivityIndicator,
   SafeAreaView,
   TextInput,
   useWindowDimensions,
-  Linking,
   StatusBar,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
@@ -18,55 +16,65 @@ import { useNavigation, useRoute } from "@react-navigation/native";
 import { fetchTourismByType } from "../../../Controller/TourismController/TourismController";
 import Loader from "../../../components/Alert/Loader";
 
+/* ── Shared colour tokens (identical to TourismPage1) ── */
+const C = {
+  primary: "#93210A",
+  dark:    "#301913",
+  gold:    "#D4AF37",
+  bg:      "#d4cea6",
+  card:    "#ede8d5",
+  white:   "#FFFFFF",
+  text:    "#1a0a00",
+  border:  "rgba(48,25,19,0.25)",
+};
+
 export default function TourismPage2() {
   const navigation = useNavigation();
-  const route = useRoute();
+  const route      = useRoute();
   const { typeId, typeName } = route.params;
 
-  const { width } = useWindowDimensions();
-  const isTablet = width >= 600;
-  const isLargeTablet = width >= 1024;
+  const { width }      = useWindowDimensions();
+  const isTablet       = width >= 600;
+  const isLargeTablet  = width >= 1024;
 
-  const [places, setPlaces] = useState([]);
+  const [places,         setPlaces]         = useState([]);
   const [filteredPlaces, setFilteredPlaces] = useState([]);
-  const [searchText, setSearchText] = useState("");
-  const [loading, setLoading] = useState(true);
+  const [searchText,     setSearchText]     = useState("");
+  const [loading,        setLoading]        = useState(true);
 
-  // Responsive size helper
-  const responsiveSize = (mobile, tablet, largeTablet) => {
-    if (isLargeTablet) return largeTablet || tablet;
-    return isTablet ? tablet : mobile;
-  };
+  /* ── Responsive helpers ── */
+  const numColumns     = isLargeTablet ? 3 : isTablet ? 3 : 2;
+  const HORIZONTAL_PAD = isTablet ? 32 : 16;
+  const GAP            = isTablet ? 16 : 10;
 
-  // Responsive columns: 2 on mobile, 3 on tablet, 4 on large tablet
-  const numColumns = isLargeTablet ? 4 : (isTablet ? 3 : 2);
+  const cardWidth = useMemo(
+    () =>
+      Math.floor(
+        (width - HORIZONTAL_PAD * 2 - GAP * (numColumns - 1)) / numColumns
+      ),
+    [width, numColumns, HORIZONTAL_PAD, GAP]
+  );
 
-  // Calculate card width based on screen size
-  const cardWidth = useMemo(() => {
-    const padding = responsiveSize(10, 15, 20);
-    const gap = responsiveSize(10, 15, 20);
-    const totalGap = gap * (numColumns - 1);
-    const availableWidth = width - (padding * 2);
-    return (availableWidth - totalGap) / numColumns;
-  }, [width, numColumns, isTablet, isLargeTablet]);
+  const footerFontSize = isTablet ? 15 : 13;
+  const arrowSize      = isTablet ? 26 : 22;
+  const dotSize        = isTablet ? 26 : 22;
 
-  /* ===================== API ===================== */
+  /* ── Data ── */
   useEffect(() => {
-    const loadPlaces = async () => {
+    const load = async () => {
       try {
         const data = await fetchTourismByType(typeId);
-        setPlaces(data);
-        setFilteredPlaces(data);
-      } catch (error) {
-        console.error(error);
+        setPlaces(Array.isArray(data) ? data : []);
+        setFilteredPlaces(Array.isArray(data) ? data : []);
+      } catch (e) {
+        console.error("Error loading places:", e);
       } finally {
         setLoading(false);
       }
     };
-    loadPlaces();
+    load();
   }, [typeId]);
 
-  /* ===================== SEARCH ===================== */
   const handleSearch = (text) => {
     setSearchText(text);
     if (text.trim() === "") {
@@ -74,459 +82,385 @@ export default function TourismPage2() {
       return;
     }
     setFilteredPlaces(
-      places.filter((item) =>
-        item.name.toLowerCase().includes(text.toLowerCase())
+      places.filter((p) =>
+        (p.name || p.title || "").toLowerCase().includes(text.toLowerCase())
       )
     );
   };
 
-  if (loading) {
-    return <Loader />;
-  }
+  if (loading) return <Loader />;
 
-  return (
-    <SafeAreaView style={styles.container}>
-      <StatusBar backgroundColor="#93210A" barStyle="light-content" />
-      
-      {/* ===================== HEADER ===================== */}
-      <View style={[
-        styles.header, 
-        isTablet && styles.headerTablet,
-        isLargeTablet && styles.headerLargeTablet
-      ]}>
-        <TouchableOpacity 
-          onPress={() => navigation.goBack()}
-          style={[
-            styles.backButton,
-            isTablet && styles.backButtonTablet
-          ]}
-        >
-          <Ionicons 
-            name="chevron-back" 
-            size={responsiveSize(24, 28, 32)} 
-            color="#fff" 
-          />
-        </TouchableOpacity>
-        
-        <Text style={[
-          styles.headerTitle, 
-          isTablet && styles.headerTitleTablet
-        ]}>
-          {typeName}
-        </Text>
-        
-        <View style={[
-          styles.headerSpacer,
-          isTablet && styles.headerSpacerTablet
-        ]} />
+  /* ── Card ── */
+  const renderItem = ({ item }) => (
+    <TouchableOpacity
+      style={[
+        styles.card,
+        {
+          width:        cardWidth,
+          borderRadius: isTablet ? 12 : 10,
+        },
+      ]}
+      activeOpacity={0.85}
+      onPress={() => navigation.navigate("TourismPage3", { id: item.id })}
+    >
+      {/* Image */}
+      <View style={[styles.imageWrap, { aspectRatio: 1.2 }]}>
+        <Image
+          source={{
+            uri:
+              item.bannerImage ||
+              item.image ||
+              "https://cdn-icons-png.flaticon.com/512/201/201623.png",
+          }}
+          style={styles.image}
+          resizeMode="cover"
+        />
+        {/* subtle vignette — matches Page1's imageOverlay */}
+        <View style={styles.imageOverlay} />
+
+        {/* Location pin — top-right, gold tinted, no badge box */}
+        <View style={styles.pinWrap}>
+          <Ionicons name="location" size={isTablet ? 16 : 13} color={C.gold} />
+        </View>
       </View>
 
-      {/* ===================== SEARCH ===================== */}
-      <View style={[
-        styles.searchContainer,
-        isTablet && styles.searchContainerTablet
-      ]}>
-        <Ionicons 
-          name="search" 
-          size={responsiveSize(18, 20, 22)} 
-          color="#777" 
+      {/* Footer — same pattern as TourismPage1 */}
+      <View
+        style={[
+          styles.cardFooter,
+          { paddingHorizontal: isTablet ? 12 : 10 },
+        ]}
+      >
+        <Text
+          style={[
+            styles.cardText,
+            {
+              fontSize:      footerFontSize,
+              lineHeight:    footerFontSize + 6,
+              paddingTop:    isTablet ? 12 : 10,
+              paddingBottom: isTablet ? 12 : 10,
+            },
+          ]}
+          numberOfLines={2}
+        >
+          {item.name || item.title}
+        </Text>
+
+        {/* Info button — gold dot, always visible */}
+        <TouchableOpacity
+          style={[
+            styles.infoDot,
+            {
+              width:        dotSize,
+              height:       dotSize,
+              borderRadius: dotSize / 2,
+            },
+          ]}
+          onPress={(e) => {
+            e.stopPropagation && e.stopPropagation();
+            navigation.navigate("TourismPlaces", { id: item.id });
+          }}
+          activeOpacity={0.75}
+        >
+          <Ionicons
+            name="information-circle"
+            size={isTablet ? 24 : 20}
+            color={C.dark}
+          />
+        </TouchableOpacity>
+
+       
+      </View>
+    </TouchableOpacity>
+  );
+
+  return (
+    <SafeAreaView style={styles.safe}>
+      <StatusBar barStyle="light-content" backgroundColor={C.primary} />
+
+      {/* ── HEADER — exact same as TourismPage1 ── */}
+      <View style={[styles.header, isTablet && styles.headerTablet]}>
+        <TouchableOpacity
+          style={[styles.backBtn, isTablet && styles.backBtnTablet]}
+          onPress={() => navigation.goBack()}
+          activeOpacity={0.8}
+        >
+          <Ionicons
+            name="chevron-back"
+            size={isTablet ? 30 : 26}
+            color={C.white}
+          />
+        </TouchableOpacity>
+        <Text
+          style={[styles.headerTitle, isTablet && styles.headerTitleTablet]}
+          numberOfLines={3}
+        >
+          {typeName}
+        </Text>
+        <View
+          style={[styles.headerSpacer, isTablet && styles.headerSpacerTablet]}
+        />
+      </View>
+
+      {/* ── SEARCH BAR ── */}
+      <View
+        style={[
+          styles.searchWrap,
+          isTablet && styles.searchWrapTablet,
+        ]}
+      >
+        <Ionicons
+          name="search"
+          size={isTablet ? 20 : 17}
+          color={C.primary}
+          style={{ marginRight: 8 }}
         />
         <TextInput
-          placeholder="Search places..."
+          placeholder="இடங்களை தேடுங்கள்..."
           value={searchText}
           onChangeText={handleSearch}
-          style={[
-            styles.searchInput,
-            isTablet && styles.searchInputTablet
-          ]}
-          placeholderTextColor="#999"
+          style={[styles.searchInput, isTablet && styles.searchInputTablet]}
+          placeholderTextColor="rgba(48,25,19,0.45)"
         />
         {searchText.length > 0 && (
-          <TouchableOpacity onPress={() => setSearchText("")}>
-            <Ionicons 
-              name="close" 
-              size={responsiveSize(18, 20, 22)} 
-              color="#777" 
-            />
+          <TouchableOpacity onPress={() => handleSearch("")} activeOpacity={0.7}>
+            <Ionicons name="close-circle" size={isTablet ? 20 : 17} color={C.primary} />
           </TouchableOpacity>
         )}
       </View>
 
-      {/* ===================== GRID ===================== */}
+      {/* ── GRID ── */}
       <FlatList
         data={filteredPlaces}
+        key={`grid-${numColumns}`}
         numColumns={numColumns}
-        key={numColumns}
-        keyExtractor={(item) => item.id.toString()}
+        renderItem={renderItem}
+        keyExtractor={(item, idx) => String(item?.id ?? idx)}
+        showsVerticalScrollIndicator={false}
         contentContainerStyle={[
-          styles.list,
-          isTablet && styles.listTablet
+          filteredPlaces.length === 0 && { flexGrow: 1 },
+          {
+            paddingHorizontal: HORIZONTAL_PAD,
+            paddingTop:        isTablet ? 20 : 14,
+            paddingBottom:     isTablet ? 40 : 32,
+          },
         ]}
-        columnWrapperStyle={[
-          styles.columnWrapper,
-          { 
-            justifyContent: "space-between",
-            marginBottom: responsiveSize(12, 16, 20)
-          }
-        ]}
+        columnWrapperStyle={
+          numColumns > 1
+            ? {
+                gap:            GAP,
+                marginBottom:   GAP,
+                justifyContent: "flex-start",
+              }
+            : undefined
+        }
         ListEmptyComponent={
-          <View style={[
-            styles.notFound,
-            isTablet && styles.notFoundTablet
-          ]}>
-            <Ionicons 
-              name="search-outline" 
-              size={responsiveSize(50, 70, 90)} 
-              color="#ccc" 
-            />
-            <Text style={[
-              styles.notFoundText,
-              isTablet && styles.notFoundTextTablet
-            ]}>
-              No places found
+          <View style={styles.empty}>
+            <View
+              style={[
+                styles.emptyIconWrap,
+                isTablet && styles.emptyIconWrapTablet,
+              ]}
+            >
+              <Ionicons
+                name="location-outline"
+                size={isTablet ? 52 : 40}
+                color={C.primary}
+              />
+            </View>
+            <Text
+              style={[styles.emptyTitle, isTablet && styles.emptyTitleTablet]}
+            >
+              இடங்கள் எதுவும் இல்லை
+            </Text>
+            <Text
+              style={[styles.emptySub, isTablet && styles.emptySubTablet]}
+            >
+              பின்னர் மீண்டும் பார்க்கவும்
             </Text>
           </View>
         }
-        renderItem={({ item }) => (
-          <TouchableOpacity
-            style={[
-              styles.card,
-              { width: cardWidth },
-              isTablet && styles.cardTablet
-            ]}
-            activeOpacity={0.85}
-            onPress={() =>
-              navigation.navigate("TourismPage3", { id: item.id })
-            }
-          >
-            <Image
-              source={{
-                uri:
-                  item.bannerImage ||
-                  "https://cdn-icons-png.flaticon.com/512/2659/2659360.png",
-              }}
-              style={[
-                styles.image,
-                isTablet && styles.imageTablet
-              ]}
-            />
-
-            <View style={[
-              styles.info,
-              isTablet && styles.infoTablet
-            ]}>
-              <Text style={[
-                styles.name,
-                isTablet && styles.nameTablet
-              ]} numberOfLines={1}>
-                {item.name}
-              </Text>
-
-              <Text style={[
-                styles.title,
-                isTablet && styles.titleTablet
-              ]} numberOfLines={2}>
-                {item.title}
-              </Text>
-
-              {/* ===================== BUTTONS ===================== */}
-              <View style={[
-                styles.buttonRow,
-                isTablet && styles.buttonRowTablet
-              ]}>
-                <TouchableOpacity
-                  style={[
-                    styles.visitButton,
-                    isTablet && styles.visitButtonTablet
-                  ]}
-                  onPress={() =>
-                    navigation.navigate("TourismPlaces", { id: item.id })
-                  }
-                >
-                  <Ionicons 
-                    name="location-outline" 
-                    size={responsiveSize(16, 18, 20)} 
-                    color="#fff" 
-                  />
-                  <Text style={[
-                    styles.btnText,
-                    isTablet && styles.btnTextTablet
-                  ]}>
-                    Visit
-                  </Text>
-                </TouchableOpacity>
-
-                {item.phone && (
-                  <TouchableOpacity
-                    style={[
-                      styles.callButton,
-                      isTablet && styles.callButtonTablet
-                    ]}
-                    onPress={() => Linking.openURL(`tel:${item.phone}`)}
-                  >
-                    <Ionicons 
-                      name="call-outline" 
-                      size={responsiveSize(18, 20, 22)} 
-                      color="#fff" 
-                    />
-                  </TouchableOpacity>
-                )}
-              </View>
-            </View>
-          </TouchableOpacity>
-        )}
       />
     </SafeAreaView>
   );
 }
 
-/* ===================== STYLES ===================== */
-
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#F4F6F8",
-  },
-  centered: {
-    justifyContent: "center",
-    alignItems: "center",
-  },
+  safe: { flex: 1, backgroundColor: C.bg },
 
-  // Header Styles
+  /* ── HEADER — copied verbatim from TourismPage1 ── */
   header: {
-   flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#93210A",
-    paddingTop:40,
-    paddingBottom:30,
-    borderBottomLeftRadius: 20,
+    flexDirection:           "row",
+    alignItems:              "center",
+    backgroundColor:         C.primary,
+    paddingTop:              40,
+    paddingBottom:           30,
+    paddingHorizontal:       14,
+    borderBottomLeftRadius:  20,
     borderBottomRightRadius: 20,
+    elevation:               6,
+    shadowColor:             C.dark,
+    shadowOffset:            { width: 0, height: 3 },
+    shadowOpacity:           0.3,
+    shadowRadius:            6,
   },
   headerTablet: {
-   paddingTop:45,
-    paddingBottom:28,
-    paddingHorizontal: 18,
+    paddingTop:              56,
+    paddingBottom:           30,
+    paddingHorizontal:       22,
+    borderBottomLeftRadius:  28,
+    borderBottomRightRadius: 28,
   },
-  headerLargeTablet: {
-    paddingTop: StatusBar.currentHeight + 25,
-    paddingBottom: 24,
-    paddingHorizontal: 32,
-  },
-  backButton:{
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+  backBtn: {
+    width:           40,
+    height:          40,
+    borderRadius:    20,
     backgroundColor: "rgba(255,255,255,0.15)",
-    alignItems: "center",
-    justifyContent: "center",
-    marginLeft:15,
+    alignItems:      "center",
+    justifyContent:  "center",
   },
-  backButtonTablet:{
-    width: 50,
-    height: 50,
-    borderRadius: 25,
-  },
+  backBtnTablet:      { width: 50, height: 50, borderRadius: 25 },
   headerTitle: {
-    flex: 1,
-    textAlign: "center",
-    color: "#fff",
-    fontSize: 18,
-    fontWeight: "800",
-    letterSpacing: 0.3,
+    flex:             1,
+    textAlign:        "center",
+    color:            C.white,
+    fontSize:         15,
+    fontWeight:       "800",
+    letterSpacing:    0.3,
+    marginHorizontal: 8,
   },
-  headerTitleTablet: {
-    fontSize: 22,
-    letterSpacing: 0.5,
-  },
-  headerSpacer: {
-    width: 34,
-  },
-  headerSpacerTablet: {
-    width: 44,
-  },
+  headerTitleTablet:  { fontSize: 24 },
+  headerSpacer:       { width: 40 },
+  headerSpacerTablet: { width: 50 },
 
-  // Search Container
-  searchContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#fff",
-    margin: 16,
+  /* ── SEARCH ── */
+  searchWrap: {
+    flexDirection:   "row",
+    alignItems:      "center",
+    backgroundColor: C.card,           // warm beige card tone
     marginHorizontal: 16,
-    borderRadius: 12,
-    paddingHorizontal: 12,
-    elevation: 3,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    borderWidth: 1,
-    borderColor: "#f0f0f0",
+    marginTop:        14,
+    marginBottom:     4,
+    paddingHorizontal: 14,
+    paddingVertical:   2,
+    borderRadius:      12,
+    borderWidth:       1.5,
+    borderColor:       C.border,
+    elevation:         2,
+    shadowColor:       C.dark,
+    shadowOffset:      { width: 0, height: 1 },
+    shadowOpacity:     0.1,
+    shadowRadius:      3,
   },
-  searchContainerTablet: {
-    margin: 20,
-    marginHorizontal: 24,
-    borderRadius: 16,
-    paddingHorizontal: 16,
+  searchWrapTablet: {
+    marginHorizontal: 32,
+    marginTop:        20,
+    borderRadius:     14,
   },
   searchInput: {
-    flex: 1,
-    paddingVertical: 12,
-    paddingHorizontal: 8,
-    fontSize: 14,
-    color: "#333",
+    flex:          1,
+    paddingVertical: 10,
+    fontSize:      14,
+    color:         C.text,
+    fontWeight:    "600",
   },
-  searchInputTablet: {
-    paddingVertical: 15,
-    fontSize: 16,
-  },
+  searchInputTablet: { paddingVertical: 13, fontSize: 16 },
 
-  // List Styles
-  list: {
-    paddingHorizontal: 10,
-    paddingBottom: 30,
-  },
-  listTablet: {
-    paddingHorizontal: 20,
-    paddingBottom: 40,
-  },
-  columnWrapper: {
-    justifyContent: "space-between",
-  },
-
-  // Card Styles
+  /* ── CARD — mirror of TourismPage1 card ── */
   card: {
-    backgroundColor: "#fff",
-    borderRadius: 12,
-    marginBottom: 12,
-    elevation: 3,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    overflow: "hidden",
-    borderWidth: 1,
-    borderColor: "#f0f0f0",
+    backgroundColor: C.dark,   // dark bg so no colour leak ever
+    overflow:        "hidden",
+    elevation:       4,
+    shadowColor:     C.dark,
+    shadowOpacity:   0.12,
+    shadowRadius:    6,
+    shadowOffset:    { width: 0, height: 3 },
+    borderWidth:     1,
+    borderColor:     C.border,
   },
-  cardTablet: {
-    borderRadius: 16,
-    elevation: 4,
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.15,
-    shadowRadius: 6,
+  imageWrap: {
+    width:           "100%",
+    backgroundColor: "#c8c2a0",
+    position:        "relative",
+    overflow:        "hidden",
   },
-  image: {
-    height: 100,
-    width: "100%",
-    backgroundColor: "#f0f0f0",
-  },
-  imageTablet: {
-    height: 130,
+  image: { width: "100%", height: "100%" },
+  imageOverlay: {
+    position:        "absolute",
+    bottom:          0,
+    left:            0,
+    right:           0,
+    height:          "35%",
+    backgroundColor: "rgba(48,25,19,0.18)",
   },
 
-  // Info Section
-  info: {
-    padding: 8,
+  /* Gold pin — top right, no badge box */
+  pinWrap: {
+    position:  "absolute",
+    top:       8,
+    right:     8,
   },
-  infoTablet: {
-    padding: 12,
+
+  /* ── CARD FOOTER — identical structure to TourismPage1 ── */
+  cardFooter: {
+    backgroundColor: C.dark,
+    flexDirection:   "row",
+    alignItems:      "center",
+    gap:             4,
   },
-  name: {
-    fontSize: 14,
+  cardText: {
+    flex:       1,
+    flexShrink: 1,
     fontWeight: "700",
-    color: "#222",
-    marginBottom: 2,
-  },
-  nameTablet: {
-    fontSize: 16,
-    marginBottom: 4,
-  },
-  title: {
-    fontSize: 12,
-    color: "#666",
-    marginVertical: 2,
-    lineHeight: 16,
-  },
-  titleTablet: {
-    fontSize: 13,
-    lineHeight: 18,
+    color:      C.white,
+    textAlign:  "center",
   },
 
-  // Button Row
-  buttonRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginTop: 8,
-  },
-  buttonRowTablet: {
-    marginTop: 12,
-  },
-  visitButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#1E88E5",
-    paddingVertical: 6,
-    paddingHorizontal: 12,
-    borderRadius: 20,
-    elevation: 2,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-  },
-  visitButtonTablet: {
-    paddingVertical: 8,
-    paddingHorizontal: 16,
-    borderRadius: 25,
-  },
-  callButton: {
-    backgroundColor: "#93210A",
-    padding: 8,
-    borderRadius: 50,
-    width: 34,
-    height: 34,
-    alignItems: 'center',
-    justifyContent: 'center',
-    elevation: 2,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-  },
-  callButtonTablet: {
-    width: 44,
-    height: 44,
-    padding: 10,
-  },
-  btnText: {
-    color: "#fff",
-    fontSize: 12,
-    marginLeft: 5,
-    fontWeight: "600",
-  },
-  btnTextTablet: {
-    fontSize: 14,
-    marginLeft: 6,
+  /* Info dot — gold circle, same size/style as arrowDot */
+  infoDot: {
+    backgroundColor: C.gold,
+    alignItems:      "center",
+    justifyContent:  "center",
+    flexShrink:      0,
   },
 
-  // Empty State
-  notFound: {
-    alignItems: "center",
+  /* Arrow dot — white circle, same as TourismPage1 */
+  arrowDot: {
+    backgroundColor: C.white,
+    alignItems:      "center",
+    justifyContent:  "center",
+    flexShrink:      0,
+  },
+
+  /* ── EMPTY STATE ── */
+  empty: {
+    flex:          1,
+    alignItems:    "center",
     justifyContent: "center",
-    marginTop: 60,
-    paddingHorizontal: 20,
+    paddingTop:    80,
+    gap:           12,
   },
-  notFoundTablet: {
-    marginTop: 80,
+  emptyIconWrap: {
+    width:           80,
+    height:          80,
+    borderRadius:    40,
+    backgroundColor: "rgba(147,33,10,0.1)",
+    borderWidth:     1.5,
+    borderColor:     "rgba(147,33,10,0.2)",
+    alignItems:      "center",
+    justifyContent:  "center",
   },
-  notFoundText: {
-    color: "#999",
-    fontSize: 16,
-    marginTop: 12,
-    textAlign: "center",
+  emptyIconWrapTablet: { width: 100, height: 100, borderRadius: 50 },
+  emptyTitle: {
+    fontSize:   16,
+    fontWeight: "800",
+    color:      C.dark,
   },
-  notFoundTextTablet: {
-    fontSize: 18,
-    marginTop: 16,
+  emptyTitleTablet: { fontSize: 20 },
+  emptySub: {
+    fontSize:   13,
+    color:      "#7a6a5a",
+    fontWeight: "500",
   },
+  emptySubTablet: { fontSize: 15 },
 });

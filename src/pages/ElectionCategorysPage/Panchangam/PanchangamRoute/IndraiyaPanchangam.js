@@ -814,7 +814,7 @@ import { Ionicons } from "@expo/vector-icons";
 import axios from "axios";
 import Loader from "../../../../components/Alert/Loader";
 
-const API_URL = "http://192.168.1.6:5000/api/v1/panchangam/indray-panjagam/today";
+const API_URL = "https://hdrss-backend.onrender.com/api/v1/panchangam/indray-panjagam/today";
 
 const TAMIL_WEEKDAYS = ["ஞாயிறு", "திங்கள்", "செவ்வாய்", "புதன்", "வியாழன்", "வெள்ளி", "சனி"];
 const TAMIL_MONTHS = ["ஜனவரி", "பிப்ரவரி", "மார்ச்", "ஏப்ரல்", "மே", "ஜூன்", 

@@ -476,3 +476,42 @@ export const getResultsByAssembly = (assemblyId) => {
 };
 
 
+// product api for category
+
+export const getProductCategories = async () => {
+  try {
+    const response = await axios.get(`${BASE_URL}/product-categories`);
+
+    return response.data.data;
+  } catch (error) {
+    console.log("Product Category API Error :", error);
+    throw error;
+  }
+};
+
+//  Product Type
+export const getProductTypes = async () => {
+  try {
+    const response = await axios.get(
+      `${BASE_URL}/product-types`
+    );
+
+    return response.data.data;
+  } catch (error) {
+    console.log("Product Type API Error", error);
+    throw error;
+  }
+};
+
+// productScreen 3
+export const getProducts = async () => {
+  try {
+    const response = await api.get('/product-details');
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching products:', error);
+    throw error;
+  }
+};
+
+export default api;

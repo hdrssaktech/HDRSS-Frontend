@@ -10,31 +10,407 @@ import {
   SafeAreaView,
   StatusBar,
   FlatList,
+  Animated,
+  Easing,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import YoutubePlayer from "react-native-youtube-iframe";
 import { LinearGradient } from "expo-linear-gradient";
+import Slider from "@react-native-community/slider";
+
+const C = {
+  primary:   "#93210A",
+  dark:      "#301913",
+  bg:        "#1a0a00",
+  cardBg:    "#2a1208",
+  gold:      "#DAA520",
+  goldLight: "#FFF0EE",
+  cream:     "#FDF5E6",
+  textMain:  "#FFFFFF",
+  textSub:   "#b0a090",
+  white:     "#fff",
+  surface:   "#2e1510",
+  divider:   "rgba(218,165,32,0.2)",
+};
+
+function AudioStylePlayer({ videoId, title, subtitle, thumbUri, isTablet }) {
+  const playerRef   = useRef(null);
+  const intervalRef = useRef(null);
+  const spinAnim    = useRef(new Animated.Value(0)).current;
+  const spinLoopRef = useRef(null);
+
+  const [playing,     setPlaying]     = useState(false);
+  const [duration,    setDuration]    = useState(0);
+  const [current,     setCurrent]     = useState(0);
+  const [playerReady, setPlayerReady] = useState(false);
+  const [isSeeking,   setIsSeeking]   = useState(false);
+
+  const startSpin = useCallback(() => {
+    spinAnim.setValue(0);
+    spinLoopRef.current = Animated.loop(
+      Animated.timing(spinAnim, {
+        toValue: 1,
+        duration: 8000,
+        easing: Easing.linear,
+        useNativeDriver: true,
+      })
+    );
+    spinLoopRef.current.start();
+  }, [spinAnim]);
+
+  const stopSpin = useCallback(() => {
+    if (spinLoopRef.current) spinLoopRef.current.stop();
+  }, []);
+
+  const spin = spinAnim.interpolate({
+    inputRange:  [0, 1],
+    outputRange: ["0deg", "360deg"],
+  });
+
+  const startPolling = useCallback(() => {
+    intervalRef.current = setInterval(async () => {
+      if (playerRef.current && !isSeeking) {
+        const t = await playerRef.current.getCurrentTime();
+        setCurrent(t ?? 0);
+      }
+    }, 500);
+  }, [isSeeking]);
+
+  const stopPolling = useCallback(() => {
+    if (intervalRef.current) clearInterval(intervalRef.current);
+  }, []);
+
+  const onReady = useCallback(async () => {
+    setPlayerReady(true);
+    if (playerRef.current) {
+      const d = await playerRef.current.getDuration();
+      setDuration(d ?? 0);
+    }
+  }, []);
+
+  const onStateChange = useCallback(
+    (state) => {
+      if (state === "playing") {
+        setPlaying(true);
+        startPolling();
+        startSpin();
+      } else if (state === "paused" || state === "ended") {
+        setPlaying(false);
+        stopPolling();
+        stopSpin();
+        if (state === "ended") setCurrent(0);
+      }
+    },
+    [startPolling, stopPolling, startSpin, stopSpin]
+  );
+
+  useEffect(() => {
+    return () => {
+      stopPolling();
+      stopSpin();
+    };
+  }, [stopPolling, stopSpin]);
+
+  const togglePlay = useCallback(() => {
+    if (!playerReady) return;
+    setPlaying((prev) => !prev);
+  }, [playerReady]);
+
+  const seekTo = async (val) => {
+    if (playerRef.current) await playerRef.current.seekTo(val, true);
+    setCurrent(val);
+    setIsSeeking(false);
+  };
+
+  const skipBy = async (secs) => {
+    const next = Math.max(0, Math.min(current + secs, duration));
+    if (playerRef.current) await playerRef.current.seekTo(next, true);
+    setCurrent(next);
+  };
+
+  const fmt = (s) => {
+    const m   = Math.floor(s / 60);
+    const sec = Math.floor(s % 60);
+    return `${m}:${sec.toString().padStart(2, "0")}`;
+  };
+
+  const progress = duration > 0 ? current / duration : 0;
+  const artSize  = isTablet ? 220 : 180;
+
+  return (
+    <View style={[ap.wrap, isTablet && ap.wrapTablet]}>
+      <YoutubePlayer
+        ref={playerRef}
+        height={0}
+        width={0}
+        play={playing}
+        videoId={videoId}
+        onReady={onReady}
+        onChangeState={onStateChange}
+        webViewProps={{ androidLayerType: "hardware" }}
+        initialPlayerParams={{
+          playsInline: true,
+          controls: false,
+          modestbranding: true,
+          rel: false,
+        }}
+      />
+
+      <View style={{ marginBottom: 24, alignItems: "center" }}>
+        <Animated.View
+          style={[
+            ap.artWrap,
+            {
+              width: artSize,
+              height: artSize,
+              borderRadius: artSize / 2,
+              transform: [{ rotate: playing ? spin : "0deg" }],
+            },
+          ]}
+        >
+          {thumbUri ? (
+            <Image
+              source={{ uri: thumbUri }}
+              style={{ width: artSize, height: artSize, borderRadius: artSize / 2 }}
+              resizeMode="cover"
+            />
+          ) : (
+            <View
+              style={[
+                ap.artPlaceholder,
+                { width: artSize, height: artSize, borderRadius: artSize / 2 },
+              ]}
+            >
+              <Text style={{ fontSize: isTablet ? 64 : 52 }}>🕉️</Text>
+            </View>
+          )}
+        </Animated.View>
+      </View>
+
+      <Text style={[ap.title, isTablet && ap.titleTablet]} numberOfLines={2}>
+        {title}
+      </Text>
+      {!!subtitle && (
+        <Text style={[ap.subtitle, isTablet && ap.subtitleTablet]} numberOfLines={1}>
+          {subtitle}
+        </Text>
+      )}
+
+      <View style={ap.progressWrap}>
+        <View style={ap.progressTrack}>
+          <View style={[ap.progressFill, { width: `${progress * 100}%` }]} />
+          <View style={[ap.progressThumb, { left: `${progress * 100}%` }]} />
+        </View>
+        <Slider
+          style={ap.slider}
+          minimumValue={0}
+          maximumValue={duration || 1}
+          value={current}
+          onSlidingStart={() => setIsSeeking(true)}
+          onSlidingComplete={seekTo}
+          minimumTrackTintColor="transparent"
+          maximumTrackTintColor="transparent"
+          thumbTintColor="transparent"
+        />
+      </View>
+
+      <View style={ap.timeRow}>
+        <Text style={ap.timeText}>{fmt(current)}</Text>
+        <Text style={ap.timeText}>{fmt(duration)}</Text>
+      </View>
+
+      <View style={ap.controls}>
+        <TouchableOpacity onPress={() => skipBy(-10)} style={ap.sideBtn} activeOpacity={0.7} disabled={!playerReady}>
+          <Ionicons name="play-skip-back" size={isTablet ? 28 : 24} color={C.textSub} />
+          <Text style={ap.skipLabel}>10</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity onPress={() => skipBy(-30)} style={ap.sideBtn} activeOpacity={0.7} disabled={!playerReady}>
+          <Ionicons name="reload" size={isTablet ? 26 : 22} color={C.textSub} />
+          <Text style={ap.skipLabel}>30s</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          onPress={togglePlay}
+          style={[ap.playBtn, isTablet && ap.playBtnTablet, !playerReady && ap.playBtnDisabled]}
+          disabled={!playerReady}
+          activeOpacity={0.85}
+        >
+          <LinearGradient
+            colors={[C.primary, C.dark]}
+            style={[ap.playGradient, isTablet && { width: 76, height: 76, borderRadius: 38 }]}
+          >
+            <Ionicons
+              name={playing ? "pause" : "play"}
+              size={isTablet ? 36 : 30}
+              color={C.white}
+              style={playing ? {} : { marginLeft: 3 }}
+            />
+          </LinearGradient>
+        </TouchableOpacity>
+
+        <TouchableOpacity onPress={() => skipBy(30)} style={ap.sideBtn} activeOpacity={0.7} disabled={!playerReady}>
+          <Ionicons name="reload" size={isTablet ? 26 : 22} color={C.textSub} style={{ transform: [{ scaleX: -1 }] }} />
+          <Text style={ap.skipLabel}>30s</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity onPress={() => skipBy(10)} style={ap.sideBtn} activeOpacity={0.7} disabled={!playerReady}>
+          <Ionicons name="play-skip-forward" size={isTablet ? 28 : 24} color={C.textSub} />
+          <Text style={ap.skipLabel}>10</Text>
+        </TouchableOpacity>
+      </View>
+
+      {!playerReady && (
+        <View style={ap.loadingRow}>
+          <Ionicons name="musical-notes-outline" size={16} color={C.gold} />
+          <Text style={ap.loadingText}>Loading audio...</Text>
+        </View>
+      )}
+
+      {playing && playerReady && (
+        <View style={ap.nowPlayingRow}>
+          <View style={ap.nowPlayingDot} />
+          <View style={[ap.nowPlayingDot, { height: 14 }]} />
+          <View style={[ap.nowPlayingDot, { height: 10 }]} />
+          <View style={[ap.nowPlayingDot, { height: 16 }]} />
+          <View style={[ap.nowPlayingDot, { height: 8 }]} />
+          <Text style={ap.nowPlayingText}>NOW PLAYING</Text>
+        </View>
+      )}
+    </View>
+  );
+}
+
+const ap = StyleSheet.create({
+  wrap: {
+    backgroundColor: "#2a1208",
+    borderRadius: 24,
+    paddingVertical: 28,
+    paddingHorizontal: 20,
+    alignItems: "center",
+    borderWidth: 1.5,
+    borderColor: "rgba(218,165,32,0.25)",
+    elevation: 8,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.5,
+    shadowRadius: 14,
+  },
+  wrapTablet: { paddingVertical: 36, paddingHorizontal: 32, borderRadius: 28 },
+  artWrap: {
+    borderWidth: 3,
+    borderColor: C.gold,
+    overflow: "hidden",
+    elevation: 10,
+    shadowColor: C.gold,
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.3,
+    shadowRadius: 12,
+  },
+  artPlaceholder: {
+    backgroundColor: "#1a0a00",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  title: {
+    fontSize: 18, fontWeight: "800", color: C.white,
+    textAlign: "center", marginBottom: 4, letterSpacing: 0.3, paddingHorizontal: 8,
+  },
+  titleTablet: { fontSize: 22 },
+  subtitle: {
+    fontSize: 14, color: C.textSub, fontWeight: "500",
+    textAlign: "center", marginBottom: 24,
+  },
+  subtitleTablet: { fontSize: 16 },
+  progressWrap: { width: "100%", height: 36, justifyContent: "center", marginBottom: 0 },
+  progressTrack: {
+    position: "absolute", left: 0, right: 0,
+    height: 3, backgroundColor: "rgba(218,165,32,0.2)",
+    borderRadius: 2, overflow: "visible",
+  },
+  progressFill: { height: "100%", backgroundColor: C.gold, borderRadius: 2 },
+  progressThumb: {
+    position: "absolute", top: -5, width: 13, height: 13,
+    borderRadius: 6.5, backgroundColor: C.gold,
+    marginLeft: -6.5, elevation: 3,
+  },
+  slider: { position: "absolute", left: -10, right: -10, height: 36, opacity: 0 },
+  timeRow: {
+    flexDirection: "row", justifyContent: "space-between",
+    width: "100%", marginBottom: 24, marginTop: 4,
+  },
+  timeText: { fontSize: 11, color: C.textSub, fontWeight: "600" },
+  controls: {
+    flexDirection: "row", alignItems: "center",
+    justifyContent: "center", gap: 20, marginBottom: 16,
+  },
+  sideBtn: { alignItems: "center", justifyContent: "center", width: 40, height: 40 },
+  skipLabel: {
+    fontSize: 9, color: C.textSub, fontWeight: "700",
+    marginTop: 2, letterSpacing: 0.3,
+  },
+  playBtn: {
+    elevation: 8, shadowColor: C.primary,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.5, shadowRadius: 10,
+  },
+  playBtnTablet: {},
+  playBtnDisabled: { opacity: 0.4 },
+  playGradient: {
+    width: 64, height: 64, borderRadius: 32,
+    alignItems: "center", justifyContent: "center",
+    borderWidth: 2.5, borderColor: C.gold,
+  },
+  loadingRow: { flexDirection: "row", alignItems: "center", gap: 6, marginTop: 8 },
+  loadingText: { fontSize: 12, color: C.gold, fontWeight: "600", letterSpacing: 0.5 },
+  nowPlayingRow: { flexDirection: "row", alignItems: "flex-end", gap: 3, marginTop: 8 },
+  nowPlayingDot: { width: 3, height: 18, backgroundColor: C.gold, borderRadius: 2, opacity: 0.8 },
+  nowPlayingText: {
+    fontSize: 10, color: C.gold, fontWeight: "800",
+    letterSpacing: 1.5, marginLeft: 6,
+  },
+});
 
 export default function DivinePage3() {
   const navigation = useNavigation();
-  const route = useRoute();
-  const { data } = route.params;
+  const route      = useRoute();
+  const { data }   = route.params;
 
   const { width } = useWindowDimensions();
-  const isTablet = width >= 600;
+  const isTablet  = width >= 600;
 
-  const playerRef = useRef(null);
-  const [playing, setPlaying] = useState(false);
-  const [playerError, setPlayerError] = useState(null);
+  const [activeTab, setActiveTab] = useState("about");
 
-  const [isExpanded, setIsExpanded] = useState(false);
+  const [isExpanded,   setIsExpanded]   = useState(false);
   const [showReadMore, setShowReadMore] = useState(false);
+
+  const fullText = useMemo(() => (data?.description || "").trim(), [data?.description]);
+
+  const paragraphs = useMemo(() => {
+    if (!fullText) return [];
+    if (isExpanded) {
+      return fullText.split(/\n\s*\n/).map((p) => p.trim()).filter(Boolean);
+    }
+    return [fullText.length > 220 ? fullText.substring(0, 220) + "..." : fullText];
+  }, [fullText, isExpanded]);
+
+  useEffect(() => {
+    if (fullText.length > 220) setShowReadMore(true);
+  }, [fullText]);
+
+  const galleryImages = useMemo(
+    () => (Array.isArray(data?.gallery) ? data.gallery : []),
+    [data?.gallery]
+  );
+  const getGalleryCaption = (index) =>
+    Array.isArray(data?.galleryTitles) && data.galleryTitles[index]
+      ? data.galleryTitles[index]
+      : `Image ${String(index + 1).padStart(2, "0")}`;
 
   const getYoutubeId = (url) => {
     if (!url) return null;
     if (/^[\w-]{11}$/.test(url)) return url;
-
     const patterns = [
       /youtu\.be\/([\w-]{11})/i,
       /youtube\.com\/watch\?v=([\w-]{11})/i,
@@ -42,596 +418,277 @@ export default function DivinePage3() {
       /youtube\.com\/shorts\/([\w-]{11})/i,
       /youtube\.com\/v\/([\w-]{11})/i,
     ];
-
     for (const p of patterns) {
       const m = url.match(p);
       if (m?.[1]) return m[1];
     }
-
-    const vMatch = url.match(/[?&]v=([\w-]{11})/i);
-    return vMatch?.[1] || null;
+    return url.match(/[?&]v=([\w-]{11})/i)?.[1] || null;
   };
 
   const videoId = useMemo(() => getYoutubeId(data?.video), [data?.video]);
 
-  const onStateChange = useCallback((state) => {
-    if (state === "ended") {
-      setPlaying(false);
-    }
-  }, []);
-
-  const onError = useCallback((e) => {
-    console.log("Player error:", e);
-    setPlayerError(e);
-    setPlaying(false);
-  }, []);
-
-  const onReady = useCallback(() => {
-    setPlayerError(null);
-  }, []);
-
-  const fullText = useMemo(() => {
-    return (data?.description || "").trim();
-  }, [data?.description]);
-
-  const paragraphs = useMemo(() => {
-    if (!fullText) return [];
-
-    if (isExpanded) {
-      const byBlankLine = fullText
-        .split(/\n\s*\n/)
-        .map((p) => p.trim())
-        .filter(Boolean);
-
-      if (byBlankLine.length > 1) return byBlankLine;
-
-      return fullText
-        .split("\n")
-        .map((p) => p.trim())
-        .filter(Boolean);
-    } else {
-      const previewText =
-        fullText.length > 150 ? fullText.substring(0, 150) + "..." : fullText;
-      return [previewText];
-    }
-  }, [fullText, isExpanded]);
-
-  useEffect(() => {
-    setShowReadMore(fullText.length > 150);
-  }, [fullText]);
-
-  const galleryImages = useMemo(() => {
-    return Array.isArray(data?.gallery) ? data.gallery : [];
-  }, [data?.gallery]);
-
-  const getGalleryCaption = (index) => {
-    if (Array.isArray(data?.galleryTitles) && data.galleryTitles[index]) {
-      return data.galleryTitles[index];
-    }
-    return `Image ${String(index + 1).padStart(2, "0")}`;
-  };
+  const hasAbout   = fullText.length > 0;
+  const hasGallery = galleryImages.length > 0;
+  const contentPadding = isTablet ? 32 : 18;
+  const galleryItemWidth = isTablet ? 180 : 140;
 
   const renderGalleryItem = ({ item, index }) => (
-    <TouchableOpacity style={styles.galleryItem} activeOpacity={0.8}>
-      <Image
-        source={{ uri: item }}
-        style={[styles.galleryImage, isTablet && styles.galleryImageTablet]}
-        resizeMode="cover"
-      />
-      <Text style={styles.galleryItemCaption} numberOfLines={1}>
+    <TouchableOpacity
+      style={[s.galleryItem, { width: galleryItemWidth }]}
+      activeOpacity={0.85}
+    >
+      <View style={[s.galleryImageWrap, { width: galleryItemWidth, height: galleryItemWidth }]}>
+        <Image
+          source={{ uri: item }}
+          style={{ width: "100%", height: "100%" }}
+          resizeMode="cover"
+        />
+        <LinearGradient
+          colors={["transparent", "rgba(26,10,0,0.7)"]}
+          style={s.galleryGradient}
+        />
+        <View style={s.galleryBadge}>
+          <Text style={s.galleryBadgeText}>{String(index + 1).padStart(2, "0")}</Text>
+        </View>
+      </View>
+      <Text style={s.galleryCaption} numberOfLines={1}>
         {getGalleryCaption(index)}
       </Text>
     </TouchableOpacity>
   );
 
   return (
-    <SafeAreaView style={styles.safe}>
-      <StatusBar barStyle="light-content" backgroundColor="#8B3A2F" />
-
-      {/* Header */}
-      <View style={[styles.header, isTablet && styles.headerTablet]}>
-        <TouchableOpacity
-          style={[styles.backButton, isTablet && styles.backButtonTablet]}
-          onPress={() => navigation.goBack()}
-        >
-          <Ionicons name="chevron-back" size={isTablet ? 30 : 26} color="#fff" />
-        </TouchableOpacity>
-
-        <Text
-          style={[styles.headerTitle, isTablet && styles.headerTitleTablet]}
-          numberOfLines={1}
-        >
-          {data?.title || "History"}
-        </Text>
-
-        <View style={styles.headerSide} />
-      </View>
+    <SafeAreaView style={s.safe}>
+      <StatusBar barStyle="light-content" backgroundColor={C.bg} />
 
       <ScrollView
         showsVerticalScrollIndicator={false}
-        style={styles.scrollView}
-        contentContainerStyle={styles.scrollContent}
+        style={s.scroll}
+        contentContainerStyle={{ paddingBottom: isTablet ? 60 : 40 }}
       >
-        {/* Banner Image */}
-        {!!data?.bannerImage && (
-          <View style={styles.bannerContainer}>
+        {/* ── HERO BANNER ── */}
+        <View style={s.heroWrap}>
+          {!!data?.bannerImage ? (
             <Image
               source={{ uri: data.bannerImage }}
-              style={[styles.banner, { height: isTablet ? 450 : 280 }]}
+              style={[s.heroBanner, { height: isTablet ? 420 : 300 }]}
               resizeMode="cover"
             />
-            <LinearGradient
-              colors={[
-                "transparent",
-                "rgba(139, 58, 47, 0.3)",
-                "rgba(109, 46, 38, 0.7)",
-              ]}
-              style={styles.bannerGradient}
-            />
-            <View style={styles.omSymbolContainer}>
-              <Text style={styles.omSymbol}>🕉️</Text>
+          ) : (
+            <View style={[s.heroPlaceholder, { height: isTablet ? 420 : 300 }]}>
+              <Text style={s.heroPlaceholderText}>🕉️</Text>
             </View>
+          )}
+
+          <LinearGradient
+            colors={["transparent", "rgba(26,10,0,0.5)", C.bg]}
+            locations={[0.3, 0.7, 1]}
+            style={s.heroGradient}
+          />
+
+          <TouchableOpacity
+            style={[s.backButton, isTablet && s.backButtonTablet]}
+            onPress={() => navigation.goBack()}
+          >
+            <Ionicons name="chevron-back" size={isTablet ? 28 : 24} color={C.white} />
+          </TouchableOpacity>
+
+          <View style={[s.omBadge, isTablet && s.omBadgeTablet]}>
+            <Text style={[s.omText, isTablet && s.omTextTablet]}>🕉️</Text>
+          </View>
+        </View>
+
+        {/* ── TITLE BLOCK ── */}
+        <View style={[s.titleBlock, { paddingHorizontal: contentPadding }]}>
+          <Text style={[s.titleMain, isTablet && s.titleMainTablet]}>
+            {data?.title || ""}
+          </Text>
+          {!!data?.subtitle && (
+            <Text style={[s.titleSub, isTablet && s.titleSubTablet]}>
+              {data.subtitle}
+            </Text>
+          )}
+          <View style={s.goldBar} />
+        </View>
+
+        {/* ── AUDIO STYLE PLAYER ── */}
+        {videoId && (
+          <View style={{ marginHorizontal: contentPadding, marginBottom: 24 }}>
+            <AudioStylePlayer
+              videoId={videoId}
+              title={data?.title || ""}
+              subtitle={data?.subtitle || ""}
+              thumbUri={data?.bannerImage || null}
+              isTablet={isTablet}
+            />
           </View>
         )}
 
-        {/* Title Card */}
-        <View style={[styles.titleCard, isTablet && styles.titleCardTablet]}>
-          <View style={styles.titleDecoration}>
-            <View style={styles.titleLineLeft} />
-            <Ionicons name="leaf" size={24} color="#DAA520" />
-            <View style={styles.titleLineRight} />
-          </View>
-
-          <Text style={[styles.title, isTablet && styles.titleTablet]}>
-            {data?.title}
-          </Text>
-
-          {data?.subtitle ? (
-            <Text style={[styles.subtitle, isTablet && styles.subtitleTablet]}>
-              {data?.subtitle}
-            </Text>
-          ) : null}
-        </View>
-
-        {/* Video Section */}
-        <View style={[styles.videoSection, isTablet && styles.videoSectionTablet]}>
-          <View style={styles.videoHeader}>
-            <LinearGradient
-              colors={["#DAA520", "#B8860B"]}
-              style={styles.videoHeaderIcon}
-            >
-              <Ionicons name="videocam" size={20} color="#fff" />
-            </LinearGradient>
-            <Text style={styles.videoHeaderText}>Video</Text>
-          </View>
-
-          {videoId ? (
-            <View style={styles.videoContainer}>
-              <YoutubePlayer
-                ref={playerRef}
-                height={(width - (isTablet ? 80 : 32)) * 0.5625}
-                width={width - (isTablet ? 80 : 32)}
-                play={playing}
-                videoId={videoId}
-                onChangeState={onStateChange}
-                onError={onError}
-                onReady={onReady}
-                initialPlayerParams={{
-                  playsInline: true,
-                  controls: true,
-                  modestbranding: true,
-                  rel: false,
-                  showinfo: 1,
-                }}
-              />
+        {/* ── TAB BAR ── */}
+        {(hasAbout || hasGallery) && (
+          <>
+            <View style={[s.tabBar, { paddingHorizontal: contentPadding }]}>
+              {hasAbout && (
+                <TouchableOpacity
+                  style={s.tabItem}
+                  onPress={() => setActiveTab("about")}
+                  activeOpacity={0.8}
+                >
+                  <Text style={[s.tabText, activeTab === "about" && s.tabTextActive]}>
+                    ABOUT
+                  </Text>
+                  {activeTab === "about" && <View style={s.tabUnderline} />}
+                </TouchableOpacity>
+              )}
+              {hasGallery && (
+                <TouchableOpacity
+                  style={s.tabItem}
+                  onPress={() => setActiveTab("gallery")}
+                  activeOpacity={0.8}
+                >
+                  <Text style={[s.tabText, activeTab === "gallery" && s.tabTextActive]}>
+                    GALLERY
+                  </Text>
+                  {activeTab === "gallery" && <View style={s.tabUnderline} />}
+                </TouchableOpacity>
+              )}
             </View>
-          ) : (
-            <View style={styles.noVideoContainer}>
-              <Ionicons name="videocam-outline" size={36} color="#8B3A2F" />
-              <Text style={styles.noVideoText}>No video available</Text>
-            </View>
-          )}
+            <View style={[s.divider, { marginHorizontal: contentPadding }]} />
+          </>
+        )}
 
-          {playerError && (
-            <Text style={styles.errorText}>
-              Unable to play video. Please try again.
-            </Text>
-          )}
-        </View>
-
-        {/* Description */}
-        {fullText.length > 0 && (
-          <View
-            style={[
-              styles.descriptionSection,
-              isTablet && styles.descriptionSectionTablet,
-            ]}
-          >
-            <View style={styles.descriptionHeader}>
-              <View style={styles.descriptionLine} />
-              <Text style={styles.descriptionTitle}>Lines</Text>
-              <View style={styles.descriptionLine} />
-            </View>
-
-            {paragraphs.map((paragraph, index) => (
+        {/* ── ABOUT TAB ── */}
+        {activeTab === "about" && hasAbout && (
+          <View style={[s.aboutBlock, { paddingHorizontal: contentPadding }]}>
+            {paragraphs.map((p, i) => (
               <Text
-                key={`p-${index}`}
-                style={[styles.description, isTablet && styles.descTablet]}
+                key={i}
+                style={[s.description, isTablet && s.descTablet, i > 0 && { marginTop: 14 }]}
               >
-                {paragraph}
+                {p}
               </Text>
             ))}
-
             {showReadMore && (
               <TouchableOpacity
-                style={styles.readMoreButton}
+                style={s.readMoreBtn}
                 onPress={() => setIsExpanded(!isExpanded)}
+                activeOpacity={0.8}
               >
-                <Text style={styles.readMoreText}>
-                  {isExpanded ? "Read Less" : "Read More"}
+                <Text style={s.readMoreText}>
+                  {isExpanded ? "SEE LESS" : "Read full"}
                 </Text>
                 <Ionicons
                   name={isExpanded ? "chevron-up" : "chevron-down"}
-                  size={16}
-                  color="#8B3A2F"
+                  size={12}
+                  color={C.gold}
                 />
               </TouchableOpacity>
             )}
           </View>
         )}
 
-        {/* Gallery */}
-        {galleryImages.length > 0 && (
-          <View style={[styles.gallerySection, isTablet && styles.gallerySectionTablet]}>
-            <View style={styles.galleryHeader}>
-              <View style={styles.galleryLine} />
-              <Text style={[styles.galleryTitle, isTablet && styles.galleryTitleTablet]}>
-                Gallery
-              </Text>
-              <View style={styles.galleryLine} />
-            </View>
-
+        {/* ── GALLERY TAB ── */}
+        {activeTab === "gallery" && hasGallery && (
+          <View style={{ marginTop: 16 }}>
             <FlatList
               data={galleryImages}
               renderItem={renderGalleryItem}
-              keyExtractor={(item, index) => `gallery-${index}`}
+              keyExtractor={(_, i) => `gallery-${i}`}
               horizontal
               showsHorizontalScrollIndicator={false}
-              contentContainerStyle={styles.galleryList}
+              contentContainerStyle={[
+                s.galleryList,
+                { paddingHorizontal: contentPadding },
+              ]}
             />
           </View>
         )}
 
-        <View style={styles.bottomPadding}>
-          <Text style={styles.omFooter}>ॐ</Text>
+        {/* ── FOOTER ── */}
+        <View style={[s.footer, { marginHorizontal: contentPadding, marginTop: 32 }]}>
+          <View style={s.footerLine} />
+          <View style={s.footerOmWrap}>
+            <Text style={s.footerOm}>ॐ</Text>
+          </View>
+          <View style={s.footerLine} />
         </View>
+
       </ScrollView>
     </SafeAreaView>
   );
 }
 
-const styles = StyleSheet.create({
-  safe: {
-    flex: 1,
-    backgroundColor: "#FDF5E6",
-  },
-  scrollView: {
-    flex: 1,
-  },
-  scrollContent: {
-    paddingBottom: 20,
-  },
+const s = StyleSheet.create({
+  safe:   { flex: 1, backgroundColor: C.bg },
+  scroll: { flex: 1 },
 
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#93210A",
-    paddingTop: 40,
-    paddingBottom: 30,
-    borderBottomLeftRadius: 20,
-    borderBottomRightRadius: 20,
-  },
-  headerTablet: {
-    paddingTop: 60,
-    paddingBottom: 30,
-    paddingHorizontal: 24,
-  },
+  heroWrap:            { width: "100%", position: "relative" },
+  heroBanner:          { width: "100%" },   // ← FIXED: removed height:"189%"
+  heroPlaceholder:     { width: "100%", backgroundColor: C.cardBg, alignItems: "center", justifyContent: "center" },
+  heroPlaceholderText: { fontSize: 80 },
+  heroGradient:        { position: "absolute", bottom: 0, left: 0, right: 0, height: "70%" },
   backButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: "rgba(255,255,255,0.15)",
-    alignItems: "center",
-    justifyContent: "center",
-    marginLeft: 15,
+    position: "absolute", top: 48, left: 16,
+    width: 36, height: 36, borderRadius: 18,
+    backgroundColor: "rgba(0,0,0,0.45)",
+    alignItems: "center", justifyContent: "center",
   },
-  backButtonTablet: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
+  backButtonTablet:  { top: 56, left: 24, width: 44, height: 44, borderRadius: 22 },
+  omBadge: {
+    position: "absolute", top: 48, right: 16,
+    backgroundColor: "rgba(218,165,32,0.15)",
+    borderRadius: 22, padding: 8,
+    borderWidth: 1, borderColor: C.gold,
   },
-  headerSide: {
-    width: 40,
-  },
-  headerTitle: {
-    flex: 1,
-    textAlign: "center",
-    color: "#fff",
-    fontWeight: "800",
-    fontSize: 17,
-    letterSpacing: 0.5,
-  },
-  headerTitleTablet: {
-    fontSize: 22,
-  },
+  omBadgeTablet:     { top: 56, right: 24, padding: 12, borderRadius: 28 },
+  omText:            { fontSize: 20 },
+  omTextTablet:      { fontSize: 26 },
 
-  bannerContainer: {
-    width: "100%",
-    backgroundColor: "#000",
-    position: "relative",
-  },
-  banner: {
-    width: "100%",
-  },
-  bannerGradient: {
-    position: "absolute",
-    bottom: 0,
-    left: 0,
-    right: 0,
-    height: 150,
-  },
-  omSymbolContainer: {
-    position: "absolute",
-    top: 20,
-    right: 20,
-    backgroundColor: "rgba(255,215,0,0.2)",
-    borderRadius: 30,
-    padding: 10,
-    borderWidth: 1,
-    borderColor: "#FFD700",
-  },
-  omSymbol: {
-    fontSize: 24,
-    color: "#FFD700",
-  },
+  titleBlock:        { marginTop: -8, paddingTop: 8, paddingBottom: 20 },
+  titleMain:         { fontSize: 18, fontWeight: "900", color: C.white, letterSpacing: 0.2, marginBottom: 6 },
+  titleMainTablet:   { fontSize: 25 },
+  titleSub:          { fontSize: 15, color: C.textSub, fontWeight: "500", marginBottom: 14 },
+  titleSubTablet:    { fontSize: 18 },
+  goldBar:           { width: 40, height: 3, backgroundColor: C.gold, borderRadius: 2, marginTop: 2, marginBottom: 20 },
 
-  titleCard: {
-    backgroundColor: "#FFF8E7",
-    marginHorizontal: 16,
-    marginTop: -30,
-    padding: 16,
-    borderRadius: 15,
-    shadowColor: "#8B3A2F",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2,
-    shadowRadius: 8,
-    elevation: 5,
-    marginBottom: 20,
-    borderWidth: 1,
-    borderColor: "#DAA520",
-  },
-  titleCardTablet: {
-    marginHorizontal: 40,
-    marginTop: -40,
-    padding: 30,
-  },
-  titleDecoration: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    marginBottom: 15,
-  },
-  titleLineLeft: {
-    flex: 1,
-    height: 1,
-    backgroundColor: "#DAA520",
-    marginRight: 10,
-  },
-  titleLineRight: {
-    flex: 1,
-    height: 1,
-    backgroundColor: "#DAA520",
-    marginLeft: 10,
-  },
-  title: {
-    fontSize: 20,
-    fontWeight: "700",
-    color: "#8B3A2F",
-    marginBottom: 8,
-    textAlign: "center",
-  },
-  titleTablet: {
-    fontSize: 36,
-  },
-  subtitle: {
-    fontSize: 16,
-    color: "#B8860B",
-    textAlign: "center",
-    fontStyle: "italic",
-  },
-  subtitleTablet: {
-    fontSize: 18,
-  },
+  tabBar:            { flexDirection: "row", gap: 28 },
+  tabItem:           { paddingBottom: 10, position: "relative" },
+  tabText:           { fontSize: 13, fontWeight: "700", color: C.textSub, letterSpacing: 1 },
+  tabTextActive:     { color: C.gold },
+  tabUnderline:      { position: "absolute", bottom: 0, left: 0, right: 0, height: 2, backgroundColor: C.gold, borderRadius: 1 },
 
-  videoSection: {
-    marginHorizontal: 16,
-    marginBottom: 25,
-  },
-  videoSectionTablet: {
-    marginHorizontal: 40,
-    marginBottom: 35,
-  },
-  videoHeader: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 12,
-  },
-  videoHeaderIcon: {
-    width: 30,
-    height: 30,
-    borderRadius: 15,
-    alignItems: "center",
-    justifyContent: "center",
-    marginRight: 8,
-  },
-  videoHeaderText: {
-    fontSize: 16,
-    fontWeight: "600",
-    color: "#8B3A2F",
-  },
-  videoContainer: {
-    borderRadius: 15,
-    overflow: "hidden",
-    backgroundColor: "#000",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2,
-    shadowRadius: 8,
-    elevation: 5,
-  },
-  noVideoContainer: {
-    alignItems: "center",
-    justifyContent: "center",
-    paddingVertical: 30,
-    borderRadius: 15,
-    backgroundColor: "#FFF8E7",
-    borderWidth: 1,
-    borderColor: "#DAA520",
-  },
-  noVideoText: {
-    marginTop: 10,
-    fontSize: 15,
-    color: "#8B3A2F",
-    fontWeight: "600",
-  },
-  errorText: {
-    marginTop: 10,
-    color: "#FF6B6B",
-    fontSize: 14,
-    textAlign: "center",
-  },
+  divider:           { height: 1, backgroundColor: C.divider, marginBottom: 20 },
 
-  descriptionSection: {
-    marginHorizontal: 16,
-    marginBottom: 25,
-    backgroundColor: "#FFF8E7",
-    padding: 20,
-    borderRadius: 15,
-    borderWidth: 1,
-    borderColor: "#DAA520",
-  },
-  descriptionSectionTablet: {
-    marginHorizontal: 40,
-    marginBottom: 35,
-    padding: 30,
-  },
-  descriptionHeader: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 15,
-  },
-  descriptionLine: {
-    flex: 1,
-    height: 1,
-    backgroundColor: "#DAA520",
-  },
-  descriptionTitle: {
-    fontSize: 18,
-    fontWeight: "700",
-    color: "#8B3A2F",
-    marginHorizontal: 15,
-  },
-  description: {
-    fontSize: 16,
-    lineHeight: 24,
-    color: "#4A1F1A",
-    marginBottom: 16,
-    textAlign: "justify",
-  },
-  descTablet: {
-    fontSize: 18,
-    lineHeight: 28,
-  },
-  readMoreButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    alignSelf: "center",
-    paddingVertical: 8,
-    paddingHorizontal: 20,
-    backgroundColor: "#FDF5E6",
-    borderRadius: 20,
-    borderWidth: 1,
-    borderColor: "#DAA520",
-  },
-  readMoreText: {
-    fontSize: 14,
-    fontWeight: "600",
-    color: "#8B3A2F",
-    marginRight: 4,
-  },
+  aboutBlock:        { paddingBottom: 8 },
+  description:       { fontSize: 15, lineHeight: 26, color: "#d4c4b0", textAlign: "left" },
+  descTablet:        { fontSize: 17, lineHeight: 30 },
+  readMoreBtn:       { flexDirection: "row", alignItems: "center", alignSelf: "flex-start", gap: 6, marginTop: 16 },
+  readMoreText:      { fontSize: 12, fontWeight: "800", color: C.gold, letterSpacing: 0.8 },
 
-  gallerySection: {
-    marginHorizontal: 16,
-    marginBottom: 25,
+  galleryList:       { paddingBottom: 4 },
+  galleryItem:       { marginRight: 14 },
+  galleryImageWrap:  {
+    borderRadius: 10, overflow: "hidden",
+    borderWidth: 1.5, borderColor: "rgba(218,165,32,0.35)",
+    backgroundColor: C.cardBg, position: "relative",
   },
-  gallerySectionTablet: {
-    marginHorizontal: 40,
-    marginBottom: 35,
+  galleryGradient:   { position: "absolute", bottom: 0, left: 0, right: 0, height: 55 },
+  galleryBadge:      {
+    position: "absolute", top: 7, left: 7,
+    backgroundColor: "rgba(26,10,0,0.75)", borderRadius: 6,
+    paddingHorizontal: 6, paddingVertical: 2,
+    borderWidth: 1, borderColor: "rgba(218,165,32,0.4)",
   },
-  galleryHeader: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 16,
-  },
-  galleryLine: {
-    flex: 1,
-    height: 1,
-    backgroundColor: "#DAA520",
-  },
-  galleryTitle: {
-    fontSize: 20,
-    fontWeight: "700",
-    color: "#8B3A2F",
-    marginHorizontal: 15,
-  },
-  galleryTitleTablet: {
-    fontSize: 24,
-  },
-  galleryList: {
-    paddingRight: 16,
-  },
-  galleryItem: {
-    marginRight: 16,
-    width: 150,
-  },
-  galleryImage: {
-    width: 150,
-    height: 150,
-    borderRadius: 12,
-    backgroundColor: "#f0f0f0",
-    borderWidth: 2,
-    borderColor: "#DAA520",
-  },
-  galleryImageTablet: {
-    width: 200,
-    height: 200,
-  },
-  galleryItemCaption: {
-    marginTop: 8,
-    fontSize: 14,
-    color: "#8B3A2F",
-    fontWeight: "500",
-    textAlign: "center",
-  },
+  galleryBadgeText:  { fontSize: 10, fontWeight: "800", color: C.gold, letterSpacing: 0.4 },
+  galleryCaption:    { marginTop: 7, fontSize: 12, color: C.textSub, fontWeight: "600", textAlign: "center" },
 
-  bottomPadding: {
-    height: 50,
-    alignItems: "center",
-    justifyContent: "center",
+  footer:            { flexDirection: "row", alignItems: "center" },
+  footerLine:        { flex: 1, height: 1, backgroundColor: C.gold, opacity: 0.2 },
+  footerOmWrap:      {
+    width: 44, height: 44, borderRadius: 22,
+    backgroundColor: "rgba(218,165,32,0.08)",
+    borderWidth: 1, borderColor: "rgba(218,165,32,0.25)",
+    alignItems: "center", justifyContent: "center", marginHorizontal: 14,
   },
-  omFooter: {
-    fontSize: 30,
-    color: "#DAA520",
-    opacity: 0.5,
-  },
+  footerOm:          { fontSize: 24, color: C.gold, opacity: 0.6 },
 });

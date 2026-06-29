@@ -13,7 +13,19 @@ import {
 import { useRoute, useNavigation } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
 import YoutubePlayer from "react-native-youtube-iframe";
-import Loader from "../../../components/Alert/Loader";
+import { LinearGradient } from "expo-linear-gradient";
+
+const C = {
+  primary:     "#93210A",
+  primaryDark: "#301913",
+  gold:        "#D4AF37",
+  bg:          "#d4cea6",
+  white:       "#FFFFFF",
+  text:        "#1a0a00",
+  textSub:     "#5a3a2a",
+  border:      "rgba(48,25,19,0.3)",  // ← brown border
+  card:        "#ede8d5",
+};
 
 const VaasthuPage3 = () => {
   const { width } = useWindowDimensions();
@@ -23,16 +35,10 @@ const VaasthuPage3 = () => {
   const navigation = useNavigation();
   const { item } = route.params;
 
-  const [videoLoading, setVideoLoading] = useState(true);
-  const [playing, setPlaying] = useState(false);
-
-  /* 🔹 ABOUT STATE */
+  const [playing,       setPlaying]       = useState(false);
   const [showFullAbout, setShowFullAbout] = useState(false);
+  const [showFullDesc,  setShowFullDesc]  = useState(false);
 
-  /* 🔹 DESCRIPTION STATE */
-  const [showFullDescription, setShowFullDescription] = useState(false);
-
-  /* ================= YOUTUBE ================= */
   const getYoutubeId = (url) => {
     if (!url) return null;
     const reg =
@@ -41,170 +47,196 @@ const VaasthuPage3 = () => {
     return match ? match[1] : null;
   };
 
-  const videoId = getYoutubeId(item.video);
+  const videoId     = getYoutubeId(item.video);
   const screenWidth = Dimensions.get("window").width;
   const videoHeight = isTablet
     ? Math.min(screenWidth * 0.56, 400)
-    : Math.min(screenWidth * 0.56, 240);
+    : screenWidth * 0.5625;
 
-  /* ================= HEADER ================= */
-  const renderHeader = () => (
-    <View style={[styles.header, isTablet && styles.headerTablet]}>
-      <TouchableOpacity
-        style={[styles.backButton, isTablet && styles.backButtonTablet]}
-        onPress={() => navigation.goBack()}
-      >
-        <Ionicons name="chevron-back" size={isTablet ? 30 : 26} color="#fff" />
-      </TouchableOpacity>
+  const contentPad = isTablet ? 28 : 16;
 
-      <Text style={[styles.headerTitle, isTablet && styles.headerTitleTablet]} numberOfLines={1}>
-        {item.title}
+  // ── Section Header (no left line, just plain title) ──────────
+  const SectionHeader = ({ label }) => (
+    <View style={s.sectionHeader}>
+      <Text style={[s.sectionTitle, isTablet && s.sectionTitleTablet]}>
+        {label}
       </Text>
-
-      <View style={[styles.headerSpacer, isTablet && styles.headerSpacerTablet]} />
     </View>
   );
 
-  /* ================= ABOUT ================= */
-  const renderAboutSection = () => {
-    if (!item.about) return null;
-
+  // ── Text Block ───────────────────────────────────────────────
+  const TextBlock = ({ text, expanded, onToggle }) => {
+    if (!text) return null;
     return (
-      <View style={styles.sectionContainer}>
-        <Text style={[styles.sectionTitle, isTablet && styles.sectionTitleTablet]}>
-          About
+      <View style={s.textCard}>
+        <View style={s.textCardStrip} />
+        <Text
+          style={[s.bodyText, isTablet && s.bodyTextTablet]}
+          numberOfLines={expanded ? undefined : 6}
+        >
+          {text}
         </Text>
-
-        <View style={styles.textCard}>
-          <Text
-            style={[styles.sectionText, isTablet && styles.sectionTextTablet]}
-            numberOfLines={showFullAbout ? undefined : 10}
-          >
-            {item.about}
+        <TouchableOpacity
+          style={s.readMoreBtn}
+          onPress={onToggle}
+          activeOpacity={0.8}
+        >
+          <Text style={[s.readMoreText, isTablet && s.readMoreTextTablet]}>
+            {expanded ? "Show Less" : "Read More"}
           </Text>
-
-          <TouchableOpacity
-            style={styles.readMoreButton}
-            onPress={() => setShowFullAbout(!showFullAbout)}
-          >
-            <Text style={[styles.readMoreText, isTablet && styles.readMoreTextTablet]}>
-              {showFullAbout ? "Show Less" : "Read More"}
-            </Text>
+          <View style={s.readMoreChevron}>
             <Ionicons
-              name={showFullAbout ? "chevron-up" : "chevron-down"}
-              size={isTablet ? 18 : 16}
-              color="#8B1A1A"
-              style={{ marginLeft: 4 }}
+              name={expanded ? "chevron-up" : "chevron-down"}
+              size={12}
+              color={C.white}
             />
-          </TouchableOpacity>
-        </View>
-      </View>
-    );
-  };
-
-  /* ================= DESCRIPTION ================= */
-  const renderDescriptionSection = () => {
-    if (!item.description) return null;
-
-    return (
-      <View style={styles.sectionContainer}>
-        <Text style={[styles.sectionTitle, isTablet && styles.sectionTitleTablet]}>
-          Description
-        </Text>
-
-        <View style={styles.textCard}>
-          <Text
-            style={[styles.sectionText, isTablet && styles.sectionTextTablet]}
-            numberOfLines={showFullDescription ? undefined : 10}
-          >
-            {item.description}
-          </Text>
-
-          <TouchableOpacity
-            style={styles.readMoreButton}
-            onPress={() => setShowFullDescription(!showFullDescription)}
-          >
-            <Text style={[styles.readMoreText, isTablet && styles.readMoreTextTablet]}>
-              {showFullDescription ? "Show Less" : "Read More"}
-            </Text>
-            <Ionicons
-              name={showFullDescription ? "chevron-up" : "chevron-down"}
-              size={isTablet ? 18 : 16}
-              color="#8B1A1A"
-              style={{ marginLeft: 4 }}
-            />
-          </TouchableOpacity>
-        </View>
-      </View>
-    );
-  };
-
-  /* ================= VIDEO ================= */
-  const renderVideoSection = () => {
-    if (!videoId) return null;
-
-    return (
-      <View style={styles.sectionContainer}>
-        <Text style={[styles.sectionTitle, isTablet && styles.sectionTitleTablet]}>
-          Video
-        </Text>
-
-        <View style={[styles.videoCard, { height: videoHeight }]}>
-          <YoutubePlayer
-            height={videoHeight}
-            width={screenWidth - (isTablet ? 72 : 32)}
-            videoId={videoId}
-            play={playing}
-            onReady={() => setVideoLoading(false)}
-          />
-        </View>
-      </View>
-    );
-  };
-
-  /* ================= GALLERY ================= */
-  const renderGallery = () => {
-    if (!item.gallery || item.gallery.length === 0) return null;
-
-    return (
-      <View style={styles.sectionContainer}>
-        <Text style={[styles.sectionTitle, isTablet && styles.sectionTitleTablet]}>
-          Gallery
-        </Text>
-
-        <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-          {item.gallery.map((img, i) => (
-            <Image
-              key={i}
-              source={{ uri: img }}
-              style={[
-                styles.galleryImage,
-                isTablet && styles.galleryImageTablet,
-              ]}
-            />
-          ))}
-        </ScrollView>
+          </View>
+        </TouchableOpacity>
       </View>
     );
   };
 
   return (
-    <View style={styles.screen}>
-      <StatusBar backgroundColor="#8B1A1A" barStyle="light-content" />
+    <View style={s.screen}>
+      <StatusBar backgroundColor="#93210A" barStyle="light-content" />
 
-      {renderHeader()}
+      {/* ── HEADER ── */}
+      <View style={[s.header, isTablet && s.headerTablet]}>
+        <TouchableOpacity
+          style={[s.backBtn, isTablet && s.backBtnTablet]}
+          onPress={() => navigation.goBack()}
+          activeOpacity={0.8}
+        >
+          <Ionicons name="chevron-back" size={isTablet ? 30 : 26} color={C.white} />
+        </TouchableOpacity>
 
-      <ScrollView showsVerticalScrollIndicator={false}>
-        <Image
-          source={{ uri: item.bannerImage }}
-          style={[styles.banner, isTablet && styles.bannerTablet]}
-        />
+        <Text
+          style={[s.headerTitle, isTablet && s.headerTitleTablet]}
+          numberOfLines={1}
+        >
+          {item.title}
+        </Text>
 
-        <View style={[styles.contentContainer, isTablet && styles.contentContainerTablet]}>
-          {renderAboutSection()}
-          {item.video && renderVideoSection()}
-          {renderGallery()}
-          {renderDescriptionSection()}
+        <View style={[s.headerSpacer, isTablet && s.headerSpacerTablet]} />
+      </View>
+
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        style={s.scroll}
+        contentContainerStyle={{ paddingBottom: 40 }}
+      >
+
+        {/* ── BANNER ── */}
+        <View style={s.bannerWrap}>
+          <Image
+            source={{ uri: item.bannerImage }}
+            style={[s.banner, { height: isTablet ? 320 : 220 }]}
+            resizeMode="cover"
+          />
+          <LinearGradient
+            colors={["transparent", "rgba(48,25,19,0.55)", "rgba(48,25,19,0.92)"]}
+            locations={[0.35, 0.72, 1]}
+            style={s.bannerGradient}
+          />
+          <View style={[s.bannerTitleWrap, { paddingHorizontal: contentPad }]}>
+            <View style={s.bannerGoldLine} />
+            <Text
+              style={[s.bannerTitle, isTablet && s.bannerTitleTablet]}
+              numberOfLines={2}
+            >
+              {item.title}
+            </Text>
+          </View>
+        </View>
+
+        {/* ── CONTENT ── */}
+        <View style={[s.content, { paddingHorizontal: contentPad }]}>
+
+          {/* ── ABOUT ── */}
+          {!!item.about && (
+            <View style={s.section}>
+              <SectionHeader label="About" />
+              <TextBlock
+                text={item.about}
+                expanded={showFullAbout}
+                onToggle={() => setShowFullAbout((v) => !v)}
+              />
+            </View>
+          )}
+
+          {/* ── VIDEO ── */}
+          {!!videoId && (
+            <View style={s.section}>
+              <SectionHeader label="Video" />
+              <View style={s.videoCard}>
+                <LinearGradient
+                  colors={[C.gold, "#b8940f"]}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 0 }}
+                  style={s.videoTopBar}
+                />
+                <View style={[s.videoInner, { height: videoHeight }]}>
+                  <YoutubePlayer
+                    height={videoHeight}
+                    width={width - contentPad * 2}
+                    videoId={videoId}
+                    play={playing}
+                    onChangeState={(state) => {
+                      if (state === "ended") setPlaying(false);
+                    }}
+                    initialPlayerParams={{
+                      playsInline: true,
+                      controls: true,
+                      modestbranding: true,
+                      rel: false,
+                    }}
+                  />
+                </View>
+              </View>
+            </View>
+          )}
+
+          {/* ── GALLERY (no badges) ── */}
+          {!!item.gallery && item.gallery.length > 0 && (
+            <View style={s.section}>
+              <SectionHeader label="Gallery" />
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={s.galleryScroll}
+              >
+                {item.gallery.map((img, i) => (
+                  <View key={i} style={s.galleryItemWrap}>
+                    <Image
+                      source={{ uri: img }}
+                      style={[
+                        s.galleryImage,
+                        isTablet && s.galleryImageTablet,
+                      ]}
+                      resizeMode="cover"
+                    />
+                    <LinearGradient
+                      colors={["transparent", "rgba(48,25,19,0.4)"]}
+                      style={s.galleryOverlay}
+                    />
+                  </View>
+                ))}
+              </ScrollView>
+            </View>
+          )}
+
+          {/* ── DESCRIPTION ── */}
+          {!!item.description && (
+            <View style={s.section}>
+              <SectionHeader label="Description" />
+              <TextBlock
+                text={item.description}
+                expanded={showFullDesc}
+                onToggle={() => setShowFullDesc((v) => !v)}
+              />
+            </View>
+          )}
+
         </View>
       </ScrollView>
     </View>
@@ -213,36 +245,34 @@ const VaasthuPage3 = () => {
 
 export default VaasthuPage3;
 
-/* ================= STYLES ================= */
+const s = StyleSheet.create({
+  screen: { flex: 1, backgroundColor: C.bg },
+  scroll: { flex: 1 },
 
-const styles = StyleSheet.create({
-  screen: {
-    flex: 1,
-    backgroundColor: "#F5F5F5",
-  },
-
-  /* Header - Exactly like PoojaPage1 */
+  /* ── HEADER ── */
   header: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#8B1A1A",
+    backgroundColor: "#93210A",
     paddingTop: 40,
     paddingBottom: 30,
     paddingHorizontal: 16,
     borderBottomLeftRadius: 20,
     borderBottomRightRadius: 20,
-    elevation: 4,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 3,
+    elevation: 6,
+    shadowColor: "#301913",
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.3,
+    shadowRadius: 6,
   },
   headerTablet: {
-    paddingTop: 45,
-    paddingBottom: 28,
+    paddingTop: 56,
+    paddingBottom: 30,
     paddingHorizontal: 24,
+    borderBottomLeftRadius: 28,
+    borderBottomRightRadius: 28,
   },
-  backButton: {
+  backBtn: {
     width: 40,
     height: 40,
     borderRadius: 20,
@@ -250,141 +280,173 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-  backButtonTablet: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
-  },
+  backBtnTablet:      { width: 50, height: 50, borderRadius: 25 },
   headerTitle: {
     flex: 1,
     textAlign: "center",
-    color: "#fff",
+    color: C.white,
     fontSize: 18,
     fontWeight: "800",
     letterSpacing: 0.3,
     marginHorizontal: 8,
   },
-  headerTitleTablet: {
-    fontSize: 24,
-  },
-  headerSpacer: {
-    width: 40,
-  },
-  headerSpacerTablet: {
-    width: 50,
-  },
+  headerTitleTablet:  { fontSize: 24 },
+  headerSpacer:       { width: 40 },
+  headerSpacerTablet: { width: 50 },
 
-  /* Banner Image */
-  banner: {
-    width: "100%",
-    height: 200,
-    backgroundColor: "#f0f0f0",
+  /* ── BANNER ── */
+  bannerWrap:  { width: "100%", position: "relative" },
+  banner:      { width: "100%" },
+  bannerGradient: {
+    position: "absolute",
+    bottom: 0,
+    left: 0,
+    right: 0,
+    height: "65%",
   },
-  bannerTablet: {
-    height: 300,
+  bannerTitleWrap: {
+    position: "absolute",
+    bottom: 18,
+    left: 0,
+    right: 0,
   },
+  bannerGoldLine: {
+    width: 36,
+    height: 3,
+    backgroundColor: C.gold,
+    borderRadius: 2,
+    marginBottom: 8,
+  },
+  bannerTitle: {
+    fontSize: 20,
+    fontWeight: "900",
+    color: C.white,
+    letterSpacing: 0.3,
+    textShadowColor: "rgba(0,0,0,0.5)",
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 4,
+  },
+  bannerTitleTablet: { fontSize: 28 },
 
-  /* Content Container */
-  contentContainer: {
-    padding: 16,
-  },
-  contentContainerTablet: {
-    padding: 24,
-    maxWidth: 900,
-    alignSelf: "center",
-    width: "100%",
-  },
+  /* ── CONTENT ── */
+  content: { paddingTop: 20 },
+  section: { marginBottom: 24 },
 
-  /* Section Container */
-  sectionContainer: {
-    marginBottom: 24,
-  },
-
-  /* Section Title - Like PoojaPage1 section headers */
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: "bold",
-    color: "#8B1A1A",
+  /* ── SECTION HEADER (plain title only, no left line) ── */
+  sectionHeader: {
     marginBottom: 12,
-    paddingLeft: 10,
-    borderLeftWidth: 4,
-    borderLeftColor: "#8B1A1A",
   },
-  sectionTitleTablet: {
-    fontSize: 22,
-    marginBottom: 16,
-    paddingLeft: 12,
-  },
-
-  /* Text Card - Like PoojaPage1 content cards */
-  textCard: {
-    backgroundColor: "#fff",
-    borderRadius: 12,
-    padding: 16,
-    elevation: 3,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    borderWidth: 1,
-    borderColor: "#f0f0f0",
-  },
-
-  /* Section Text */
-  sectionText: {
-    fontSize: 15,
-    lineHeight: 24,
-    color: "#444",
-    textAlign: "justify",
-  },
-  sectionTextTablet: {
+  sectionTitle: {
     fontSize: 17,
-    lineHeight: 28,
+    fontWeight: "800",
+    color: "#301913",
+    letterSpacing: 0.4,
   },
+  sectionTitleTablet: { fontSize: 21 },
 
-  /* Read More Button */
-  readMoreButton: {
+  /* ── TEXT CARD (brown border) ── */
+  textCard: {
+    backgroundColor: C.card,
+    borderRadius: 16,
+    overflow: "hidden",
+    elevation: 3,
+    shadowColor: "#301913",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.12,
+    shadowRadius: 6,
+    borderWidth: 1.5,
+    borderColor: "rgba(48,25,19,0.3)",  // ← brown
+  },
+  textCardStrip: {
+    height: 4,
+    backgroundColor: C.gold,
+    width: "100%",
+    marginBottom: 14,
+  },
+  bodyText: {
+    fontSize: 15,
+    lineHeight: 25,
+    color: C.text,
+    textAlign: "justify",
+    paddingHorizontal: 16,
+    paddingBottom: 4,
+  },
+  bodyTextTablet: { fontSize: 17, lineHeight: 29 },
+  readMoreBtn: {
     flexDirection: "row",
     alignItems: "center",
     alignSelf: "flex-end",
+    gap: 6,
+    margin: 14,
     marginTop: 12,
-    paddingVertical: 4,
-    paddingHorizontal: 8,
+    paddingVertical: 6,
+    paddingHorizontal: 14,
+    backgroundColor: "#93210A",
+    borderRadius: 20,
   },
   readMoreText: {
-    color: "#8B1A1A",
-    fontSize: 14,
+    fontSize: 12,
     fontWeight: "700",
+    color: C.white,
+    letterSpacing: 0.4,
   },
-  readMoreTextTablet: {
-    fontSize: 16,
+  readMoreTextTablet: { fontSize: 14 },
+  readMoreChevron: {
+    width: 18,
+    height: 18,
+    borderRadius: 9,
+    backgroundColor: "rgba(255,255,255,0.2)",
+    alignItems: "center",
+    justifyContent: "center",
   },
 
-  /* Video Section */
+  /* ── VIDEO CARD (brown border) ── */
   videoCard: {
-    width: "100%",
-    borderRadius: 12,
+    borderRadius: 16,
     overflow: "hidden",
     backgroundColor: "#000",
-    elevation: 3,
+    elevation: 6,
     shadowColor: "#000",
-    shadowOffset: { width: 0, height: 3 },
+    shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
-    shadowRadius: 5,
+    shadowRadius: 8,
+    borderWidth: 1.5,
+    borderColor: "rgba(48,25,19,0.5)",  // ← brown
   },
+  videoTopBar: { height: 5, width: "100%" },
+  videoInner:  { width: "100%", backgroundColor: "#000" },
 
-  /* Gallery */
+  /* ── GALLERY (no badge, brown border) ── */
+  galleryScroll: { paddingVertical: 4, paddingRight: 4 },
+  galleryItemWrap: {
+    marginRight: 14,
+    borderRadius: 14,
+    overflow: "hidden",
+    borderWidth: 2,
+    borderColor: "rgba(48,25,19,0.4)",  // ← brown
+    elevation: 4,
+    shadowColor: "#301913",
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.2,
+    shadowRadius: 6,
+    position: "relative",
+  },
   galleryImage: {
-    width: 180,
-    height: 135,
-    borderRadius: 10,
-    marginRight: 12,
-    backgroundColor: "#f0f0f0",
+    width: 160,
+    height: 120,
+    backgroundColor: "#d4cea6",
   },
   galleryImageTablet: {
-    width: 240,
-    height: 180,
-    borderRadius: 12,
-    marginRight: 16,
+    width: 220,
+    height: 165,
   },
+  galleryOverlay: {
+    position: "absolute",
+    bottom: 0,
+    left: 0,
+    right: 0,
+    height: 50,
+  },
+
+ 
 });

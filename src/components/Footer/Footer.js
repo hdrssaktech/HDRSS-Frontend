@@ -56,7 +56,7 @@ export default function Footer() {
 
 const styles = StyleSheet.create({
   footerSafe: {
-    backgroundColor: "#93210A",
+    backgroundColor: "#800000",
   },
 
   // 📱 Mobile

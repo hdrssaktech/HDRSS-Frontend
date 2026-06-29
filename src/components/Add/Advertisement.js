@@ -51,9 +51,7 @@ export default function AutoScrollAds() {
 
   if (loading) {
     return (
-      <View
-    >
-       
+      <View>
       </View>
     );
   }
@@ -91,7 +89,7 @@ export default function AutoScrollAds() {
   onPress={() => navigation.navigate("PDFViewer")}
 >
   <Text style={styles.buttonText}>
-    United America
+    University Details
   </Text>
 </TouchableOpacity>
   <TouchableOpacity
@@ -115,6 +113,7 @@ const styles = StyleSheet.create({
   },
   adImage: {
     height: 280,
+    
   },
   loaderContainer: {
     height: 300,
@@ -162,3 +161,5 @@ buttonText: {
   fontWeight: "600",
 },
 });
+
+

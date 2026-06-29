@@ -159,8 +159,7 @@ export default function PremiumBusinessForm() {
 
       formData.append('file', file);
 
-      console.log('Uploading to:', `${API_BASE_URL}/api/upload`);
-      console.log('File details:', file);
+
 
       const response = await axios({
         method: 'POST',
@@ -177,7 +176,6 @@ export default function PremiumBusinessForm() {
         },
       });
 
-      console.log('Upload response:', response.data);
 
       if (response.data && response.data.fileUrl) {
         setUploadedImageUrl(response.data.fileUrl);
@@ -322,8 +320,8 @@ export default function PremiumBusinessForm() {
     };
 
     try {
-      console.log('Submitting form to:', FORM_SUBMIT_URL);
-      console.log('Payload:', payload);
+
+  
 
       const response = await axios({
         method: 'POST',
@@ -336,7 +334,7 @@ export default function PremiumBusinessForm() {
         timeout: 30000,
       });
 
-      console.log('Form submission response:', response.data);
+      
 
       if (response.status === 200 || response.status === 201) {
         Alert.alert(

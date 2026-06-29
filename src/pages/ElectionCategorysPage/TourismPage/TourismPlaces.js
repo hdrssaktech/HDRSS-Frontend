@@ -1,14 +1,13 @@
+// TourismPlacesList.js - First Page
 import {
   StyleSheet,
   Text,
   View,
-  ActivityIndicator,
   Image,
   TouchableOpacity,
   Linking,
   useWindowDimensions,
   TextInput,
-  Modal,
   FlatList,
   StatusBar,
 } from "react-native";
@@ -16,709 +15,457 @@ import React, { useEffect, useState } from "react";
 import { useRoute, useNavigation } from "@react-navigation/native";
 import {
   MaterialIcons,
-  FontAwesome,
   FontAwesome5,
   Ionicons,
 } from "@expo/vector-icons";
 import Loader from "../../../components/Alert/Loader";
 
+// Brand Colors
+const C = {
+  primary: "#93210A",
+  dark: "#301913",
+  gold: "#D4AF37",
+  bg: "#d4cea6",
+  card: "#ede8d5",
+  white: "#FFFFFF",
+  text: "#1a0a00",
+  textMid: "#5a3a2a",
+  border: "rgba(48,25,19,0.25)",
+  shadow: "#301913",
+};
+
+const CAT_META = {
+  All: { icon: "apps", lib: "MaterialIcons", color: C.primary },
+  Hotel: { icon: "bed", lib: "FontAwesome5", color: "#1565C0" },
+  Restaurant: { icon: "utensils", lib: "FontAwesome5", color: "#E65100" },
+  Shopping: { icon: "shopping-bag", lib: "FontAwesome5", color: "#6A1B9A" },
+  "Hill Station": { icon: "mountain", lib: "FontAwesome5", color: "#2E7D32" },
+  Other: { icon: "ellipsis-h", lib: "FontAwesome5", color: C.textMid },
+};
+
 const IMAGE_BASE_URL = "https://hdrss-backend.onrender.com/";
+const CATEGORIES = ["All", "Hotel", "Restaurant", "Shopping", "Hill Station", "Other"];
+
+function CategoryPill({ label, active, onPress, isTablet }) {
+  const meta = CAT_META[label] || CAT_META.Other;
+  const sz = isTablet ? 13 : 11;
+  const Icon = () =>
+    meta.lib === "MaterialIcons"
+      ? <MaterialIcons name={meta.icon} size={sz} color={active ? C.dark : C.textMid} />
+      : <FontAwesome5 name={meta.icon} size={sz - 1} color={active ? C.dark : C.textMid} />;
+
+  return (
+    <TouchableOpacity
+      style={[styles.pill, active && styles.pillActive, isTablet && styles.pillTablet]}
+      onPress={onPress}
+      activeOpacity={0.8}
+    >
+      <Icon />
+      <Text style={[styles.pillText, active && styles.pillTextActive, isTablet && styles.pillTextTablet]}>
+        {label}
+      </Text>
+    </TouchableOpacity>
+  );
+}
+
+function PlaceCard({ item, onPress, cardWidth, isTablet }) {
+  const meta = CAT_META[item.category] || CAT_META.Other;
+  const imgUri = item.image
+    ? item.image.startsWith("http") ? item.image : IMAGE_BASE_URL + item.image
+    : "https://cdn-icons-png.flaticon.com/512/2659/2659360.png";
+
+  const imgH = isTablet ? 120 : 85;
+  const footerFS = isTablet ? 12 : 10;
+  const arrowSize = isTablet ? 20 : 16;
+
+  return (
+    <TouchableOpacity
+      style={[styles.card, { width: cardWidth }]}
+      onPress={onPress}
+      activeOpacity={0.87}
+    >
+      {/* Image Section */}
+      <View style={styles.imgWrap}>
+        <Image
+          source={{ uri: imgUri }}
+          style={{ width: "100%", height: imgH }}
+          resizeMode="cover"
+        />
+        <View style={styles.imgFade} />
+        <View style={styles.goldStripe} />
+        {item.category && (
+          <View style={[styles.catBadge, { backgroundColor: meta.color }]}>
+            <Text style={styles.catBadgeText}>{item.category}</Text>
+          </View>
+        )}
+      </View>
+
+      {/* Footer - Title and Arrow Only */}
+      <View style={[styles.cardFooter, { paddingHorizontal: isTablet ? 9 : 7 }]}>
+        <Text
+          style={[
+            styles.cardFooterText,
+            {
+              fontSize: footerFS,
+              lineHeight: footerFS + 4,
+              paddingTop: isTablet ? 8 : 6,
+              paddingBottom: isTablet ? 8 : 6,
+            },
+          ]}
+          numberOfLines={2}
+        >
+          {item.title}
+        </Text>
+        <View
+          style={[
+            styles.arrowDot,
+            { width: arrowSize, height: arrowSize, borderRadius: arrowSize / 2 },
+          ]}
+        >
+          <Ionicons name="chevron-forward" size={isTablet ? 11 : 9} color={C.dark} />
+        </View>
+      </View>
+    </TouchableOpacity>
+  );
+}
 
 export default function TourismPlacesList() {
   const route = useRoute();
   const navigation = useNavigation();
   const { id } = route.params;
-  const { width, height } = useWindowDimensions();
-  const isMobile = width < 600;
+
+  const { width } = useWindowDimensions();
   const isTablet = width >= 600 && width < 1024;
   const isLargeTablet = width >= 1024;
+
+  const numColumns = (isTablet || isLargeTablet) ? 4 : 3;
+  const HP = isLargeTablet ? 20 : isTablet ? 16 : 10;
+  const GAP = isLargeTablet ? 12 : isTablet ? 10 : 8;
+
+  const cardW = () => {
+    const available = width - HP * 2;
+    return (available - GAP * (numColumns - 1)) / numColumns;
+  };
 
   const [data, setData] = useState([]);
   const [filteredData, setFilteredData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [searchQuery, setSearchQuery] = useState("");
-  const [modalVisible, setModalVisible] = useState(false);
-
-  // Responsive size helper
-  const responsiveSize = (mobile, tablet, largeTablet) => {
-    if (isLargeTablet) return largeTablet || tablet;
-    if (isTablet) return tablet;
-    return mobile;
-  };
-
-  // Responsive columns: 2 on mobile, 3 on tablet, 4 on large tablet
-  const numColumns = isLargeTablet ? 4 : (isTablet ? 3 : 2);
-
-  // Calculate card width based on screen size
-  const cardWidth = () => {
-    const padding = responsiveSize(15, 20, 25);
-    const gap = responsiveSize(10, 15, 20);
-    const totalGap = gap * (numColumns - 1);
-    const availableWidth = width - (padding * 2);
-    return (availableWidth - totalGap) / numColumns;
-  };
-
-  const categories = [
-    "All",
-    "Hotel",
-    "Restaurant",
-    "Shopping",
-    "Hill Station",
-    "Other",
-  ];
 
   useEffect(() => {
-    fetchTourismPlaces();
+    (async () => {
+      try {
+        const res = await fetch(`https://hdrss-backend.onrender.com/api/tourism/tourismplaces/${id}`);
+        const result = await res.json();
+        setData(result.data || []);
+        setFilteredData(result.data || []);
+      } catch (e) { console.log("Error:", e); }
+      finally { setLoading(false); }
+    })();
   }, []);
 
   useEffect(() => {
-    filterData();
+    let f = [...data];
+    if (selectedCategory !== "All")
+      f = f.filter(i => i.category?.toLowerCase() === selectedCategory.toLowerCase());
+    if (searchQuery.trim())
+      f = f.filter(i =>
+        i.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        i.location?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        i.category?.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+    setFilteredData(f);
   }, [selectedCategory, searchQuery, data]);
 
-  const fetchTourismPlaces = async () => {
-    try {
-      const response = await fetch(
-        `https://hdrss-backend.onrender.com/api/tourism/tourismplaces/${id}`
-      );
-      const result = await response.json();
-      setData(result.data || []);
-      setFilteredData(result.data || []);
-    } catch (error) {
-      console.log("Error:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
+  if (loading) return <Loader />;
 
-  const filterData = () => {
-    let filtered = [...data];
-
-    if (selectedCategory !== "All") {
-      filtered = filtered.filter(
-        (item) =>
-          item.category?.toLowerCase() === selectedCategory.toLowerCase()
-      );
-    }
-
-    if (searchQuery.trim() !== "") {
-      const query = searchQuery.toLowerCase();
-      filtered = filtered.filter(
-        (item) =>
-          item.title?.toLowerCase().includes(query) ||
-          item.location?.toLowerCase().includes(query) ||
-          item.category?.toLowerCase().includes(query)
-      );
-    }
-
-    setFilteredData(filtered);
-  };
-
-  /* ================= ACTIONS ================= */
-
-  const openPhone = (phone) => Linking.openURL(`tel:${phone}`);
-
-  const openWhatsApp = (whatsapp) =>
-    Linking.openURL(`https://wa.me/${whatsapp.replace(/\D/g, "")}`);
-
-  const openMap = (location) =>
-    Linking.openURL(
-      `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
-        location
-      )}`
-    );
-
-  // Navigation to details page
-  const handleCardPress = (item) => {
-    navigation.navigate("TourismPlaceDetails", {
-      place: item,
-    });
-  };
-
-  /* ================= UI ================= */
-
-  const renderCategoryItem = ({ item }) => (
-    <TouchableOpacity
-      style={[
-        styles.categoryItem,
-        selectedCategory === item && styles.selectedCategoryItem,
-      ]}
-      onPress={() => {
-        setSelectedCategory(item);
-        setModalVisible(false);
-      }}
-    >
-      <Text
-        style={[
-          styles.categoryText,
-          selectedCategory === item && styles.selectedCategoryText,
-        ]}
-      >
-        {item}
-      </Text>
-    </TouchableOpacity>
-  );
-
-  const ListEmptyComponent = () =>
-    !modalVisible && (
-      <View style={[
-        styles.emptyContainer,
-        { marginTop: responsiveSize(40, 60, 80) }
-      ]}>
-        <Ionicons 
-          name="search-outline" 
-          size={responsiveSize(50, 70, 90)} 
-          color="#999" 
-        />
-        <Text style={[
-          styles.emptyText,
-          { fontSize: responsiveSize(16, 18, 20) }
-        ]}>
-          No places found
-        </Text>
-      </View>
-    );
-
-  if (loading) {
-    return <Loader />;
-  }
+  const resultLabel = filteredData.length === 0
+    ? "No places found"
+    : `${filteredData.length} place${filteredData.length !== 1 ? "s" : ""}`;
 
   return (
-    <View style={styles.container}>
-      <StatusBar backgroundColor="#93210A" barStyle="light-content" />
-      
-      {/* HEADER */}
-      <View style={[
-        styles.header,
-        isTablet && styles.headerTablet,
-        isLargeTablet && styles.headerLargeTablet
-      ]}>
-        <TouchableOpacity 
+    <View style={styles.root}>
+      <StatusBar backgroundColor={C.primary} barStyle="light-content" />
+
+      {/* Header */}
+      <View style={[styles.header, isTablet && styles.headerTablet]}>
+        <TouchableOpacity
+          style={styles.backBtn}
           onPress={() => navigation.goBack()}
-          style={[
-            styles.backButton,
-            isTablet && styles.backButtonTablet
-          ]}
+          activeOpacity={0.8}
         >
-          <Ionicons 
-            name="chevron-back" 
-            size={responsiveSize(24, 28, 32)} 
-            color="#fff" 
-          />
+          <Ionicons name="chevron-back" size={isTablet ? 28 : 24} color={C.white} />
         </TouchableOpacity>
 
-        <Text style={[
-          styles.heading,
-          isMobile && styles.mobileHeading,
-          isTablet && styles.headingTablet,
-          isLargeTablet && styles.headingLargeTablet
-        ]}>
-          Tourism Places
-        </Text>
-
-        <View style={[
-          styles.headerSpacer,
-          isTablet && styles.headerSpacerTablet
-        ]} />
-      </View>
-
-      {/* SEARCH + FILTER */}
-      <View style={[
-        styles.filterSection,
-        isTablet && styles.filterSectionTablet
-      ]}>
-        <View style={[
-          styles.searchContainer,
-          isTablet && styles.searchContainerTablet
-        ]}>
-          <Ionicons 
-            name="search" 
-            size={responsiveSize(18, 20, 22)} 
-            color="#666" 
-          />
-          <TextInput
-            style={[
-              styles.searchInput,
-              isTablet && styles.searchInputTablet
-            ]}
-            placeholder="Search places..."
-            value={searchQuery}
-            onChangeText={setSearchQuery}
-            placeholderTextColor="#999"
-          />
-          {searchQuery.length > 0 && (
-            <TouchableOpacity onPress={() => setSearchQuery("")}>
-              <Ionicons 
-                name="close" 
-                size={responsiveSize(18, 20, 22)} 
-                color="#666" 
-              />
-            </TouchableOpacity>
-          )}
+        <View style={{ flex: 1, alignItems: "center" }}>
+          <Text style={[styles.headerTitle, isTablet && { fontSize: 22 }]}>
+            Tourism Places
+          </Text>
+         
         </View>
 
-        <TouchableOpacity
-          style={[
-            styles.filterButton,
-            isTablet && styles.filterButtonTablet
-          ]}
-          onPress={() => setModalVisible(true)}
-        >
-          <MaterialIcons 
-            name="filter-list" 
-            size={responsiveSize(20, 22, 24)} 
-            color="#fff" 
-          />
-          <Text style={[
-            styles.filterButtonText,
-            isTablet && styles.filterButtonTextTablet
-          ]}>
-            {selectedCategory === "All" ? "Category" : selectedCategory}
-          </Text>
-        </TouchableOpacity>
+        <View style={[styles.backBtn, { backgroundColor: "transparent" }]} />
       </View>
 
-      {/* LIST */}
-      {!modalVisible && (
+      {/* Search */}
+      <View style={[styles.searchWrap, { marginHorizontal: HP }]}>
+        <Ionicons name="search" size={16} color={C.textMid} />
+        <TextInput
+          style={[styles.searchInput, isTablet && { fontSize: 15 }]}
+          placeholder="Search places, locations…"
+          placeholderTextColor="rgba(90,58,42,0.5)"
+          value={searchQuery}
+          onChangeText={setSearchQuery}
+        />
+        {searchQuery.length > 0 && (
+          <TouchableOpacity onPress={() => setSearchQuery("")} activeOpacity={0.7}>
+            <Ionicons name="close-circle" size={16} color={C.textMid} />
+          </TouchableOpacity>
+        )}
+      </View>
+
+      {/* Categories */}
+      <View style={{ marginTop: 10, marginBottom: 12, paddingHorizontal: HP }}>
         <FlatList
-          data={filteredData}
-          keyExtractor={(item, index) => index.toString()}
-          numColumns={numColumns}
-          key={numColumns}
-          columnWrapperStyle={numColumns > 1 ? {
-            justifyContent: "space-between",
-            marginBottom: responsiveSize(12, 16, 20)
-          } : undefined}
-          contentContainerStyle={[
-            styles.listContent,
-            { paddingHorizontal: responsiveSize(15, 20, 25) },
-            filteredData.length === 0 && { flex: 1 },
-          ]}
-          ListEmptyComponent={ListEmptyComponent}
+          data={CATEGORIES}
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          keyExtractor={i => i}
+          ItemSeparatorComponent={() => <View style={{ width: 7 }} />}
           renderItem={({ item }) => (
-            <TouchableOpacity
-              style={[
-                styles.card,
-                { width: cardWidth() },
-                isTablet && styles.cardTablet
-              ]}
-              onPress={() => handleCardPress(item)}
-              activeOpacity={0.85}
-            >
-              <Image
-                source={{
-                  uri: item.image
-                    ? item.image.startsWith("http")
-                      ? item.image
-                      : IMAGE_BASE_URL + item.image
-                    : "https://cdn-icons-png.flaticon.com/512/2659/2659360.png",
-                }}
-                style={[
-                  styles.cardImage,
-                  isTablet && styles.cardImageTablet
-                ]}
-              />
-
-              <View style={[
-                styles.cardContent,
-                isTablet && styles.cardContentTablet
-              ]}>
-                <Text style={[
-                  styles.title,
-                  isTablet && styles.titleTablet
-                ]} numberOfLines={2}>
-                  {item.title}
-                </Text>
-
-                {item.category && (
-                  <View style={[
-                    styles.categoryBadge,
-                    isTablet && styles.categoryBadgeTablet
-                  ]}>
-                    <Text style={[
-                      styles.categoryBadgeText,
-                      isTablet && styles.categoryBadgeTextTablet
-                    ]}>
-                      {item.category}
-                    </Text>
-                  </View>
-                )}
-
-                {/* ICON ROW */}
-                <View style={[
-                  styles.iconRow,
-                  isTablet && styles.iconRowTablet
-                ]}>
-                  {item.phone && (
-                    <TouchableOpacity
-                      onPress={(e) => {
-                        e.stopPropagation();
-                        openPhone(item.phone);
-                      }}
-                    >
-                      <FontAwesome 
-                        name="phone" 
-                        size={responsiveSize(18, 20, 22)} 
-                        color="#93210A" 
-                      />
-                    </TouchableOpacity>
-                  )}
-
-                  {item.location && (
-                    <TouchableOpacity
-                      onPress={(e) => {
-                        e.stopPropagation();
-                        openMap(item.location);
-                      }}
-                    >
-                      <FontAwesome5
-                        name="map-marker-alt"
-                        size={responsiveSize(18, 20, 22)}
-                        color="#2346a5"
-                      />
-                    </TouchableOpacity>
-                  )}
-
-                  {item.whatsapp && (
-                    <TouchableOpacity
-                      onPress={(e) => {
-                        e.stopPropagation();
-                        openWhatsApp(item.whatsapp);
-                      }}
-                    >
-                      <FontAwesome
-                        name="whatsapp"
-                        size={responsiveSize(18, 20, 22)}
-                        color="#25D366"
-                      />
-                    </TouchableOpacity>
-                  )}
-                </View>
-              </View>
-            </TouchableOpacity>
+            <CategoryPill
+              label={item}
+              active={selectedCategory === item}
+              onPress={() => setSelectedCategory(item)}
+              isTablet={isTablet || isLargeTablet}
+            />
           )}
         />
-      )}
+      </View>
 
-      {/* CATEGORY MODAL */}
-      <Modal visible={modalVisible} transparent animationType="slide">
-        <View style={styles.modalContainer}>
-          <View style={[
-            styles.modalContent,
-            { 
-              marginTop: responsiveSize(200, 300, 400),
-              padding: responsiveSize(20, 24, 28)
-            }
-          ]}>
-            <View style={styles.modalHeader}>
-              <Text style={[
-                styles.modalTitle,
-                { fontSize: responsiveSize(18, 20, 22) }
-              ]}>
-                Select Category
-              </Text>
-              <TouchableOpacity onPress={() => setModalVisible(false)}>
-                <Ionicons 
-                  name="close" 
-                  size={responsiveSize(22, 24, 26)} 
-                  color="#333" 
-                />
-              </TouchableOpacity>
+      {/* Grid */}
+      <FlatList
+        data={filteredData}
+        keyExtractor={(item, index) => index.toString()}
+        numColumns={numColumns}
+        key={numColumns}
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={[
+          { paddingHorizontal: HP, paddingBottom: 36 },
+          filteredData.length === 0 && { flex: 1 },
+        ]}
+        columnWrapperStyle={{ gap: GAP, marginBottom: GAP }}
+        ListEmptyComponent={() => (
+          <View style={styles.emptyBox}>
+            <View style={styles.emptyIconWrap}>
+              <Ionicons name="map-outline" size={isTablet ? 48 : 40} color={C.primary} />
             </View>
-
-            <FlatList
-              data={categories}
-              renderItem={renderCategoryItem}
-              keyExtractor={(item) => item}
-            />
+            <Text style={[styles.emptyTitle, isTablet && { fontSize: 18 }]}>
+              No places found
+            </Text>
+            <Text style={styles.emptySub}>Try a different category or search</Text>
           </View>
-        </View>
-      </Modal>
+        )}
+        renderItem={({ item }) => (
+          <PlaceCard
+            item={item}
+            cardWidth={cardW()}
+            isTablet={isTablet || isLargeTablet}
+            onPress={() => navigation.navigate("TourismPlaceDetails", { place: item })}
+          />
+        )}
+      />
     </View>
   );
 }
 
-/* ================= STYLES ================= */
 const styles = StyleSheet.create({
-  container: { 
-    flex: 1, 
-    backgroundColor: "#f5f5f5" 
-  },
+  root: { flex: 1, backgroundColor: C.bg },
 
-  // Header Styles
   header: {
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "space-between",
-    backgroundColor: "#93210A",
-    paddingHorizontal: 16,
-    paddingTop: StatusBar.currentHeight + 10,
-    paddingBottom: 15,
-    borderBottomLeftRadius: 20,
-    borderBottomRightRadius: 20,
-    elevation: 4,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
-  },
-  headerTablet: {
-    paddingTop: StatusBar.currentHeight + 20,
+    backgroundColor: C.primary,
+    paddingTop: (StatusBar.currentHeight || 24) + 10,
     paddingBottom: 20,
-    paddingHorizontal: 24,
-    borderBottomLeftRadius: 30,
-    borderBottomRightRadius: 30,
-  },
-  headerLargeTablet: {
-    paddingTop: StatusBar.currentHeight + 25,
-    paddingBottom: 24,
-    paddingHorizontal: 32,
-  },
-  backButton: {
-    width: 34,
-    height: 34,
-    borderRadius: 17,
-    backgroundColor: "rgba(255,255,255,0.2)",
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  backButtonTablet: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-  },
-  heading: {
-    flex: 1,
-    textAlign: "center",
-    fontSize: 20,
-    fontWeight: "bold",
-    color: "#fff",
-    letterSpacing: 0.5,
-  },
-  mobileHeading: { 
-    fontSize: 18 
-  },
-  headingTablet: {
-    fontSize: 24,
-  },
-  headingLargeTablet: {
-    fontSize: 28,
-  },
-  headerSpacer: {
-    width: 34,
-  },
-  headerSpacerTablet: {
-    width: 44,
-  },
-
-  // Filter Section
-  filterSection: {
-    flexDirection: "row",
-    padding: 15,
-    gap: 10,
-  },
-  filterSectionTablet: {
-    padding: 20,
-    gap: 15,
-  },
-
-  searchContainer: {
-    flex: 1,
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#fff",
-    borderRadius: 10,
-    paddingHorizontal: 12,
-    elevation: 2,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-    borderWidth: 1,
-    borderColor: "#f0f0f0",
-  },
-  searchContainerTablet: {
-    borderRadius: 12,
     paddingHorizontal: 14,
-  },
-  searchInput: { 
-    flex: 1,
-    paddingVertical: 10,
-    paddingHorizontal: 8,
-    fontSize: 14,
-  },
-  searchInputTablet: {
-    paddingVertical: 12,
-    fontSize: 16,
-  },
-
-  filterButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#93210A",
-    paddingHorizontal: 14,
-    borderRadius: 10,
-    elevation: 2,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-  },
-  filterButtonTablet: {
-    paddingHorizontal: 18,
-    borderRadius: 12,
-  },
-  filterButtonText: { 
-    color: "#fff", 
-    marginLeft: 5,
-    fontSize: 13,
-    fontWeight: "600",
-  },
-  filterButtonTextTablet: {
-    fontSize: 15,
-    marginLeft: 8,
-  },
-
-  // List Styles
-  listContent: { 
-    paddingBottom: 30 
-  },
-
-  // Card Styles
-  card: {
-    backgroundColor: "#fff",
-    borderRadius: 12,
-    marginBottom: 12,
-    elevation: 3,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    overflow: "hidden",
-    borderWidth: 1,
-    borderColor: "#f0f0f0",
-  },
-  cardTablet: {
-    borderRadius: 16,
-    elevation: 4,
+    borderBottomLeftRadius: 22,
+    borderBottomRightRadius: 22,
+    elevation: 6,
+    shadowColor: C.dark,
     shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.15,
+    shadowOpacity: 0.3,
     shadowRadius: 6,
   },
-  cardImage: { 
-    width: "100%", 
-    height: 110,
-    backgroundColor: "#f0f0f0",
+  headerTablet: {
+    paddingTop: (StatusBar.currentHeight || 24) + 18,
+    paddingBottom: 24,
+    paddingHorizontal: 24,
   },
-  cardImageTablet: {
-    height: 140,
-  },
-  cardContent: { 
-    padding: 10 
-  },
-  cardContentTablet: {
-    padding: 14,
-  },
-  title: { 
-    fontSize: 14, 
-    fontWeight: "600",
-    color: "#333",
-    lineHeight: 18,
-  },
-  titleTablet: {
-    fontSize: 16,
-    lineHeight: 20,
-  },
-
-  categoryBadge: {
-    alignSelf: "flex-start",
-    backgroundColor: "#eef2ff",
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: 10,
-    marginVertical: 6,
-  },
-  categoryBadgeTablet: {
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 12,
-    marginVertical: 8,
-  },
-  categoryBadgeText: {
-    fontSize: 11,
-    fontWeight: "600",
-    color: "#2346a5",
-  },
-  categoryBadgeTextTablet: {
-    fontSize: 12,
-  },
-
-  iconRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginTop: 8,
-    paddingHorizontal: 5,
-  },
-  iconRowTablet: {
-    marginTop: 12,
-    paddingHorizontal: 8,
-  },
-
-  emptyContainer: {
-    flex: 1,
+  backBtn: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    backgroundColor: "rgba(255,255,255,0.18)",
+    alignItems: "center",
     justifyContent: "center",
-    alignItems: "center",
+  },
+  headerTitle: {
+    color: C.white,
+    fontSize: 18,
+    fontWeight: "800",
+    letterSpacing: 0.3,
+  },
+  headerSub: {
+    color: "rgba(255,255,255,0.6)",
+    fontSize: 11,
+    fontWeight: "500",
+    marginTop: 2,
   },
 
-  emptyText: {
-    marginTop: 12,
-    color: "#777",
-    textAlign: "center",
-  },
-
-  // Modal Styles
-  modalContainer: {
-    flex: 1,
-    justifyContent: "flex-end",
-    backgroundColor: "rgba(0,0,0,0.5)",
-  },
-
-  modalContent: {
-    backgroundColor: "#fff",
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-    maxHeight: "60%",
-  },
-
-  modalHeader: {
+  searchWrap: {
     flexDirection: "row",
-    justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: 15,
+    backgroundColor: C.card,
+    borderRadius: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 9,
+    marginTop: 14,
+    borderWidth: 1,
+    borderColor: C.border,
+    gap: 8,
+    elevation: 2,
+    shadowColor: C.dark,
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.08,
+    shadowRadius: 3,
+  },
+  searchInput: {
+    flex: 1,
+    fontSize: 13,
+    color: C.text,
+    fontWeight: "500",
   },
 
-  modalTitle: { 
-    fontWeight: "bold",
-    color: "#333",
+  pill: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+    backgroundColor: C.card,
+    borderWidth: 1,
+    borderColor: C.border,
+    borderRadius: 20,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    elevation: 1,
+  },
+  pillActive: { backgroundColor: C.gold, borderColor: C.gold },
+  pillTablet: { paddingHorizontal: 13, paddingVertical: 8 },
+  pillText: { fontSize: 11, fontWeight: "600", color: C.textMid },
+  pillTextActive: { color: C.dark },
+  pillTextTablet: { fontSize: 13 },
+
+  card: {
+    backgroundColor: C.dark,
+    borderRadius: 10,
+    overflow: "hidden",
+    elevation: 4,
+    shadowColor: C.shadow,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.18,
+    shadowRadius: 5,
+    borderWidth: 1,
+    borderColor: C.border,
   },
 
-  categoryItem: {
-    paddingVertical: 15,
-    borderBottomWidth: 1,
-    borderBottomColor: "#eee",
+  imgWrap: {
+    width: "100%",
+    backgroundColor: "#c8c2a0",
+    overflow: "hidden",
+    position: "relative",
+  },
+  imgFade: {
+    position: "absolute",
+    bottom: 0,
+    left: 0,
+    right: 0,
+    height: "35%",
+    backgroundColor: "rgba(48,25,19,0.18)",
+  },
+  goldStripe: {
+    position: "absolute",
+    bottom: 0,
+    left: 0,
+    right: 0,
+    height: 2,
+    backgroundColor: C.gold,
+  },
+  catBadge: {
+    position: "absolute",
+    top: 5,
+    left: 5,
+    borderRadius: 4,
+    paddingHorizontal: 5,
+    paddingVertical: 2,
+  },
+  catBadgeText: {
+    color: C.white,
+    fontSize: 7,
+    fontWeight: "700",
+    letterSpacing: 0.3,
+    textTransform: "uppercase",
   },
 
-  selectedCategoryItem: { 
-    backgroundColor: "#f9f9f9" 
+  cardFooter: {
+    backgroundColor: C.dark,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+    borderTopWidth: 1,
+    borderTopColor: "rgba(212,175,55,0.2)",
+  },
+  cardFooterText: {
+    flex: 1,
+    flexShrink: 1,
+    fontWeight: "700",
+    color: C.white,
+    
+  },
+  arrowDot: {
+    backgroundColor: C.white,
+    alignItems: "center",
+    justifyContent: "center",
+    flexShrink: 0,
   },
 
-  categoryText: { 
-    fontSize: 16,
-    color: "#333",
+  emptyBox: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 60,
+    gap: 10,
   },
-
-  selectedCategoryText: {
-    color: "#93210A",
-    fontWeight: "600",
+  emptyIconWrap: {
+    width: 72,
+    height: 72,
+    borderRadius: 36,
+    backgroundColor: "rgba(147,33,10,0.1)",
+    alignItems: "center",
+    justifyContent: "center",
+    borderWidth: 1.5,
+    borderColor: "rgba(147,33,10,0.2)",
+    marginBottom: 4,
+  },
+  emptyTitle: {
+    fontSize: 15,
+    fontWeight: "800",
+    color: C.dark,
+  },
+  emptySub: {
+    fontSize: 12,
+    color: C.textMid,
+    textAlign: "center",
+    paddingHorizontal: 30,
   },
 });

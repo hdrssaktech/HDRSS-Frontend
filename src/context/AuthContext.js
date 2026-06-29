@@ -26,9 +26,11 @@ export function AuthProvider({ children }) {
   const fetchUserProfile = async (userToken = token) => {
     try {
       const data = await getProfileApi(userToken);
+      console.log("Profile data:", data.user); // Debugging line to check profile data
 
       if (data?.user) {
         setUserData(data.user);
+
       }
     } catch (err) {
       console.error("Profile fetch error:", err);

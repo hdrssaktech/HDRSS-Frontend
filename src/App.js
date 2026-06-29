@@ -132,6 +132,20 @@ import HdrssMemberEventDetails from "./pages/DistrictPage/Parties/HdrssParties/H
 import CacusForm from "./components/Caucus/CacusForm.js";
 import PDFViewerScreen from "./components/Caucus/PDFViewerScreen.js";
 import PrinciplesScreen from "./pages/AboutPage/PrinciplesScreen.js";
+import MatrimonyBtn from "./pages/ElectionCategorysPage/Matrimony/MatrimonyBtn.js";
+import CreateMatrimonyProfile from "./pages/ElectionCategorysPage/Matrimony/CreateMatrimonyProfile.js";
+import MatrimonyProfiles from "./pages/ElectionCategorysPage/Matrimony/MartriMoneyProfiles.js";
+import MatrimonyProfileDetail from "./pages/ElectionCategorysPage/Matrimony/MatrimonyProfileDetail.js";
+import TopAstrologerScreen from "./components/TopAstrologer/TopAstrologerScreen.js";
+import AllCategoriesScreen from "./pages/ProductItems/ProductScreen1fullproducts.js";
+import ProductScreen2 from "./pages/ProductItems/ProductScreen2.js";
+import ProductScreen3 from "./pages/ProductItems/ProductScreen3.js";
+import ProductScreen4 from "./pages/ProductItems/ProductScreen4.js";
+import GurukulamPage1 from "./pages/Gurukulam/GurukulamPage1.js";
+import GurukulamPage2 from "./pages/Gurukulam/GurukulamPage2.js";
+import QuizCategories from "./pages/QuizPage/QuizCategories.js";
+import QuizQuestions from "./pages/QuizPage/quizData.js";
+import ProductScreenCart from "./pages/ProductItems/ProductScreenCart.js";
 
 
 
@@ -269,7 +283,7 @@ function MainStackScreen() {
     <MainStack.Screen name="BhakthiNoolgal1" component={withFooter(BhakthiNoolgal1)}/>  
     <MainStack.Screen name="BhakthiNoolgal2" component={withFooter(BhakthiNoolgal2)}/>  
     <MainStack.Screen name="BhakthiNoolgal3" component={withFooter(BhakthiNoolgal3)}/>  
-     <MainStack.Screen name="HinduThuvm" component={withFooter(DetailsScreen)}/>  
+    <MainStack.Screen name="HinduThuvm" component={withFooter(DetailsScreen)}/>  
     <MainStack.Screen name="HinduLeaders1" component={withFooter(HinduLeaders1)}/> 
     <MainStack.Screen name="HinduLeaders2" component={withFooter(HinduLeaders2)}/>
     <MainStack.Screen name="HinduLeaders3" component={withFooter(HinduLeaders3)}/>
@@ -297,6 +311,20 @@ function MainStackScreen() {
     <MainStack.Screen name="Caucus" component={withFooter(CacusForm)}/>
     <MainStack.Screen name="PDFViewer" component={withFooter(PDFViewerScreen)}/>
     <MainStack.Screen name="Principles" component={withFooter(PrinciplesScreen)}/>
+     <MainStack.Screen name="matrimonyBtn" component={withFooter(MatrimonyBtn)}/>
+     <MainStack.Screen name="CreateProfile" component={withFooter(CreateMatrimonyProfile)}/>
+     <MainStack.Screen name="MatrimoneyProfiles" component={withFooter(MatrimonyProfiles)}/>
+     <MainStack.Screen name="MatrimoneyProfiledetails" component={withFooter(MatrimonyProfileDetail)}/>
+     <MainStack.Screen name="TopAstrologer" component={withFooter(TopAstrologerScreen)}/>
+     <MainStack.Screen name="ProductScreen1fullproducts"component={withFooter(AllCategoriesScreen)}/>
+     <MainStack.Screen name="ProductScreen2"component={withFooter(ProductScreen2)}/>
+     <MainStack.Screen name="ProductScreen3"component={withFooter(ProductScreen3)}/>
+     <MainStack.Screen name="ProductScreen4"component={withFooter(ProductScreen4)}/>
+     <MainStack.Screen name="GurukulamPage1"component={withFooter(GurukulamPage1)}/>
+     <MainStack.Screen name="GurukulamPage2"component={withFooter(GurukulamPage2)}/>
+     <MainStack.Screen name="QuizCategories" component={withFooter(QuizCategories)}/>
+     <MainStack.Screen name="QuizQuestions" component={withFooter(QuizQuestions)}/>
+      <MainStack.Screen name="ProductScreenCart" component={withFooter(ProductScreenCart)}/>
     </MainStack.Navigator>
   );
 }

@@ -1,3 +1,4 @@
+// TourismPlaceDetails.js - Second Page (Updated)
 import {
   StyleSheet,
   Text,
@@ -19,20 +20,32 @@ import {
 } from "@expo/vector-icons";
 import YoutubePlayer from "react-native-youtube-iframe";
 
+// Brand Colors (matching first page)
+const C = {
+  primary: "#93210A",
+  dark: "#301913",
+  gold: "#D4AF37",
+  bg: "#d4cea6",
+  card: "#ede8d5",
+  white: "#FFFFFF",
+  text: "#1a0a00",
+  textMid: "#5a3a2a",
+  border: "rgba(48,25,19,0.25)",
+  shadow: "#301913",
+};
+
 export default function TourismPlaceDetails() {
   const route = useRoute();
   const navigation = useNavigation();
   const { place } = route.params;
   const { width, height } = useWindowDimensions();
   
-  // Responsive breakpoints
   const isMobile = width < 600;
   const isTablet = width >= 600 && width < 1024;
   const isLargeTablet = width >= 1024;
 
   const [showMore, setShowMore] = useState(false);
 
-  // Responsive size helper
   const responsiveSize = (mobile, tablet, largeTablet) => {
     if (isLargeTablet) return largeTablet || tablet;
     if (isTablet) return tablet;
@@ -57,15 +70,13 @@ export default function TourismPlaceDetails() {
 
   const videoId = getYoutubeId(place.video);
 
-  // Check available contact options
   const hasPhone = place.phone && place.phone.trim() !== "";
   const hasWhatsApp = place.whatsapp && place.whatsapp.trim() !== "";
   const hasLocation = place.location && place.location.trim() !== "";
 
   return (
     <View style={styles.container}>
-      {/* Status Bar */}
-      <StatusBar backgroundColor="#93210A" barStyle="light-content" />
+      <StatusBar backgroundColor={C.primary} barStyle="light-content" />
       
       <ScrollView 
         style={styles.scrollView} 
@@ -75,7 +86,7 @@ export default function TourismPlaceDetails() {
           { paddingBottom: responsiveSize(30, 40, 50) }
         ]}
       >
-        {/* HEADER */}
+        {/* Header */}
         <View style={[
           styles.header,
           isTablet && styles.headerTablet,
@@ -91,7 +102,7 @@ export default function TourismPlaceDetails() {
             <Ionicons 
               name="chevron-back" 
               size={responsiveSize(24, 28, 32)} 
-              color="#fff" 
+              color={C.white} 
             />
           </TouchableOpacity>
 
@@ -108,7 +119,7 @@ export default function TourismPlaceDetails() {
           ]} />
         </View>
 
-        {/* HERO IMAGE */}
+        {/* Hero Image */}
         <View style={[
           styles.imageContainer,
           { height: responsiveSize(250, 300, 350) }
@@ -145,7 +156,7 @@ export default function TourismPlaceDetails() {
           )}
         </View>
 
-        {/* CONTENT CARD */}
+        {/* Content Card */}
         <View style={[
           styles.contentCard,
           { 
@@ -155,7 +166,7 @@ export default function TourismPlaceDetails() {
             borderRadius: responsiveSize(18, 22, 26)
           }
         ]}>
-          {/* TITLE */}
+          {/* Title */}
           <Text style={[
             styles.placeTitle,
             { 
@@ -167,24 +178,12 @@ export default function TourismPlaceDetails() {
             {place.title}
           </Text>
 
-          {/* QUICK CONTACT ICONS */}
+          {/* Quick Contact Icons */}
           {(hasPhone || hasWhatsApp || hasLocation) && (
             <View style={[
               styles.contactSection,
               { marginBottom: responsiveSize(22, 28, 34) }
             ]}>
-              <Text style={[
-                styles.sectionTitle,
-                { 
-                  fontSize: responsiveSize(18, 21, 24),
-                  marginBottom: responsiveSize(12, 16, 20),
-                  paddingLeft: responsiveSize(8, 10, 12),
-                  borderLeftWidth: responsiveSize(3, 4, 5),
-                }
-              ]}>
-                Quick Contact
-              </Text>
-              
               <View style={[
                 styles.contactRow,
                 { 
@@ -192,7 +191,6 @@ export default function TourismPlaceDetails() {
                   marginTop: responsiveSize(8, 12, 16)
                 }
               ]}>
-                {/* Phone */}
                 {hasPhone && (
                   <TouchableOpacity
                     style={[
@@ -200,7 +198,9 @@ export default function TourismPlaceDetails() {
                       { 
                         borderRadius: responsiveSize(12, 14, 16),
                         padding: responsiveSize(8, 12, 16),
-                        minWidth: responsiveSize(80, 110, 140)
+                        minWidth: responsiveSize(80, 110, 140),
+                        backgroundColor: C.card,
+                        borderColor: C.border,
                       }
                     ]}
                     onPress={() => openPhone(place.phone)}
@@ -219,30 +219,18 @@ export default function TourismPlaceDetails() {
                       <FontAwesome 
                         name="phone" 
                         size={responsiveSize(18, 22, 26)} 
-                        color="#fff" 
+                        color={C.white} 
                       />
                     </View>
                     <Text style={[
                       styles.contactLabel,
-                      { fontSize: responsiveSize(12, 14, 16) }
+                      { fontSize: responsiveSize(12, 14, 16), color: C.dark }
                     ]}>
                       Call
                     </Text>
-                    {place.phone && (
-                      <Text style={[
-                        styles.contactValue,
-                        { 
-                          fontSize: responsiveSize(10, 11, 12),
-                          marginTop: responsiveSize(2, 3, 4)
-                        }
-                      ]} numberOfLines={1}>
-                        {place.phone}
-                      </Text>
-                    )}
                   </TouchableOpacity>
                 )}
 
-                {/* Location */}
                 {hasLocation && (
                   <TouchableOpacity
                     style={[
@@ -250,7 +238,9 @@ export default function TourismPlaceDetails() {
                       { 
                         borderRadius: responsiveSize(12, 14, 16),
                         padding: responsiveSize(8, 12, 16),
-                        minWidth: responsiveSize(80, 110, 140)
+                        minWidth: responsiveSize(80, 110, 140),
+                        backgroundColor: C.card,
+                        borderColor: C.border,
                       }
                     ]}
                     onPress={() => openLocation(place.location)}
@@ -269,31 +259,18 @@ export default function TourismPlaceDetails() {
                       <FontAwesome5
                         name="map-marker-alt"
                         size={responsiveSize(18, 22, 26)}
-                        color="#fff"
+                        color={C.white}
                       />
                     </View>
                     <Text style={[
                       styles.contactLabel,
-                      { fontSize: responsiveSize(12, 14, 16) }
+                      { fontSize: responsiveSize(12, 14, 16), color: C.dark }
                     ]}>
                       Map
-                    </Text>
-                    <Text 
-                      style={[
-                        styles.contactValue,
-                        { 
-                          fontSize: responsiveSize(10, 11, 12),
-                          marginTop: responsiveSize(2, 3, 4)
-                        }
-                      ]}
-                      numberOfLines={1}
-                    >
-                      View Map
                     </Text>
                   </TouchableOpacity>
                 )}
 
-                {/* WhatsApp */}
                 {hasWhatsApp && (
                   <TouchableOpacity
                     style={[
@@ -301,7 +278,9 @@ export default function TourismPlaceDetails() {
                       { 
                         borderRadius: responsiveSize(12, 14, 16),
                         padding: responsiveSize(8, 12, 16),
-                        minWidth: responsiveSize(80, 110, 140)
+                        minWidth: responsiveSize(80, 110, 140),
+                        backgroundColor: C.card,
+                        borderColor: C.border,
                       }
                     ]}
                     onPress={() => openWhatsApp(place.whatsapp)}
@@ -320,33 +299,22 @@ export default function TourismPlaceDetails() {
                       <FontAwesome 
                         name="whatsapp" 
                         size={responsiveSize(18, 22, 26)} 
-                        color="#fff" 
+                        color={C.white} 
                       />
                     </View>
                     <Text style={[
                       styles.contactLabel,
-                      { fontSize: responsiveSize(12, 14, 16) }
+                      { fontSize: responsiveSize(12, 14, 16), color: C.dark }
                     ]}>
                       WhatsApp
                     </Text>
-                    {place.whatsapp && (
-                      <Text style={[
-                        styles.contactValue,
-                        { 
-                          fontSize: responsiveSize(10, 11, 12),
-                          marginTop: responsiveSize(2, 3, 4)
-                        }
-                      ]} numberOfLines={1}>
-                        {place.whatsapp}
-                      </Text>
-                    )}
                   </TouchableOpacity>
                 )}
               </View>
             </View>
           )}
 
-          {/* DESCRIPTION */}
+          {/* Description */}
           {place.about && (
             <View style={[
               styles.section,
@@ -359,6 +327,8 @@ export default function TourismPlaceDetails() {
                   marginBottom: responsiveSize(12, 16, 20),
                   paddingLeft: responsiveSize(8, 10, 12),
                   borderLeftWidth: responsiveSize(3, 4, 5),
+                  borderLeftColor: C.primary,
+                  color: C.primary,
                 }
               ]}>
                 About
@@ -367,7 +337,10 @@ export default function TourismPlaceDetails() {
                 styles.descriptionCard,
                 { 
                   borderRadius: responsiveSize(10, 12, 14),
-                  padding: responsiveSize(14, 18, 22)
+                  padding: responsiveSize(14, 18, 22),
+                  backgroundColor: C.card,
+                  borderLeftWidth: 3,
+                  borderLeftColor: C.primary,
                 }
               ]}>
                 <Text
@@ -375,7 +348,8 @@ export default function TourismPlaceDetails() {
                     styles.description,
                     { 
                       fontSize: responsiveSize(15, 17, 19),
-                      lineHeight: responsiveSize(22, 26, 30)
+                      lineHeight: responsiveSize(22, 26, 30),
+                      color: C.text,
                     }
                   ]}
                   numberOfLines={showMore ? undefined : 6}
@@ -394,7 +368,8 @@ export default function TourismPlaceDetails() {
                     styles.readMoreText,
                     { 
                       fontSize: responsiveSize(13, 15, 17),
-                      marginRight: responsiveSize(4, 6, 8)
+                      marginRight: responsiveSize(4, 6, 8),
+                      color: C.primary,
                     }
                   ]}>
                     {showMore ? "Read Less" : "Read More"}
@@ -402,14 +377,14 @@ export default function TourismPlaceDetails() {
                   <Ionicons 
                     name={showMore ? "chevron-up" : "chevron-down"} 
                     size={responsiveSize(14, 16, 18)} 
-                    color="#93210A" 
+                    color={C.primary} 
                   />
                 </TouchableOpacity>
               </View>
             </View>
           )}
 
-          {/* GALLERY */}
+          {/* Gallery */}
           {place.gallery && place.gallery.length > 0 && (
             <View style={[
               styles.section,
@@ -422,6 +397,8 @@ export default function TourismPlaceDetails() {
                   marginBottom: responsiveSize(12, 16, 20),
                   paddingLeft: responsiveSize(8, 10, 12),
                   borderLeftWidth: responsiveSize(3, 4, 5),
+                  borderLeftColor: C.primary,
+                  color: C.primary,
                 }
               ]}>
                 Gallery ({place.gallery.length})
@@ -451,30 +428,13 @@ export default function TourismPlaceDetails() {
                       ]}
                       resizeMode="cover"
                     />
-                    <View style={[
-                      styles.imageNumberBadge,
-                      {
-                        top: responsiveSize(6, 8, 10),
-                        left: responsiveSize(6, 8, 10),
-                        width: responsiveSize(20, 22, 24),
-                        height: responsiveSize(20, 22, 24),
-                        borderRadius: responsiveSize(8, 10, 12),
-                      }
-                    ]}>
-                      <Text style={[
-                        styles.imageNumberText,
-                        { fontSize: responsiveSize(10, 11, 12) }
-                      ]}>
-                        {index + 1}
-                      </Text>
-                    </View>
                   </View>
                 ))}
               </ScrollView>
             </View>
           )}
 
-          {/* VIDEO */}
+          {/* Video */}
           {place.video && videoId && (
             <View style={[
               styles.section,
@@ -487,6 +447,8 @@ export default function TourismPlaceDetails() {
                   marginBottom: responsiveSize(12, 16, 20),
                   paddingLeft: responsiveSize(8, 10, 12),
                   borderLeftWidth: responsiveSize(3, 4, 5),
+                  borderLeftColor: C.primary,
+                  color: C.primary,
                 }
               ]}>
                 Video
@@ -495,7 +457,8 @@ export default function TourismPlaceDetails() {
                 styles.videoContainer,
                 { 
                   borderRadius: responsiveSize(10, 12, 14),
-                  marginBottom: responsiveSize(8, 12, 16)
+                  marginBottom: responsiveSize(8, 12, 16),
+                  backgroundColor: C.dark,
                 }
               ]}>
                 <YoutubePlayer
@@ -503,25 +466,6 @@ export default function TourismPlaceDetails() {
                   play={false}
                   videoId={videoId}
                 />
-                <View style={[
-                  styles.videoInfo,
-                  { padding: responsiveSize(6, 8, 10) }
-                ]}>
-                  <Text style={[
-                    styles.videoNote,
-                    { 
-                      fontSize: responsiveSize(11, 13, 15),
-                      marginRight: responsiveSize(4, 6, 8)
-                    }
-                  ]}>
-                    Tap to play video
-                  </Text>
-                  <Ionicons 
-                    name="play-circle-outline" 
-                    size={responsiveSize(14, 16, 18)} 
-                    color="#666" 
-                  />
-                </View>
               </View>
             </View>
           )}
@@ -534,7 +478,7 @@ export default function TourismPlaceDetails() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#f8f9fa",
+    backgroundColor: C.bg,
   },
   scrollView: {
     flex: 1,
@@ -545,7 +489,7 @@ const styles = StyleSheet.create({
   
   // Header Styles
   header: {
-    backgroundColor: "#93210A",
+    backgroundColor: C.primary,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
@@ -553,7 +497,7 @@ const styles = StyleSheet.create({
     paddingBottom: 15,
     paddingHorizontal: 16,
     elevation: 4,
-    shadowColor: "#000",
+    shadowColor: C.shadow,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.2,
     shadowRadius: 4,
@@ -586,12 +530,13 @@ const styles = StyleSheet.create({
     borderRadius: 22,
   },
   headerTitle: {
-    color: "white",
+    color: C.white,
     fontWeight: "bold",
     flex: 1,
     textAlign: "center",
     marginHorizontal: 10,
     letterSpacing: 0.5,
+    fontSize: 18,
   },
   headerTitleTablet: {
     fontSize: 24,
@@ -607,7 +552,7 @@ const styles = StyleSheet.create({
   imageContainer: {
     position: 'relative',
     width: "100%",
-    backgroundColor: "#f0f0f0",
+    backgroundColor: C.dark,
   },
   mainImage: {
     width: "100%",
@@ -619,16 +564,16 @@ const styles = StyleSheet.create({
   },
   categoryBadge: {
     position: 'absolute',
-    backgroundColor: "rgba(147, 33, 10, 0.9)",
+    backgroundColor: C.primary,
     borderRadius: 20,
     elevation: 3,
-    shadowColor: "#000",
+    shadowColor: C.shadow,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.3,
     shadowRadius: 4,
   },
   categoryText: {
-    color: "#fff",
+    color: C.white,
     fontWeight: "700",
     textTransform: "uppercase",
     letterSpacing: 0.5,
@@ -636,16 +581,16 @@ const styles = StyleSheet.create({
   
   // Content Card
   contentCard: {
-    backgroundColor: "#fff",
+    backgroundColor: C.white,
     elevation: 4,
-    shadowColor: "#000",
+    shadowColor: C.shadow,
     shadowOffset: { width: 0, height: 3 },
     shadowOpacity: 0.15,
     shadowRadius: 8,
   },
   placeTitle: {
     fontWeight: "bold",
-    color: "#333",
+    color: C.dark,
     textAlign: "center",
     letterSpacing: 0.3,
   },
@@ -653,8 +598,7 @@ const styles = StyleSheet.create({
   // Section Title
   sectionTitle: {
     fontWeight: "bold",
-    color: "#93210A",
-    borderLeftColor: "#93210A",
+    borderLeftColor: C.primary,
   },
   
   // Contact Section
@@ -670,27 +614,24 @@ const styles = StyleSheet.create({
   contactIconBox: {
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#fff',
     elevation: 3,
-    shadowColor: "#000",
+    shadowColor: C.shadow,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
     borderWidth: 1,
-    borderColor: "#f0f0f0",
-    flex: 1,
   },
   iconCircle: {
     alignItems: 'center',
     justifyContent: 'center',
     elevation: 3,
-    shadowColor: "#000",
+    shadowColor: C.shadow,
     shadowOffset: { width: 0, height: 3 },
     shadowOpacity: 0.2,
     shadowRadius: 4,
   },
   phoneIconBg: {
-    backgroundColor: "#93210A",
+    backgroundColor: C.primary,
   },
   whatsappIconBg: {
     backgroundColor: "#25D366",
@@ -700,11 +641,9 @@ const styles = StyleSheet.create({
   },
   contactLabel: {
     fontWeight: "700",
-    color: "#333",
     textAlign: 'center',
   },
   contactValue: {
-    color: "#666",
     textAlign: 'center',
     fontStyle: 'italic',
   },
@@ -714,12 +653,10 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   descriptionCard: {
-    backgroundColor: "#f9f9f9",
     borderLeftWidth: 3,
-    borderLeftColor: "#93210A",
+    borderLeftColor: C.primary,
   },
   description: {
-    color: "#555",
     textAlign: "justify",
     letterSpacing: 0.2,
   },
@@ -731,7 +668,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
   },
   readMoreText: {
-    color: "#93210A",
     fontWeight: "700",
   },
   
@@ -743,25 +679,22 @@ const styles = StyleSheet.create({
     position: 'relative',
   },
   galleryImage: {
-    backgroundColor: "#eee",
+    backgroundColor: C.card,
   },
   imageNumberBadge: {
     position: 'absolute',
-    backgroundColor: 'rgba(147, 33, 10, 0.9)',
     alignItems: 'center',
     justifyContent: 'center',
   },
   imageNumberText: {
-    color: 'white',
     fontWeight: 'bold',
   },
   
   // Video Section
   videoContainer: {
     overflow: "hidden",
-    backgroundColor: "#000",
     elevation: 3,
-    shadowColor: "#000",
+    shadowColor: C.shadow,
     shadowOffset: { width: 0, height: 3 },
     shadowOpacity: 0.3,
     shadowRadius: 5,
@@ -770,10 +703,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#f8f8f8',
   },
   videoNote: {
-    color: "#666",
     textAlign: "center",
     fontStyle: "italic",
   },

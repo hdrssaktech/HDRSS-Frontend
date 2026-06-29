@@ -6,9 +6,13 @@ import {
   StyleSheet,
   ScrollView,
   TouchableOpacity,
-  ActivityIndicator,
-  Linking,
   useWindowDimensions,
+  Linking,
+  StatusBar,
+  SafeAreaView,
+  Modal,
+  Animated,
+  PanResponder,
 } from "react-native";
 import { Ionicons, FontAwesome } from "@expo/vector-icons";
 import { useNavigation, useRoute } from "@react-navigation/native";
@@ -17,21 +21,203 @@ import YoutubePlayer from "react-native-youtube-iframe";
 import { fetchTourismById } from "../../../Controller/TourismController/TourismController";
 import Loader from "../../../components/Alert/Loader";
 
+/* ── Colour tokens ── */
+const C = {
+  primary: "#93210A",
+  dark:    "#301913",
+  gold:    "#D4AF37",
+  bg:      "#d4cea6",
+  card:    "#ede8d5",
+  white:   "#FFFFFF",
+  text:    "#1a0a00",
+  border:  "rgba(48,25,19,0.25)",
+};
+
+/* ══════════════════════════════════════
+   ZOOM MODAL COMPONENT
+══════════════════════════════════════ */
+function ZoomModal({ visible, imageUri, onClose }) {
+  const { width, height } = useWindowDimensions();
+
+  // Scale animation value
+  const scale = React.useRef(new Animated.Value(1)).current;
+  const [currentScale, setCurrentScale] = useState(1);
+
+  const zoomIn = () => {
+    const next = Math.min(currentScale + 0.5, 3);
+    setCurrentScale(next);
+    Animated.spring(scale, { toValue: next, useNativeDriver: true }).start();
+  };
+
+  const zoomOut = () => {
+    const next = Math.max(currentScale - 0.5, 1);
+    setCurrentScale(next);
+    Animated.spring(scale, { toValue: next, useNativeDriver: true }).start();
+  };
+
+  const handleClose = () => {
+    // Reset scale on close
+    scale.setValue(1);
+    setCurrentScale(1);
+    onClose();
+  };
+
+  return (
+    <Modal
+      visible={visible}
+      transparent
+      animationType="fade"
+      onRequestClose={handleClose}
+      statusBarTranslucent
+    >
+      <View style={zm.overlay}>
+
+        {/* Close button — top right */}
+        <TouchableOpacity style={zm.closeBtn} onPress={handleClose} activeOpacity={0.85}>
+          <Ionicons name="close" size={22} color={C.white} />
+        </TouchableOpacity>
+
+        {/* Zoomable image */}
+        <Animated.Image
+          source={{ uri: imageUri }}
+          style={[
+            zm.image,
+            { width: width - 32, height: height * 0.55 },
+            { transform: [{ scale }] },
+          ]}
+          resizeMode="contain"
+        />
+
+        {/* ── Circular Zoom Controls ── */}
+        <View style={zm.zoomRow}>
+
+          {/* Zoom Out */}
+          <TouchableOpacity
+            style={[zm.zoomBtn, currentScale <= 1 && zm.zoomBtnDisabled]}
+            onPress={zoomOut}
+            activeOpacity={0.8}
+            disabled={currentScale <= 1}
+          >
+            <Ionicons name="remove" size={22} color={C.white} />
+          </TouchableOpacity>
+
+          {/* Scale indicator */}
+          <View style={zm.scaleLabel}>
+            <Text style={zm.scaleLabelText}>{currentScale.toFixed(1)}×</Text>
+          </View>
+
+          {/* Zoom In */}
+          <TouchableOpacity
+            style={[zm.zoomBtn, currentScale >= 3 && zm.zoomBtnDisabled]}
+            onPress={zoomIn}
+            activeOpacity={0.8}
+            disabled={currentScale >= 3}
+          >
+            <Ionicons name="add" size={22} color={C.white} />
+          </TouchableOpacity>
+
+        </View>
+
+        {/* Hint text */}
+        <Text style={zm.hint}>Tap + / − to zoom</Text>
+
+      </View>
+    </Modal>
+  );
+}
+
+const zm = StyleSheet.create({
+  overlay: {
+    flex:            1,
+    backgroundColor: "rgba(0,0,0,0.92)",
+    alignItems:      "center",
+    justifyContent:  "center",
+  },
+  closeBtn: {
+    position:        "absolute",
+    top:             52,
+    right:           18,
+    width:           40,
+    height:          40,
+    borderRadius:    20,
+    backgroundColor: "rgba(255,255,255,0.18)",
+    alignItems:      "center",
+    justifyContent:  "center",
+    zIndex:          10,
+  },
+  image: {
+    borderRadius: 12,
+  },
+  zoomRow: {
+    flexDirection:  "row",
+    alignItems:     "center",
+    marginTop:      28,
+    gap:            20,
+  },
+  zoomBtn: {
+    width:           54,
+    height:          54,
+    borderRadius:    27,           // perfect circle
+    backgroundColor: C.primary,
+    alignItems:      "center",
+    justifyContent:  "center",
+    elevation:       6,
+    shadowColor:     "#000",
+    shadowOffset:    { width: 0, height: 3 },
+    shadowOpacity:   0.4,
+    shadowRadius:    5,
+    borderWidth:     2,
+    borderColor:     C.gold,
+  },
+  zoomBtnDisabled: {
+    backgroundColor: "rgba(147,33,10,0.35)",
+    borderColor:     "rgba(212,175,55,0.35)",
+  },
+  scaleLabel: {
+    width:           54,
+    height:          54,
+    borderRadius:    27,
+    backgroundColor: "rgba(212,175,55,0.18)",
+    borderWidth:     1.5,
+    borderColor:     C.gold,
+    alignItems:      "center",
+    justifyContent:  "center",
+  },
+  scaleLabelText: {
+    color:      C.gold,
+    fontSize:   14,
+    fontWeight: "800",
+  },
+  hint: {
+    marginTop:  12,
+    color:      "rgba(255,255,255,0.45)",
+    fontSize:   12,
+    fontWeight: "500",
+  },
+});
+
+/* ══════════════════════════════════════
+   MAIN PAGE
+══════════════════════════════════════ */
 export default function TourismPage3() {
   const navigation = useNavigation();
-  const route = useRoute();
-  const { id } = route.params;
+  const route      = useRoute();
+  const { id }     = route.params;          // ✅ used everywhere, no `item.id`
 
   const { width } = useWindowDimensions();
-  const isTablet = width >= 600;
+  const isTablet  = width >= 600;
 
-  const [data, setData] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [playing, setPlaying] = useState(false);
-  const [expanded, setExpanded] = useState(false); // ✅ Read More state
+  const [data,        setData]        = useState(null);
+  const [loading,     setLoading]     = useState(true);
+  const [playing,     setPlaying]     = useState(false);
+  const [expanded,    setExpanded]    = useState(false);
+
+  // Zoom modal state
+  const [zoomVisible, setZoomVisible] = useState(false);
+  const [zoomUri,     setZoomUri]     = useState(null);
 
   useEffect(() => {
-    const loadData = async () => {
+    const load = async () => {
       try {
         const result = await fetchTourismById(id);
         setData(result);
@@ -41,7 +227,7 @@ export default function TourismPage3() {
         setLoading(false);
       }
     };
-    loadData();
+    load();
   }, [id]);
 
   const getYouTubeVideoId = (url) => {
@@ -56,22 +242,6 @@ export default function TourismPage3() {
     if (state === "ended") setPlaying(false);
   }, []);
 
-  if (loading) {
-    return (
-      <Loader/>
-    );
-  }
-
-  if (!data) {
-    return (
-      <View style={styles.center}>
-        <Text>No data found</Text>
-      </View>
-    );
-  }
-
-  const youtubeVideoId = getYouTubeVideoId(data?.video);
-
   const openWhatsApp = (number) => {
     const phone = number?.replace(/[^0-9]/g, "");
     if (phone) Linking.openURL(`https://wa.me/${phone}`);
@@ -82,111 +252,273 @@ export default function TourismPage3() {
     if (phone) Linking.openURL(`tel:${phone}`);
   };
 
+  const openZoom = (uri) => {
+    setZoomUri(uri);
+    setZoomVisible(true);
+  };
+
+  if (loading) return <Loader />;
+
+  if (!data) {
+    return (
+      <SafeAreaView style={styles.safe}>
+        <View style={styles.center}>
+          <Ionicons name="location-outline" size={48} color={C.primary} />
+          <Text style={styles.noDataText}>No data found</Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  const youtubeVideoId = getYouTubeVideoId(data?.video);
+  const HP = isTablet ? 32 : 16;
+
   return (
-    <View style={styles.container}>
-      {/* HEADER */}
+    <SafeAreaView style={styles.safe}>
+      <StatusBar barStyle="light-content" backgroundColor={C.primary} />
+
+      {/* Zoom Modal */}
+      <ZoomModal
+        visible={zoomVisible}
+        imageUri={zoomUri}
+        onClose={() => setZoomVisible(false)}
+      />
+
+      {/* ══════════════════════════════
+          HEADER
+      ══════════════════════════════ */}
       <View style={[styles.header, isTablet && styles.headerTablet]}>
-       <TouchableOpacity
-        style={[styles.backButton, isTablet && styles.backButtonTablet]}
-        onPress={() => navigation.goBack()}
-      >
-        <Ionicons name="chevron-back" size={isTablet ? 30 : 26} color="#fff" />
-      </TouchableOpacity>
+        <TouchableOpacity
+          style={[styles.backBtn, isTablet && styles.backBtnTablet]}
+          onPress={() => navigation.goBack()}
+          activeOpacity={0.8}
+        >
+          <Ionicons name="chevron-back" size={isTablet ? 30 : 26} color={C.white} />
+        </TouchableOpacity>
+
         <Text
           style={[styles.headerTitle, isTablet && styles.headerTitleTablet]}
           numberOfLines={1}
         >
           {data.name}
         </Text>
+
+        <View style={[styles.backBtn, isTablet && styles.backBtnTablet, { backgroundColor: "transparent" }]} />
       </View>
 
       <ScrollView showsVerticalScrollIndicator={false}>
-        {/* BANNER */}
-        <Image
-          source={{ uri: data.bannerImage }}
-          style={[styles.banner, isTablet && styles.bannerTablet]}
-        />
 
-        {/* INFO */}
-        <View style={[styles.section, isTablet && styles.sectionTablet]}>
-          <Text style={[styles.mainTitle, isTablet && styles.mainTitleTablet]}>
-            {data.title}
-          </Text>
+        {/* ══════════════════════════════
+            BANNER
+        ══════════════════════════════ */}
+        <View>
+          <Image
+            source={{ uri: data.bannerImage }}
+            style={[styles.banner, isTablet && styles.bannerTablet]}
+            resizeMode="cover"
+          />
+          <View style={styles.bannerFade} />
+          <View style={styles.bannerPin}>
+            <Ionicons name="location" size={isTablet ? 16 : 13} color={C.gold} />
+          </View>
+        </View>
 
-          {data.session && (
-            <View style={[styles.infoRow, isTablet && styles.infoRowTablet]}>
-              <Ionicons name="calendar-outline" size={22} color="#E67E22" />
-              <Text style={[styles.infoText, isTablet && styles.infoTextTablet]}>
-                {data.session}
+        {/* ══════════════════════════════
+            INFO CARD
+        ══════════════════════════════ */}
+        <View
+          style={[
+            styles.infoCard,
+            {
+              marginHorizontal: HP,
+              borderRadius:     isTablet ? 16 : 12,
+            },
+          ]}
+        >
+          {/* LEFT */}
+          <View style={styles.infoLeft}>
+            <View style={styles.infoTitleRow}>
+              <View style={styles.goldBar} />
+              <Text
+                style={[styles.infoTitle, isTablet && styles.infoTitleTablet]}
+                numberOfLines={2}
+              >
+                {data.title}
               </Text>
             </View>
-          )}
 
-          {data.phone && (
-            <TouchableOpacity
-              style={[styles.infoRow, isTablet && styles.infoRowTablet]}
-              onPress={() => openPhone(data.phone)}
-            >
-              <Ionicons name="call" size={22} color="#2980B9" />
-              <Text style={[styles.infoText, isTablet && styles.infoTextTablet]}>
-                {data.phone}
-              </Text>
-            </TouchableOpacity>
-          )}
+            {data.session && (
+              <View style={styles.detailRow}>
+                <View style={[styles.detailIconWrap, { backgroundColor: "rgba(230,126,34,0.15)" }]}>
+                  <Ionicons name="calendar-outline" size={isTablet ? 15 : 13} color="#E67E22" />
+                </View>
+                <Text
+                  style={[styles.detailText, isTablet && styles.detailTextTablet]}
+                  numberOfLines={1}
+                >
+                  {data.session}
+                </Text>
+              </View>
+            )}
 
-          {data.contact && (
+            {data.phone && (
+              <TouchableOpacity
+                style={styles.detailRow}
+                onPress={() => openPhone(data.phone)}
+                activeOpacity={0.75}
+              >
+                <View style={[styles.detailIconWrap, { backgroundColor: "rgba(41,128,185,0.15)" }]}>
+                  <Ionicons name="call" size={isTablet ? 15 : 13} color="#2980B9" />
+                </View>
+                <Text
+                  style={[styles.detailText, styles.detailLink, isTablet && styles.detailTextTablet]}
+                  numberOfLines={1}
+                >
+                  {data.phone}
+                </Text>
+              </TouchableOpacity>
+            )}
+
+            {data.contact && (
+              <TouchableOpacity
+                style={styles.detailRow}
+                onPress={() => openWhatsApp(data.contact)}
+                activeOpacity={0.75}
+              >
+                <View style={[styles.detailIconWrap, { backgroundColor: "rgba(37,211,102,0.15)" }]}>
+                  <FontAwesome name="whatsapp" size={isTablet ? 15 : 13} color="#25D366" />
+                </View>
+                <Text
+                  style={[styles.detailText, styles.detailLink, isTablet && styles.detailTextTablet]}
+                  numberOfLines={1}
+                >
+                  {data.contact}
+                </Text>
+              </TouchableOpacity>
+            )}
+          </View>
+
+          {/* RIGHT — ✅ Fixed: `id` instead of `item.id` */}
+          <View style={styles.infoRight}>
             <TouchableOpacity
-              style={[styles.infoRow, isTablet && styles.infoRowTablet]}
-              onPress={() => openWhatsApp(data.contact)}
+              style={[styles.tourBtn, isTablet && styles.tourBtnTablet]}
+              onPress={() => navigation.navigate("TourismPlaces", { id })}
+              activeOpacity={0.85}
             >
-              <FontAwesome name="whatsapp" size={24} color="#25D366" />
-              <Text style={[styles.infoText, isTablet && styles.infoTextTablet]}>
-                {data.contact}
+              <View style={[styles.tourBtnIcon, isTablet && styles.tourBtnIconTablet]}>
+                <Ionicons
+                  name="information-circle"
+                  size={isTablet ? 20 : 17}
+                  color={C.dark}
+                />
+              </View>
+              <Text style={[styles.tourBtnText, isTablet && styles.tourBtnTextTablet]}>
+                Click
               </Text>
+              <Text style={[styles.tourBtnSub, isTablet && styles.tourBtnSubTablet]}>
+                Here more info
+              </Text>
+              <Ionicons
+                name="chevron-forward"
+                size={isTablet ? 14 : 12}
+                color={C.white}
+                style={{ marginTop: 4 }}
+              />
             </TouchableOpacity>
-          )}
+          </View>
         </View>
 
-        {/* DESCRIPTION */}
-        <View style={[styles.section, isTablet && styles.sectionTablet]}>
-          <Text style={[styles.label, isTablet && styles.labelTablet]}>
-            Description
-          </Text>
-
-          <Text
-            style={[
-              styles.description,
-              isTablet && styles.descriptionTablet,
-            ]}
-            numberOfLines={expanded ? undefined : 8}
-          >
-            {data.description}
-          </Text>
-
-          <TouchableOpacity onPress={() => setExpanded(!expanded)}>
-            <Text style={styles.readMoreText}>
-              {expanded ? "Read Less" : "Read More"}
+        {/* ══════════════════════════════
+            DESCRIPTION
+        ══════════════════════════════ */}
+        <View style={[styles.section, { marginHorizontal: HP }]}>
+          <View style={styles.secHeadRow}>
+            <Text style={[styles.secHeading, isTablet && styles.secHeadingTablet]}>
+              Description
             </Text>
-          </TouchableOpacity>
-        </View>
+            <View style={styles.secHeadLine} />
+          </View>
 
-        {/* VIDEO */}
-        {data.video && (
-          <>
+          <View style={styles.descCard}>
             <Text
-              style={[
-                styles.label,
-                styles.videoLabel,
-                isTablet && styles.videoLabelTablet,
-              ]}
+              style={[styles.descText, isTablet && styles.descTextTablet]}
+              numberOfLines={expanded ? undefined : 6}
             >
-              Video
+              {data.description}
             </Text>
 
-            <View style={styles.videoWrapper}>
+            <TouchableOpacity
+              style={styles.readMoreBtn}
+              onPress={() => setExpanded(!expanded)}
+              activeOpacity={0.8}
+            >
+              <Text style={[styles.readMoreText, isTablet && styles.readMoreTextTablet]}>
+                {expanded ? "Read Less" : "Read More"}
+              </Text>
+              <Ionicons
+                name={expanded ? "chevron-up" : "chevron-down"}
+                size={isTablet ? 15 : 13}
+                color={C.white}
+              />
+            </TouchableOpacity>
+          </View>
+        </View>
+
+        {/* ══════════════════════════════
+            GALLERY — tap any image to zoom
+        ══════════════════════════════ */}
+        {data.gallery?.length > 0 && (
+          <View style={[styles.section, { marginHorizontal: HP }]}>
+            <View style={styles.secHeadRow}>
+              <Text style={[styles.secHeading, isTablet && styles.secHeadingTablet]}>
+                Gallery
+              </Text>
+              <View style={styles.secHeadLine} />
+            </View>
+
+            <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+              {data.gallery.map((img, index) => (
+                <TouchableOpacity
+                  key={index}
+                  activeOpacity={0.88}
+                  onPress={() => openZoom(img)}
+                  style={[
+                    styles.galleryCard,
+                    isTablet && styles.galleryCardTablet,
+                    index === 0 && { marginLeft: 0 },
+                  ]}
+                >
+                  <Image
+                    source={{ uri: img }}
+                    style={[styles.galleryImg, isTablet && styles.galleryImgTablet]}
+                    resizeMode="cover"
+                  />
+
+                 
+                  {/* gold bottom accent */}
+                  <View style={styles.galleryAccent} />
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+          </View>
+        )}
+
+        {/* ══════════════════════════════
+            VIDEO
+        ══════════════════════════════ */}
+        {data.video && (
+          <View style={[styles.section, { marginHorizontal: 0 }]}>
+            <View style={[styles.secHeadRow, { marginHorizontal: HP }]}>
+              <Text style={[styles.secHeading, isTablet && styles.secHeadingTablet]}>
+                Video
+              </Text>
+              <View style={styles.secHeadLine} />
+            </View>
+
+            <View style={styles.videoEdge}>
               {youtubeVideoId ? (
                 <YoutubePlayer
-                  height={isTablet ? 420 : 260}
+                  height={isTablet ? 380 : 230}
                   width={width}
                   play={playing}
                   videoId={youtubeVideoId}
@@ -197,159 +529,305 @@ export default function TourismPage3() {
                   source={{ uri: data.video }}
                   useNativeControls
                   resizeMode="contain"
-                  style={[
-                    styles.video,
-                    isTablet && styles.videoTablet,
-                  ]}
+                  style={[styles.video, isTablet && styles.videoTablet]}
                 />
               )}
             </View>
-          </>
-        )}
-
-        {/* GALLERY */}
-        {data.gallery?.length > 0 && (
-          <View style={[styles.section, isTablet && styles.sectionTablet]}>
-            <Text style={[styles.label, isTablet && styles.labelTablet]}>
-              Visiting Places
-            </Text>
-            <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-              {data.gallery.map((img, index) => (
-                <Image
-                  key={index}
-                  source={{ uri: img }}
-                  style={[
-                    styles.galleryImage,
-                    isTablet && styles.galleryImageTablet,
-                  ]}
-                />
-              ))}
-            </ScrollView>
           </View>
         )}
 
-        <View style={{ height: 30 }} />
+        <View style={{ height: 40 }} />
       </ScrollView>
-    </View>
+    </SafeAreaView>
   );
 }
 
-/* ================= STYLES ================= */
-
+/* ══════════════════════════════════════
+   STYLES
+══════════════════════════════════════ */
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#fff" },
-  center: { flex: 1, justifyContent: "center", alignItems: "center" },
+  safe:       { flex: 1, backgroundColor: C.bg },
+  center:     { flex: 1, justifyContent: "center", alignItems: "center", gap: 12 },
+  noDataText: { fontSize: 16, fontWeight: "700", color: C.dark, marginTop: 8 },
 
+  /* ── HEADER ── */
   header: {
-   flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#93210A",
-    paddingTop:40,
-    paddingBottom:30,
-    borderBottomLeftRadius: 20,
+    flexDirection:           "row",
+    alignItems:              "center",
+    backgroundColor:         C.primary,
+    paddingTop:              40,
+    paddingBottom:           22,
+    paddingHorizontal:       14,
+    borderBottomLeftRadius:  20,
     borderBottomRightRadius: 20,
+    elevation:               6,
+    shadowColor:             C.dark,
+    shadowOffset:            { width: 0, height: 3 },
+    shadowOpacity:           0.3,
+    shadowRadius:            6,
   },
   headerTablet: {
-   paddingTop:45,
-    paddingBottom:28,
-    paddingHorizontal: 18,
+    paddingTop:              56,
+    paddingBottom:           26,
+    paddingHorizontal:       22,
+    borderBottomLeftRadius:  28,
+    borderBottomRightRadius: 28,
   },
-
-  headerTitle: {
-     flex: 1,
-    textAlign: "center",
-    color: "#fff",
-    fontSize: 20,
-    fontWeight: "800",
-    letterSpacing: 0.3,
-     marginRight:70,
-  },
-  headerTitleTablet: {
-    fontSize: 24,
-    marginRight:55,
-    
-  },
-
-  backButton:{
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+  backBtn: {
+    width:           40,
+    height:          40,
+    borderRadius:    20,
     backgroundColor: "rgba(255,255,255,0.15)",
-    alignItems: "center",
-    justifyContent: "center",
-    marginLeft:15,
+    alignItems:      "center",
+    justifyContent:  "center",
   },
-  backButtonTablet:{
-    width: 50,
-    height: 50,
-    borderRadius: 25,
+  backBtnTablet: { width: 50, height: 50, borderRadius: 25 },
+  headerTitle: {
+    flex:             1,
+    textAlign:        "center",
+    color:            C.white,
+    fontSize:         18,
+    fontWeight:       "800",
+    letterSpacing:    0.3,
+    marginHorizontal: 8,
   },
+  headerTitleTablet: { fontSize: 22 },
 
-  banner: { width: "100%", height: 160 },
+  /* ── BANNER ── */
+  banner:       { width: "100%", height: 210 },
   bannerTablet: { height: 340 },
-
-  section: { marginHorizontal: 20, marginTop: 18 },
-  sectionTablet: { marginHorizontal: 48, marginTop: 26 },
-
-  mainTitle: {
-    fontSize: 18,
-    fontWeight: "bold",
-    color: "#93210A",
-    marginBottom: 14,
+  bannerFade: {
+    position:        "absolute",
+    bottom:          0,
+    left:            0,
+    right:           0,
+    height:          70,
+    backgroundColor: "rgba(48,25,19,0.35)",
   },
-  mainTitleTablet: { fontSize: 28, right: 30 },
+  bannerPin: {
+    position:        "absolute",
+    top:             10,
+    right:           12,
+    backgroundColor: "rgba(48,25,19,0.6)",
+    borderRadius:    20,
+    padding:         6,
+  },
 
-  infoRow: {
+  /* ── INFO CARD ── */
+  infoCard: {
+    flexDirection:   "row",
+    backgroundColor: C.card,
+    marginTop:       14,
+    borderWidth:     1,
+    borderColor:     C.border,
+    elevation:       4,
+    shadowColor:     C.dark,
+    shadowOffset:    { width: 0, height: 2 },
+    shadowOpacity:   0.12,
+    shadowRadius:    5,
+    overflow:        "hidden",
+  },
+  infoLeft: {
+    flex:              1,
+    paddingHorizontal: 12,
+    paddingVertical:   14,
+    gap:               8,
+  },
+  infoTitleRow: {
     flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#FAFAFA",
-    padding: 12,
-    borderRadius: 12,
-    marginBottom: 10,
-    elevation: 1,
+    alignItems:    "flex-start",
+    gap:           8,
+    marginBottom:  2,
   },
-
-  infoText: {
-    fontSize: 15,
-    marginLeft: 10,
-    color: "#333",
-    fontWeight: "500",
+  goldBar: {
+    width:           3,
+    borderRadius:    2,
+    backgroundColor: C.gold,
+    marginTop:       2,
+    alignSelf:       "stretch",
   },
-
-  label: {
-    fontSize: 18,
-    fontWeight: "bold",
-    color: "#93210A",
-    marginBottom: 10,
+  infoTitle: {
+    flex:       1,
+    fontSize:   14,
+    fontWeight: "800",
+    color:      C.dark,
+    lineHeight: 20,
   },
-
-  description: {
-    fontSize: 14,
-    color: "#444",
-    textAlign: "justify",
-    lineHeight: 21,
+  infoTitleTablet: { fontSize: 18, lineHeight: 25 },
+  detailRow: {
+    flexDirection: "row",
+    alignItems:    "center",
+    gap:           8,
   },
-
-  readMoreText: {
-    color: "#93210A",
+  detailIconWrap: {
+    width:          28,
+    height:         28,
+    borderRadius:   14,
+    alignItems:     "center",
+    justifyContent: "center",
+    flexShrink:     0,
+  },
+  detailText: {
+    flex:       1,
+    fontSize:   12,
     fontWeight: "600",
-    marginTop: 6,
-    fontSize: 14,
-    marginLeft:230,
+    color:      C.text,
+  },
+  detailTextTablet: { fontSize: 14 },
+  detailLink: { color: C.primary },
+
+  infoRight: {
+    justifyContent:    "center",
+    alignItems:        "center",
+    backgroundColor:   C.dark,
+    paddingHorizontal: 12,
+    paddingVertical:   14,
+  },
+  tourBtn: {
+    alignItems:     "center",
+    justifyContent: "center",
+    gap:            3,
+  },
+  tourBtnTablet: { gap: 5 },
+  tourBtnIcon: {
+    width:           38,
+    height:          38,
+    borderRadius:    19,
+    backgroundColor: C.gold,
+    alignItems:      "center",
+    justifyContent:  "center",
+    marginBottom:    2,
+  },
+  tourBtnIconTablet: { width: 48, height: 48, borderRadius: 24 },
+  tourBtnText: {
+    fontSize:      11,
+    fontWeight:    "800",
+    color:         C.white,
+    letterSpacing: 0.4,
+  },
+  tourBtnTextTablet: { fontSize: 13 },
+  tourBtnSub: {
+    fontSize:      10,
+    fontWeight:    "600",
+    color:         C.gold,
+    letterSpacing: 0.3,
+  },
+  tourBtnSubTablet: { fontSize: 12 },
+
+  /* ── SECTIONS ── */
+  section: { marginTop: 22 },
+  secHeadRow: {
+    flexDirection: "row",
+    alignItems:    "center",
+    gap:           8,
+    marginBottom:  12,
+  },
+  secHeading: {
+    fontSize:      15,
+    fontWeight:    "800",
+    color:         C.primary,
+    letterSpacing: 0.5,
+    textTransform: "uppercase",
+  },
+  secHeadingTablet: { fontSize: 18 },
+  secHeadLine: {
+    flex:            1,
+    height:          1.5,
+    backgroundColor: C.border,
+    borderRadius:    1,
   },
 
-  videoLabel: { marginLeft: 20, marginTop: 26 },
-
-  videoWrapper: { width: "100%", backgroundColor: "#000" },
-
-  video: { width: "100%", height: 200 },
-
-  galleryImage: {
-    width: 220,
-    height: 140,
-    borderRadius: 10,
-    marginRight: 12,
-    borderWidth: 1,
-    borderColor: "#93210A",
+  /* ── DESCRIPTION ── */
+  descCard: {
+    backgroundColor: C.card,
+    borderRadius:    12,
+    borderWidth:     1,
+    borderColor:     C.border,
+    overflow:        "hidden",
+    elevation:       2,
+    shadowColor:     C.dark,
+    shadowOffset:    { width: 0, height: 1 },
+    shadowOpacity:   0.08,
+    shadowRadius:    3,
   },
+  descText: {
+    fontSize:  14,
+    color:     C.text,
+    lineHeight: 23,
+    padding:   14,
+    textAlign: "justify",
+  },
+  descTextTablet: { fontSize: 16, lineHeight: 27, padding: 20 },
+  readMoreBtn: {
+    flexDirection:   "row",
+    alignItems:      "center",
+    justifyContent:  "center",
+    backgroundColor: C.primary,
+    paddingVertical: 10,
+    gap:             6,
+  },
+  readMoreText: {
+    color:         C.white,
+    fontSize:      13,
+    fontWeight:    "700",
+    letterSpacing: 0.3,
+  },
+  readMoreTextTablet: { fontSize: 15 },
+
+  /* ── GALLERY ── */
+  galleryCard: {
+    marginRight:  12,
+    borderRadius: 12,
+    overflow:     "hidden",
+    borderWidth:  1,
+    borderColor:  C.border,
+    elevation:    3,
+    shadowColor:  C.dark,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+  },
+  galleryCardTablet: { marginRight: 16 },
+  galleryImg: {
+    width:  160,
+    height: 160,
+  },
+  galleryImgTablet: { width: 220, height: 220 },
+  galleryAccent: {
+    height:          3,
+    backgroundColor: C.gold,
+  },
+  /* circular search badge on each gallery thumbnail */
+  zoomBadge: {
+    position:        "absolute",
+    top:             8,
+    right:           8,
+    width:           28,
+    height:          28,
+    borderRadius:    14,
+    backgroundColor: "rgba(147,33,10,0.75)",
+    borderWidth:     1.5,
+    borderColor:     C.gold,
+    alignItems:      "center",
+    justifyContent:  "center",
+  },
+  zoomBadgeTablet: { width: 36, height: 36, borderRadius: 18 },
+  galleryHint: {
+    marginTop:  8,
+    fontSize:   11,
+    color:      "rgba(48,25,19,0.5)",
+    fontStyle:  "italic",
+    textAlign:  "center",
+  },
+
+  /* ── VIDEO ── */
+  videoEdge: {
+    width:             "100%",
+    backgroundColor:   C.dark,
+    borderTopWidth:    2,
+    borderBottomWidth: 2,
+    borderColor:       C.gold,
+  },
+  video:       { width: "100%", height: 230 },
+  videoTablet: { height: 380 },
 });
