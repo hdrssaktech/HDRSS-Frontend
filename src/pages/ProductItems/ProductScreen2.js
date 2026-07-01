@@ -153,12 +153,10 @@ export default function ProductScreen2({ navigation, route }) {
             />
           </View>
         </View>
-        <View style={styles.namePill}>
-          <Text style={styles.name} numberOfLines={2}>
-            {item.typeName}
-          </Text>
-          <View style={styles.nameUnderline} />
-        </View>
+        {/* ✅ REMOVED the namePill container and underline */}
+        <Text style={styles.name} numberOfLines={2}>
+          {item.typeName}
+        </Text>
       </TouchableOpacity>
     </Animated.View>
   );
@@ -203,19 +201,6 @@ export default function ProductScreen2({ navigation, route }) {
               setCurrentAdIndex(index);
             }}
           />
-          {adImages.length > 1 && (
-            <View style={styles.adDots}>
-              {adImages.map((_, idx) => (
-                <View
-                  key={idx}
-                  style={[
-                    styles.dot,
-                    currentAdIndex === idx && styles.activeDot,
-                  ]}
-                />
-              ))}
-            </View>
-          )}
         </View>
       )}
 
@@ -355,26 +340,6 @@ const styles = StyleSheet.create({
     backgroundColor: "transparent",
   },
 
-  adDots: {
-    position: 'absolute',
-    bottom: 10,
-    flexDirection: 'row',
-    justifyContent: 'center',
-    width: '100%',
-    gap: 6,
-  },
-
-  dot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: 'rgba(255,255,255,0.5)',
-  },
-
-  activeDot: {
-    backgroundColor: '#9D1B00',
-    width: 20,
-  },
 
   searchContainer: {
     flexDirection: "row",
@@ -501,31 +466,19 @@ const styles = StyleSheet.create({
   },
 
   image: {
-    width: "110%",
+    width: "120%",
     height: "100%",
   },
 
-  namePill: {
-    alignItems: "center",
-    marginTop: isTablet ? 10 : 7,
-    width: "100%",
-  },
-
+  // ✅ Updated name style - no underline
   name: {
     textAlign: "center",
     fontWeight: "700",
     color: "#1A1A2E",
     fontSize: isTablet ? 15 : 12,
     lineHeight: isTablet ? 20 : 16,
-  },
-
-  nameUnderline: {
-    width: "40%",
-    height: 2,
-    backgroundColor: "#9D1B00",
-    borderRadius: 1,
-    marginTop: isTablet ? 6 : 4,
-    opacity: 0.3,
+    marginTop: isTablet ? 10 : 7,
+    width: "100%",
   },
 
   loaderContainer: {

@@ -173,7 +173,7 @@ export default function ProductScreen4({ route, navigation }) {
     }
     
     // Navigate to CheckoutScreen with the product
-    navigation.navigate("CheckoutScreen", {
+    navigation.navigate("ProductScreenCheckout", {
       items: [{ ...productData, quantity: 1 }],
       totalAmount: parseFloat(productData.price) || 0,
       fromBuyNow: true,
@@ -187,7 +187,7 @@ export default function ProductScreen4({ route, navigation }) {
       return;
     }
     
-    navigation.navigate("CartScreen", {
+    navigation.navigate("ProductScreenCart", {
       cartItems: cartItems,
       onUpdateCart: (updatedItems) => {
         setCartItems(updatedItems);

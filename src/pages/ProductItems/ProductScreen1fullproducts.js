@@ -17,7 +17,7 @@ import {
 } from "react-native";
 import Ionicons from "react-native-vector-icons/Ionicons";
 
-const { width } = Dimensions.get("window");
+const { width, height } = Dimensions.get("window");
 const isTablet = width >= 768;
 const COLUMNS = isTablet ? 4 : 3;
 const GAP = isTablet ? 14 : 10;
@@ -119,10 +119,10 @@ export default function AllCategoriesScreen({ route, navigation }) {
   const renderAdItem = ({ item }) => {
     const imageUrl = item.image || item.imageUrl || item.banner || "https://via.placeholder.com/800x200?text=Ad";
     return (
-      <View style={{ width, height: isTablet ? 220 : 165 }}>
+      <View style={{ width: width, height: isTablet ? 220 : 165 }}>
         <Image
           source={{ uri: imageUrl }}
-          style={StyleSheet.absoluteFill}
+          style={styles.adImage}
           resizeMode="cover"
         />
       </View>
@@ -132,7 +132,7 @@ export default function AllCategoriesScreen({ route, navigation }) {
   const ListHeader = () => (
     <View>
       {ads.length > 0 && (
-        <View>
+        <View style={styles.adContainer}>
           <FlatList
             ref={adRef}
             data={ads}
@@ -387,6 +387,20 @@ const styles = StyleSheet.create({
     textAlign: "center",
     flex: 1,
   },
+
+  // ✅ FULL WIDTH AD CONTAINER - No padding, no margin
+  adContainer: {
+    width: width,
+    backgroundColor: '#000',
+    marginHorizontal: -H_PAD, // Negative margin to extend beyond padding
+    marginBottom: 8,
+  },
+
+  // ✅ AD IMAGE - Full width and height
+  adImage: {
+    width: '100%',
+    height: '100%',
+  },
   
   searchOuter: { 
     paddingHorizontal: H_PAD, 
@@ -441,7 +455,8 @@ const styles = StyleSheet.create({
   chipsRow: { 
     paddingHorizontal: H_PAD, 
     paddingBottom: isTablet ? 14 : 10, 
-    gap: isTablet ? 8 : 7 
+    gap: isTablet ? 8 : 7,
+    flexDirection: 'row',
   },
   
   chip: {
@@ -453,6 +468,7 @@ const styles = StyleSheet.create({
     backgroundColor: C.surface,
     borderWidth: 1,
     borderColor: "#E0E0E0",
+    marginRight: isTablet ? 8 : 7,
   },
   
   chipActive: { 
@@ -510,6 +526,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     width: '100%',
     gap: 6,
+    paddingHorizontal: 0,
   },
 
   dot: {
