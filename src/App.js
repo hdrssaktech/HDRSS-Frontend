@@ -144,7 +144,7 @@ import ProductScreen4 from "./pages/ProductItems/ProductScreen4.js";
 import GurukulamPage1 from "./pages/Gurukulam/GurukulamPage1.js";
 import GurukulamPage2 from "./pages/Gurukulam/GurukulamPage2.js";
 import QuizCategories from "./pages/QuizPage/QuizCategories.js";
-import QuizQuestions from "./pages/QuizPage/quizData.js";
+import QuizQuestions from "./pages/QuizPage/QuizQuestions.js";
 import ProductScreenCart from "./pages/ProductItems/ProductScreenCart.js";
 import ProductScreenCheckout from "./pages/ProductItems/ProductScreenCheckout.js";
 import ProductScreenOrderConfirm from "./pages/ProductItems/ProductScreenOrderConfirm.js";
@@ -325,7 +325,7 @@ function MainStackScreen() {
      <MainStack.Screen name="GurukulamPage1"component={withFooter(GurukulamPage1)}/>
      <MainStack.Screen name="GurukulamPage2"component={withFooter(GurukulamPage2)}/>
      <MainStack.Screen name="QuizCategories" component={withFooter(QuizCategories)}/>
-     <MainStack.Screen name="QuizQuestions" component={withFooter(QuizQuestions)}/>
+    <MainStack.Screen name="QuizQuestions" component={withFooter(QuizQuestions)}/>
      <MainStack.Screen name="ProductScreenCart" component={withFooter(ProductScreenCart)}/>
      <MainStack.Screen name="ProductScreenCheckout" component={withFooter(ProductScreenCheckout)}/>
      <MainStack.Screen name="ProductScreenOrderConfirm" component={withFooter(ProductScreenOrderConfirm)}/>

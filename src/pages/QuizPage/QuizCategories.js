@@ -14,8 +14,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useFocusEffect } from "@react-navigation/native";
 
 // ✅ Named imports — must match exactly what is exported from each file
-import { QUIZ_CATEGORIES } from "./quizData";
-import { COMPLETED_CATEGORIES_KEY } from "./QuizQuestions";
+import { QUIZ_CATEGORIES, COMPLETED_CATEGORIES_KEY } from "./quizData";
 
 export default function QuizCategories({ navigation }) {
   const { width } = useWindowDimensions();

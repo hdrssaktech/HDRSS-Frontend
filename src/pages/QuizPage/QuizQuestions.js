@@ -12,13 +12,7 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { MaterialIcons, Ionicons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-
-// ✅ Named import — matches the named export in quizData.js
-import { getQuizCategory } from "./quizData";
-
-// ✅ Named export so QuizCategories can import it
-export const COMPLETED_CATEGORIES_KEY = "hdrss_quiz_completed_categories";
-
+import { getQuizCategory, COMPLETED_CATEGORIES_KEY } from "./quizData";
 // ── Validation helpers ────────────────────────────────────────────
 const isValidEmail = (value) =>
   /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim());

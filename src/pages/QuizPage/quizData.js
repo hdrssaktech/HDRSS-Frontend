@@ -1,3 +1,6 @@
+export const COMPLETED_CATEGORIES_KEY = "hdrss_quiz_completed_categories";
+
+
 export const QUIZ_CATEGORIES = [
   {
     id: "dharma",
