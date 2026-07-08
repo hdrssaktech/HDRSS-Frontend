@@ -2,79 +2,26 @@ import React, { useState, useEffect, useRef } from 'react';
 import {
   StyleSheet, Text, View, ScrollView,
   TouchableOpacity, StatusBar, Dimensions, Platform,
-  FlatList, Alert, Modal, Animated, ActivityIndicator
+  FlatList, Alert, Modal, Animated, ActivityIndicator,
+  Image
 } from 'react-native';
 import { WebView } from 'react-native-webview';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import Loader from '../../components/Alert/Loader';
 
-const { width } = Dimensions.get('window');
+const { width, height } = Dimensions.get('window');
 const isTablet = width >= 600;
+const isLargeTablet = width >= 1024;
 
 const STORAGE_KEY = 'course_progress';
 const ACTIVE_LEVEL_KEY = 'active_level';
 const COMPLETED_LEVELS_KEY = 'completed_levels';
 
-// Sample course data with levels
-const DEMO_LEVELS = [
-  { 
-    _id: 'lvl-1', 
-    level: 'Level 1: Initialization Core', 
-    intro: 'Analyze framework layouts, device environment profiles, and standard repository structures.',
-    videolink: 'https://www.w3schools.com/html/mov_bbb.mp4', 
-    page1refid: 'c1',
-    duration: '12:30',
-    order: 1
-  },
-  { 
-    _id: 'lvl-2', 
-    level: 'Level 2: Advanced State Engine', 
-    intro: 'Break down system behaviors across threads, memory cycles, and remote data binding pipelines.',
-    videolink: 'https://www.w3schools.com/html/movie.mp4', 
-    page1refid: 'c1',
-    duration: '18:45',
-    order: 2
-  },
-  { 
-    _id: 'lvl-3', 
-    level: 'Level 3: API Integration Mastery', 
-    intro: 'Master RESTful API integration, error handling, and data persistence strategies.',
-    videolink: 'https://www.w3schools.com/html/mov_bbb.mp4', 
-    page1refid: 'c1',
-    duration: '22:15',
-    order: 3
-  },
-  { 
-    _id: 'lvl-4', 
-    level: 'Level 4: Performance Optimization', 
-    intro: 'Learn advanced performance tuning, memory management, and optimization techniques.',
-    videolink: 'https://www.w3schools.com/html/movie.mp4', 
-    page1refid: 'c1',
-    duration: '15:20',
-    order: 4
-  },
-  { 
-    _id: 'lvl-5', 
-    level: 'Level 5: Deployment & DevOps', 
-    intro: 'Understand CI/CD pipelines, cloud deployment, and monitoring strategies.',
-    videolink: 'https://www.w3schools.com/html/mov_bbb.mp4', 
-    page1refid: 'c1',
-    duration: '20:00',
-    order: 5
-  },
-  { 
-    _id: 'lvl-6', 
-    level: 'Level 1: Network Core Architectures', 
-    intro: 'A structural dive into router requests, parameter tracking modules, and secure controller queries.',
-    videolink: 'https://www.w3schools.com/html/mov_bbb.mp4', 
-    page1refid: 'c2',
-    duration: '14:30',
-    order: 1
-  },
-];
+const API_URL = 'https://hdrss-backend.onrender.com/api/course-page2/by-course';
 
 export default function GurukulamPage2({ route, navigation }) {
-  const { courseId, courseName, onProgressUpdate } = route.params;
+  const { courseId, courseName } = route.params;
   const [levels, setLevels] = useState([]);
   const [activeLevel, setActiveLevel] = useState(null);
   const [completedLevels, setCompletedLevels] = useState([]);
@@ -83,77 +30,140 @@ export default function GurukulamPage2({ route, navigation }) {
   const [isVideoEnded, setIsVideoEnded] = useState(false);
   const [courseProgress, setCourseProgress] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(false);
+  const [showGalleryModal, setShowGalleryModal] = useState(false);
+  const [selectedGalleryImage, setSelectedGalleryImage] = useState(null);
   const webViewRef = useRef(null);
   const fadeAnim = useRef(new Animated.Value(0)).current;
 
+  // Fetch levels from API
+  const fetchLevels = async (courseId) => {
+    try {
+      const response = await fetch(`${API_URL}/${courseId}`);
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      const data = await response.json();
+      
+      let mappedLevels = [];
+      if (Array.isArray(data) && data.length > 0) {
+        mappedLevels = data.map((item, index) => {
+          // Extract gallery URLs from objects
+          let galleryArray = [];
+          
+          if (item.gallery) {
+            if (Array.isArray(item.gallery)) {
+              // Handle array of objects with 'url' property
+              galleryArray = item.gallery
+                .filter(img => img && typeof img === 'object' && img.url && typeof img.url === 'string')
+                .map(img => img.url);
+            } else if (typeof item.gallery === 'string') {
+              // Handle single string URL
+              galleryArray = [item.gallery];
+            } else if (typeof item.gallery === 'object' && item.gallery.url) {
+              // Handle single object with 'url' property
+              galleryArray = [item.gallery.url];
+            }
+          }
+          
+          return {
+            _id: String(item.id),
+            level: item.level || `Level ${index + 1}`,
+            intro: item.intro || 'No description available',
+            videolink: item.videolink || '',
+            page1refid: String(item.page1refid),
+            orderno: item.orderno || index + 1,
+            duration: generateDuration(index),
+            order: item.orderno || index + 1,
+            CoursePage1: item.CoursePage1,
+            gallery: galleryArray // Now contains clean URL strings
+          };
+        });
+        
+        // Sort by order number
+        mappedLevels.sort((a, b) => (a.order || 0) - (b.order || 0));
+      }
+      
+      return mappedLevels;
+    } catch (error) {
+      console.log('Error fetching levels:', error);
+      setError(true);
+      return [];
+    }
+  };
+
+  const generateDuration = (index) => {
+    const minutes = (index % 3) + 1;
+    const seconds = (index * 7) % 60;
+    return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+  };
+
   useEffect(() => {
-    const matched = DEMO_LEVELS.filter(item => item.page1refid === courseId);
-    const sorted = matched.sort((a, b) => (a.order || 0) - (b.order || 0));
-    setLevels(sorted);
+    const loadData = async () => {
+      setIsLoading(true);
+      setError(false);
+      
+      const fetchedLevels = await fetchLevels(courseId);
+      
+      if (fetchedLevels.length === 0) {
+        setError(true);
+        setLevels([]);
+        setIsLoading(false);
+        return;
+      }
+      
+      setLevels(fetchedLevels);
+      await loadSavedData(fetchedLevels);
+      setIsLoading(false);
+    };
     
-    // Load all saved data
-    loadSavedData(sorted);
+    loadData();
   }, [courseId]);
 
-  // Load saved progress, completed levels, and active level
   const loadSavedData = async (sortedLevels) => {
     try {
-      // Load progress
       const saved = await AsyncStorage.getItem(STORAGE_KEY);
       const progressData = saved ? JSON.parse(saved) : {};
       
-      // Load completed levels
       const savedCompleted = await AsyncStorage.getItem(COMPLETED_LEVELS_KEY);
       const completedData = savedCompleted ? JSON.parse(savedCompleted) : {};
       
-      // Load active level
       const savedActiveLevel = await AsyncStorage.getItem(ACTIVE_LEVEL_KEY);
       const activeLevelData = savedActiveLevel ? JSON.parse(savedActiveLevel) : {};
       
-      // Get progress for this course
       const courseProgressData = progressData[courseId] || 0;
       setCourseProgress(courseProgressData);
       
-      // Get completed levels for this course
       const completedForCourse = completedData[courseId] || [];
       setCompletedLevels(completedForCourse);
       
-      // If we have completed levels but progress is 0, update progress
       if (completedForCourse.length > 0 && courseProgressData === 0) {
         const newProgress = Math.round((completedForCourse.length / sortedLevels.length) * 100);
         setCourseProgress(newProgress);
-        // Save the updated progress
         progressData[courseId] = newProgress;
         await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(progressData));
       }
       
-      // Determine active level
       let active = null;
       const savedActiveForCourse = activeLevelData[courseId];
       
       if (savedActiveForCourse) {
-        // Find the saved active level
         active = sortedLevels.find(l => l._id === savedActiveForCourse);
       }
       
-      // If no saved active level or it's completed, find first uncompleted
       if (!active || completedForCourse.includes(active._id)) {
         const firstUncompleted = sortedLevels.find(l => !completedForCourse.includes(l._id));
         active = firstUncompleted || sortedLevels[0];
       }
       
       setActiveLevel(active);
-      setIsLoading(false);
       
     } catch (e) {
       console.log('Error loading data:', e);
-      // Fallback: set first level as active
       setActiveLevel(sortedLevels[0]);
-      setIsLoading(false);
     }
   };
 
-  // Save completed levels
   const saveCompletedLevels = async (completed) => {
     try {
       const saved = await AsyncStorage.getItem(COMPLETED_LEVELS_KEY);
@@ -165,7 +175,6 @@ export default function GurukulamPage2({ route, navigation }) {
     }
   };
 
-  // Save active level
   const saveActiveLevel = async (levelId) => {
     try {
       const saved = await AsyncStorage.getItem(ACTIVE_LEVEL_KEY);
@@ -177,22 +186,14 @@ export default function GurukulamPage2({ route, navigation }) {
     }
   };
 
-  // Save progress to storage
   const saveProgress = async (progress, completed) => {
     try {
-      // Save progress
       const saved = await AsyncStorage.getItem(STORAGE_KEY);
       const progressData = saved ? JSON.parse(saved) : {};
       progressData[courseId] = progress;
       await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(progressData));
       
-      // Save completed levels
       await saveCompletedLevels(completed);
-      
-      // Update parent component if callback exists
-      if (onProgressUpdate) {
-        onProgressUpdate(courseId, progress);
-      }
     } catch (e) {
       console.log('Error saving progress:', e);
     }
@@ -209,13 +210,11 @@ export default function GurukulamPage2({ route, navigation }) {
     }
   }, [showCompletionModal]);
 
-  // Calculate total progress
   const calculateProgress = () => {
     if (levels.length === 0) return 0;
     return Math.round((completedLevels.length / levels.length) * 100);
   };
 
-  // Handle video completion
   const handleVideoComplete = () => {
     if (!activeLevel) return;
     
@@ -226,7 +225,6 @@ export default function GurukulamPage2({ route, navigation }) {
       const newProgress = calculateProgress();
       setCourseProgress(newProgress);
       
-      // Save progress and completed levels
       saveProgress(newProgress, newCompleted);
       
       setCompletionMessage(`🎉 Great job! You've completed "${activeLevel.level}"`);
@@ -245,7 +243,6 @@ export default function GurukulamPage2({ route, navigation }) {
     
     if (nextLevel) {
       setActiveLevel(nextLevel);
-      // Save active level
       saveActiveLevel(nextLevel._id);
       setIsVideoEnded(false);
     } else {
@@ -280,64 +277,153 @@ export default function GurukulamPage2({ route, navigation }) {
     }
   };
 
+  // Render gallery images with error handling
+  const renderGallery = (galleryImages) => {
+    // Check if gallery exists and has valid images
+    if (!galleryImages || !Array.isArray(galleryImages) || galleryImages.length === 0) {
+      return null;
+    }
+
+    // Filter out invalid images
+    const validImages = galleryImages.filter(img => img && typeof img === 'string' && img.trim().length > 0);
+    
+    if (validImages.length === 0) {
+      return null;
+    }
+    
+    const galleryItemSize = isTablet ? (isLargeTablet ? 160 : 130) : 100;
+    const galleryImageHeight = isTablet ? (isLargeTablet ? 120 : 100) : 80;
+    
+    return (
+      <View style={isTablet ? tabletStyles.galleryContainer : mobileStyles.galleryContainer}>
+        <View style={styles.galleryHeader}>
+          <Text style={isTablet ? tabletStyles.galleryTitle : mobileStyles.galleryTitle}> Course Resources</Text>
+          
+        </View>
+        <ScrollView 
+          horizontal 
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={isTablet ? tabletStyles.galleryScroll : mobileStyles.galleryScroll}
+        >
+          {validImages.map((image, index) => (
+            <TouchableOpacity
+              key={index}
+              style={[
+                isTablet ? tabletStyles.galleryItem : mobileStyles.galleryItem,
+                { width: galleryItemSize, height: galleryImageHeight }
+              ]}
+              onPress={() => {
+                setSelectedGalleryImage(image);
+                setShowGalleryModal(true);
+              }}
+              activeOpacity={0.8}
+            >
+              <Image 
+                source={{ uri: image }} 
+                style={isTablet ? tabletStyles.galleryImage : mobileStyles.galleryImage}
+                resizeMode="cover"
+                onError={(e) => console.log('Image load error:', e.nativeEvent.error)}
+              />
+              <View style={isTablet ? tabletStyles.galleryOverlay : mobileStyles.galleryOverlay}>
+                <Ionicons name="expand-outline" size={isTablet ? 24 : 20} color="#fff" />
+              </View>
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
+      </View>
+    );
+  };
+
+  // Gallery Modal
+  const renderGalleryModal = () => (
+    <Modal
+      transparent
+      visible={showGalleryModal}
+      animationType="fade"
+      onRequestClose={() => setShowGalleryModal(false)}
+    >
+      <View style={isTablet ? tabletStyles.galleryModalOverlay : mobileStyles.galleryModalOverlay}>
+        <TouchableOpacity 
+          style={isTablet ? tabletStyles.galleryModalClose : mobileStyles.galleryModalClose}
+          onPress={() => setShowGalleryModal(false)}
+        >
+          <Ionicons name="close" size={isTablet ? 36 : 30} color="#fff" />
+        </TouchableOpacity>
+        {selectedGalleryImage && (
+          <Image 
+            source={{ uri: selectedGalleryImage }} 
+            style={isTablet ? tabletStyles.galleryModalImage : mobileStyles.galleryModalImage}
+            resizeMode="contain"
+            onError={(e) => console.log('Modal image load error:', e.nativeEvent.error)}
+          />
+        )}
+      </View>
+    </Modal>
+  );
+
   const renderLevelItem = ({ item, index }) => {
     const isCompleted = completedLevels.includes(item._id);
     const isActive = activeLevel?._id === item._id;
     const isLocked = !isCompleted && !isActive && index > 0 && 
                      !completedLevels.includes(levels[index - 1]?._id);
 
+    // Check if item has valid gallery images
+    const hasGallery = item.gallery && Array.isArray(item.gallery) && item.gallery.length > 0;
+
     return (
       <TouchableOpacity
         key={item._id}
         activeOpacity={0.75}
         style={[
-          styles.syllabusRow,
-          isActive && styles.syllabusRowActive,
-          isCompleted && styles.syllabusRowCompleted,
-          isLocked && styles.syllabusRowLocked,
+          isTablet ? tabletStyles.syllabusRow : mobileStyles.syllabusRow,
+          isActive && (isTablet ? tabletStyles.syllabusRowActive : mobileStyles.syllabusRowActive),
+          isCompleted && (isTablet ? tabletStyles.syllabusRowCompleted : mobileStyles.syllabusRowCompleted),
+          isLocked && (isTablet ? tabletStyles.syllabusRowLocked : mobileStyles.syllabusRowLocked),
         ]}
         onPress={() => navigateToLevel(item)}
         disabled={isLocked}
       >
-        <View style={[styles.statusCircle, isCompleted && styles.statusCircleCompleted]}>
+        <View style={[
+          isTablet ? tabletStyles.statusCircle : mobileStyles.statusCircle,
+          isCompleted && (isTablet ? tabletStyles.statusCircleCompleted : mobileStyles.statusCircleCompleted)
+        ]}>
           {isCompleted ? (
-            <Ionicons name="checkmark" size={14} color="#fff" />
+            <Ionicons name="checkmark" size={isTablet ? (isLargeTablet ? 18 : 16) : 14} color="#fff" />
           ) : isActive ? (
-            <Ionicons name="play" size={12} color="#fff" />
+            <Ionicons name="play" size={isTablet ? (isLargeTablet ? 16 : 14) : 12} color="#fff" />
           ) : isLocked ? (
-            <Ionicons name="lock-closed" size={12} color="#94A3B8" />
+            <Ionicons name="lock-closed" size={isTablet ? (isLargeTablet ? 16 : 14) : 12} color="#94A3B8" />
           ) : (
-            <Text style={styles.indexTxt}>{index + 1}</Text>
+            <Text style={isTablet ? tabletStyles.indexTxt : mobileStyles.indexTxt}>{index + 1}</Text>
           )}
         </View>
 
-        <View style={styles.levelInfo}>
+        <View style={isTablet ? tabletStyles.levelInfo : mobileStyles.levelInfo}>
           <Text
             style={[
-              styles.syllabusName,
-              isActive && styles.syllabusNameActive,
-              isCompleted && styles.syllabusNameCompleted,
-              isLocked && styles.syllabusNameLocked,
+              isTablet ? tabletStyles.syllabusName : mobileStyles.syllabusName,
+              isActive && (isTablet ? tabletStyles.syllabusNameActive : mobileStyles.syllabusNameActive),
+              isCompleted && (isTablet ? tabletStyles.syllabusNameCompleted : mobileStyles.syllabusNameCompleted),
+              isLocked && (isTablet ? tabletStyles.syllabusNameLocked : mobileStyles.syllabusNameLocked),
             ]}
-            numberOfLines={1}
+            numberOfLines={isTablet ? 2 : 1}
           >
             {item.level}
           </Text>
-          <Text style={styles.durationText}>{item.duration}</Text>
         </View>
 
         {isActive && (
-          <View style={styles.watchingBadge}>
-            <Text style={styles.watchingTxt}>▶ Playing</Text>
+          <View style={isTablet ? tabletStyles.watchingBadge : mobileStyles.watchingBadge}>
+            <Text style={isTablet ? tabletStyles.watchingTxt : mobileStyles.watchingTxt}>▶ Playing</Text>
           </View>
         )}
         {isCompleted && !isActive && (
-          <View style={styles.completedBadge}>
-            <Text style={styles.completedTxt}>✓ Done</Text>
+          <View style={isTablet ? tabletStyles.completedBadge : mobileStyles.completedBadge}>
+            <Text style={isTablet ? tabletStyles.completedTxt : mobileStyles.completedTxt}>✓ Done</Text>
           </View>
         )}
         {isLocked && (
-          <Ionicons name="lock-closed" size={16} color="#CBD5E1" />
+          <Ionicons name="lock-closed" size={isTablet ? (isLargeTablet ? 24 : 20) : 16} color="#CBD5E1" />
         )}
       </TouchableOpacity>
     );
@@ -346,9 +432,9 @@ export default function GurukulamPage2({ route, navigation }) {
   const renderVideoPlayer = () => {
     if (!activeLevel) {
       return (
-        <View style={styles.playerEmpty}>
-          <Ionicons name="play-circle-outline" size={40} color="rgba(255,255,255,0.4)" />
-          <Text style={styles.playerEmptyTxt}>Loading lesson…</Text>
+        <View style={isTablet ? tabletStyles.playerEmpty : mobileStyles.playerEmpty}>
+          <Ionicons name="play-circle-outline" size={isTablet ? (isLargeTablet ? 60 : 50) : 40} color="rgba(255,255,255,0.4)" />
+          <Text style={isTablet ? tabletStyles.playerEmptyTxt : mobileStyles.playerEmptyTxt}>Loading lesson…</Text>
         </View>
       );
     }
@@ -360,7 +446,6 @@ export default function GurukulamPage2({ route, navigation }) {
           window.ReactNativeWebView.postMessage('video-ended');
         });
         
-        // Track video progress
         video.addEventListener('timeupdate', () => {
           const progress = (video.currentTime / video.duration) * 100;
           if (progress >= 95) {
@@ -368,7 +453,6 @@ export default function GurukulamPage2({ route, navigation }) {
           }
         });
         
-        // Auto-play
         video.play();
       }
       true;
@@ -380,7 +464,7 @@ export default function GurukulamPage2({ route, navigation }) {
         allowsFullscreenVideo
         allowsInlineMediaPlayback
         mediaPlaybackRequiresUserAction={false}
-        style={styles.video}
+        style={isTablet ? tabletStyles.video : mobileStyles.video}
         source={{
           html: `
             <html>
@@ -398,9 +482,6 @@ export default function GurukulamPage2({ route, navigation }) {
             setIsVideoEnded(true);
             handleVideoComplete();
           }
-          if (event.nativeEvent.data === 'video-near-end') {
-            // Video is near end
-          }
         }}
         injectedJavaScript={injectedJS}
         javaScriptEnabled={true}
@@ -415,34 +496,37 @@ export default function GurukulamPage2({ route, navigation }) {
       animationType="fade"
       onRequestClose={() => setShowCompletionModal(false)}
     >
-      <View style={styles.modalOverlay}>
-        <Animated.View style={[styles.modalContent, { opacity: fadeAnim }]}>
-          <View style={styles.modalIcon}>
-            <Ionicons name="checkmark-circle" size={60} color="#4CAF50" />
+      <View style={isTablet ? tabletStyles.modalOverlay : mobileStyles.modalOverlay}>
+        <Animated.View style={[
+          isTablet ? tabletStyles.modalContent : mobileStyles.modalContent, 
+          { opacity: fadeAnim }
+        ]}>
+          <View style={isTablet ? tabletStyles.modalIcon : mobileStyles.modalIcon}>
+            <Ionicons name="checkmark-circle" size={isTablet ? (isLargeTablet ? 80 : 70) : 60} color="#4CAF50" />
           </View>
-          <Text style={styles.modalTitle}>Level Complete!</Text>
-          <Text style={styles.modalMessage}>{completionMessage}</Text>
-          <View style={styles.modalProgress}>
-            <View style={styles.progressTrack}>
+          <Text style={isTablet ? tabletStyles.modalTitle : mobileStyles.modalTitle}>Level Complete!</Text>
+          <Text style={isTablet ? tabletStyles.modalMessage : mobileStyles.modalMessage}>{completionMessage}</Text>
+          <View style={isTablet ? tabletStyles.modalProgress : mobileStyles.modalProgress}>
+            <View style={isTablet ? tabletStyles.progressTrack : mobileStyles.progressTrack}>
               <View 
                 style={[
-                  styles.progressFill, 
+                  isTablet ? tabletStyles.progressFill : mobileStyles.progressFill,
                   { width: `${(completedLevels.length / levels.length) * 100}%` }
                 ]} 
               />
             </View>
-            <Text style={styles.progressText}>
+            <Text style={isTablet ? tabletStyles.progressText : mobileStyles.progressText}>
               {completedLevels.length} / {levels.length} completed
             </Text>
           </View>
           <TouchableOpacity
-            style={styles.modalButton}
+            style={isTablet ? tabletStyles.modalButton : mobileStyles.modalButton}
             onPress={() => {
               setShowCompletionModal(false);
               advanceToNextLevel();
             }}
           >
-            <Text style={styles.modalButtonText}>Continue →</Text>
+            <Text style={isTablet ? tabletStyles.modalButtonText : mobileStyles.modalButtonText}>Continue →</Text>
           </TouchableOpacity>
         </Animated.View>
       </View>
@@ -452,80 +536,109 @@ export default function GurukulamPage2({ route, navigation }) {
   const progress = levels.length > 0 ? (completedLevels.length / levels.length) * 100 : 0;
 
   if (isLoading) {
+    <Loader/>
+  }
+
+  if (error || levels.length === 0) {
     return (
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#8B1A1A" />
-        <Text style={styles.loadingText}>Loading course...</Text>
+      <View style={isTablet ? tabletStyles.errorContainer : mobileStyles.errorContainer}>
+        <Ionicons name="cloud-offline-outline" size={isTablet ? (isLargeTablet ? 100 : 80) : 60} color="#CBD5E1" />
+        <Text style={isTablet ? tabletStyles.errorTitle : mobileStyles.errorTitle}>No Course Available</Text>
+        <Text style={isTablet ? tabletStyles.errorSub : mobileStyles.errorSub}>Unable to load course levels. Please try again.</Text>
+        <TouchableOpacity 
+          style={isTablet ? tabletStyles.retryButton : mobileStyles.retryButton}
+          onPress={() => {
+            setError(false);
+            setIsLoading(true);
+            fetchLevels(courseId).then(fetched => {
+              if (fetched.length > 0) {
+                setLevels(fetched);
+                loadSavedData(fetched);
+              }
+              setIsLoading(false);
+            });
+          }}
+        >
+          <Text style={isTablet ? tabletStyles.retryButtonText : mobileStyles.retryButtonText}>Retry</Text>
+        </TouchableOpacity>
       </View>
     );
   }
 
   return (
-    <View style={styles.container}>
+    <View style={isTablet ? tabletStyles.container : mobileStyles.container}>
       <StatusBar backgroundColor="#8B1A1A" barStyle="light-content" />
 
-      <View style={styles.headerContainer}>
+      <View style={isTablet ? tabletStyles.headerContainer : mobileStyles.headerContainer}>
         <TouchableOpacity
-          style={styles.backButton}
+          style={isTablet ? tabletStyles.backButton : mobileStyles.backButton}
           onPress={() => navigation.goBack()}
         >
-          <Ionicons name="chevron-back" size={isTablet ? 30 : 24} color="#FFFFFF" />
+          <Ionicons name="chevron-back" size={isTablet ? (isLargeTablet ? 36 : 30) : 24} color="#FFFFFF" />
         </TouchableOpacity>
 
-        <View style={styles.titleContainer}>
-          <Text style={styles.headerTitle} numberOfLines={1}>
+        <View style={isTablet ? tabletStyles.titleContainer : mobileStyles.titleContainer}>
+          <Text style={isTablet ? tabletStyles.headerTitle : mobileStyles.headerTitle} numberOfLines={1}>
             {courseName}
           </Text>
         </View>
 
-        <TouchableOpacity style={styles.progressButton} onPress={() => {
+        <TouchableOpacity style={isTablet ? tabletStyles.progressButton : mobileStyles.progressButton} onPress={() => {
           Alert.alert(
             '📊 Course Progress',
             `Completed: ${completedLevels.length} / ${levels.length} levels\nProgress: ${Math.round(progress)}%`,
             [{ text: 'OK' }]
           );
         }}>
-          <Ionicons name="stats-chart" size={isTablet ? 24 : 20} color="#FFFFFF" />
+          <Ionicons name="stats-chart" size={isTablet ? (isLargeTablet ? 28 : 24) : 20} color="#FFFFFF" />
         </TouchableOpacity>
       </View>
 
-      <View style={styles.progressHeader}>
-        <View style={styles.progressBarTrack}>
-          <View style={[styles.progressBarFill, { width: `${Math.min(progress, 100)}%` }]} />
+      <View style={isTablet ? tabletStyles.progressHeader : mobileStyles.progressHeader}>
+        <View style={isTablet ? tabletStyles.progressBarTrack : mobileStyles.progressBarTrack}>
+          <View style={[
+            isTablet ? tabletStyles.progressBarFill : mobileStyles.progressBarFill,
+            { width: `${Math.min(progress, 100)}%` }
+          ]} />
         </View>
-        <Text style={styles.progressHeaderText}>{Math.round(progress)}% Complete</Text>
+        <Text style={isTablet ? tabletStyles.progressHeaderText : mobileStyles.progressHeaderText}>
+          {Math.round(progress)}% Complete
+        </Text>
       </View>
 
-      <View style={styles.playerWrap}>
+      <View style={isTablet ? tabletStyles.playerWrap : mobileStyles.playerWrap}>
         {renderVideoPlayer()}
       </View>
 
       <ScrollView
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={styles.scrollContent}
+        contentContainerStyle={isTablet ? tabletStyles.scrollContent : mobileStyles.scrollContent}
       >
         {activeLevel && (
-          <View style={styles.infoCard}>
-            <View style={styles.infoBadge}>
-              <Text style={styles.infoBadgeTxt}>Now Playing</Text>
+          <View style={isTablet ? tabletStyles.infoCard : mobileStyles.infoCard}>
+            <View style={isTablet ? tabletStyles.infoBadge : mobileStyles.infoBadge}>
+              <Text style={isTablet ? tabletStyles.infoBadgeTxt : mobileStyles.infoBadgeTxt}>Now Playing</Text>
             </View>
-            <Text style={styles.levelTitle}>{activeLevel.level}</Text>
-            <Text style={styles.levelIntro}>{activeLevel.intro}</Text>
-            <Text style={styles.durationInfo}>⏱ Duration: {activeLevel.duration}</Text>
+            <Text style={isTablet ? tabletStyles.levelTitle : mobileStyles.levelTitle}>{activeLevel.level}</Text>
+            <Text style={isTablet ? tabletStyles.levelIntro : mobileStyles.levelIntro}>{activeLevel.intro}</Text>
+            <Text style={isTablet ? tabletStyles.durationInfo : mobileStyles.durationInfo}>⏱ Duration: {activeLevel.duration}</Text>
+            
+            {/* Render gallery if available */}
+            {renderGallery(activeLevel.gallery)}
           </View>
         )}
 
-        <View style={styles.syllabusHeader}>
-          <Text style={styles.sectionLbl}>Course Syllabus</Text>
-          <Text style={styles.completedCount}>
+        <View style={isTablet ? tabletStyles.syllabusHeader : mobileStyles.syllabusHeader}>
+          <Text style={isTablet ? tabletStyles.sectionLbl : mobileStyles.sectionLbl}>Course Syllabus</Text>
+          <Text style={isTablet ? tabletStyles.completedCount : mobileStyles.completedCount}>
             {completedLevels.length}/{levels.length} completed
           </Text>
         </View>
 
         {levels.length === 0 ? (
-          <View style={styles.emptyBox}>
-            <Ionicons name="document-outline" size={28} color="#CBD5E1" />
-            <Text style={styles.emptyTxt}>No modules found for this track.</Text>
+          <View style={isTablet ? tabletStyles.emptyBox : mobileStyles.emptyBox}>
+            <Ionicons name="document-outline" size={isTablet ? (isLargeTablet ? 44 : 36) : 28} color="#CBD5E1" />
+            <Text style={isTablet ? tabletStyles.emptyTxt : mobileStyles.emptyTxt}>No modules found for this track.</Text>
           </View>
         ) : (
           <FlatList
@@ -537,22 +650,39 @@ export default function GurukulamPage2({ route, navigation }) {
         )}
 
         {completedLevels.length > 0 && completedLevels.length === levels.length && (
-          <View style={styles.completionCard}>
-            <Ionicons name="trophy" size={32} color="#D4AF37" />
-            <Text style={styles.completionTitle}>🏆 Course Complete!</Text>
-            <Text style={styles.completionSub}>You've mastered all levels of this course.</Text>
+          <View style={isTablet ? tabletStyles.completionCard : mobileStyles.completionCard}>
+            <Ionicons name="trophy" size={isTablet ? (isLargeTablet ? 48 : 40) : 32} color="#D4AF37" />
+            <Text style={isTablet ? tabletStyles.completionTitle : mobileStyles.completionTitle}>🏆 Course Complete!</Text>
+            <Text style={isTablet ? tabletStyles.completionSub : mobileStyles.completionSub}>You've mastered all levels of this course.</Text>
           </View>
         )}
 
-        <View style={{ height: 40 }} />
+        <View style={{ height: isTablet ? (isLargeTablet ? 80 : 60) : 40 }} />
       </ScrollView>
 
       {renderCompletionModal()}
+      {renderGalleryModal()}
     </View>
   );
 }
 
+// Additional styles for gallery header
 const styles = StyleSheet.create({
+  galleryHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: isTablet ? 12 : 10,
+  },
+  galleryCount: {
+    fontSize: isTablet ? 12 : 10,
+    color: '#94A3B8',
+    fontWeight: '500',
+  },
+});
+
+// ============ MOBILE STYLES ============
+const mobileStyles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#F8FAFC',
@@ -563,16 +693,51 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: '#F8FAFC',
+    gap: 12,
   },
 
   loadingText: {
-    marginTop: 12,
     fontSize: 16,
     color: '#64748B',
     fontWeight: '500',
   },
 
-  /* HEADER STYLES */
+  errorContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#F8FAFC',
+    padding: 20,
+    gap: 12,
+  },
+
+  errorTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#1A0A0A',
+  },
+
+  errorSub: {
+    fontSize: 14,
+    color: '#64748B',
+    textAlign: 'center',
+    maxWidth: 300,
+  },
+
+  retryButton: {
+    backgroundColor: '#8B1A1A',
+    paddingVertical: 10,
+    paddingHorizontal: 24,
+    borderRadius: 10,
+    marginTop: 8,
+  },
+
+  retryButtonText: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    fontWeight: '700',
+  },
+
   headerContainer: {
     backgroundColor: "#9D1B00",
     paddingTop: Platform.OS === 'ios' ? 50 : 40,
@@ -591,9 +756,9 @@ const styles = StyleSheet.create({
   },
 
   backButton: {
-    width: isTablet ? 50 : 40,
-    height: isTablet ? 50 : 40,
-    borderRadius: isTablet ? 25 : 20,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
     backgroundColor: 'rgba(255,255,255,0.15)',
     justifyContent: 'center',
     alignItems: 'center',
@@ -604,19 +769,20 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
+    paddingHorizontal: 4,
   },
 
   headerTitle: {
     color: '#fff',
-    fontSize: isTablet ? 22 : 19,
+    fontSize: 19,
     fontWeight: '800',
     letterSpacing: 0.3,
   },
 
   progressButton: {
-    width: isTablet ? 50 : 40,
-    height: isTablet ? 50 : 40,
-    borderRadius: isTablet ? 25 : 20,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
     backgroundColor: 'rgba(255,255,255,0.15)',
     justifyContent: 'center',
     alignItems: 'center',
@@ -680,7 +846,7 @@ const styles = StyleSheet.create({
   },
 
   scrollContent: {
-    padding: isTablet ? 20 : 14,
+    padding: 14,
     paddingBottom: 40,
   },
 
@@ -716,7 +882,7 @@ const styles = StyleSheet.create({
   },
 
   levelTitle: {
-    fontSize: isTablet ? 17 : 15,
+    fontSize: 15,
     fontWeight: '700',
     color: '#0F172A',
     marginBottom: 6,
@@ -724,7 +890,7 @@ const styles = StyleSheet.create({
   },
 
   levelIntro: {
-    fontSize: isTablet ? 13 : 12,
+    fontSize: 12,
     color: '#64748B',
     lineHeight: 18,
     marginBottom: 6,
@@ -734,6 +900,83 @@ const styles = StyleSheet.create({
     fontSize: 11,
     color: '#94A3B8',
     fontWeight: '500',
+  },
+
+  galleryContainer: {
+    marginTop: 12,
+    borderTopWidth: 1,
+    borderTopColor: '#E2E8F0',
+    paddingTop: 12,
+  },
+
+  galleryTitle: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#374151',
+  },
+
+  galleryScroll: {
+    paddingRight: 8,
+    paddingTop: 8,
+  },
+
+  galleryItem: {
+    borderRadius: 8,
+    marginRight: 8,
+    overflow: 'hidden',
+    position: 'relative',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+  },
+
+  galleryImage: {
+    width: '100%',
+    height: '100%',
+  },
+
+  galleryOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0,0,0,0.3)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    opacity: 0,
+  },
+
+  galleryBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    marginTop: 4,
+  },
+
+  galleryBadgeText: {
+    fontSize: 10,
+    color: '#8B1A1A',
+    fontWeight: '600',
+  },
+
+  galleryModalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.9)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+
+  galleryModalClose: {
+    position: 'absolute',
+    top: Platform.OS === 'ios' ? 50 : 40,
+    right: 20,
+    zIndex: 1,
+    padding: 10,
+  },
+
+  galleryModalImage: {
+    width: width * 0.9,
+    height: height * 0.8,
   },
 
   syllabusHeader: {
@@ -774,7 +1017,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: '#fff',
     borderRadius: 12,
-    padding: isTablet ? 14 : 12,
+    padding: 12,
     marginBottom: 8,
     borderWidth: 1,
     borderColor: '#E2E8F0',
@@ -828,7 +1071,7 @@ const styles = StyleSheet.create({
   },
 
   syllabusName: {
-    fontSize: isTablet ? 14 : 12,
+    fontSize: 12,
     fontWeight: '500',
     color: '#374151',
   },
@@ -984,6 +1227,556 @@ const styles = StyleSheet.create({
   modalButtonText: {
     color: '#FFF',
     fontSize: 16,
+    fontWeight: '700',
+  },
+});
+
+// ============ TABLET STYLES ============
+const tabletStyles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#F8FAFC',
+  },
+
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#F8FAFC',
+    gap: 16,
+  },
+
+  loadingText: {
+    fontSize: 18,
+    color: '#64748B',
+    fontWeight: '500',
+  },
+
+  errorContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#F8FAFC',
+    padding: 30,
+    gap: 16,
+  },
+
+  errorTitle: {
+    fontSize: 22,
+    fontWeight: '700',
+    color: '#1A0A0A',
+  },
+
+  errorSub: {
+    fontSize: 16,
+    color: '#64748B',
+    textAlign: 'center',
+    maxWidth: 400,
+  },
+
+  retryButton: {
+    backgroundColor: '#8B1A1A',
+    paddingVertical: 14,
+    paddingHorizontal: 32,
+    borderRadius: 12,
+    marginTop: 12,
+  },
+
+  retryButtonText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: '700',
+  },
+
+  headerContainer: {
+    backgroundColor: "#9D1B00",
+    paddingTop: Platform.OS === 'ios' ? 60 : 50,
+    paddingBottom: 20,
+    paddingHorizontal: 24,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    borderBottomLeftRadius: 35,
+    borderBottomRightRadius: 35,
+    elevation: 10,
+    shadowColor: '#8B1A1A',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.35,
+    shadowRadius: 12,
+  },
+
+  backButton: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    backgroundColor: 'rgba(255,255,255,0.15)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 1,
+  },
+
+  titleContainer: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 8,
+  },
+
+  headerTitle: {
+    color: '#fff',
+    fontSize: isLargeTablet ? 26 : 22,
+    fontWeight: '800',
+    letterSpacing: 0.3,
+  },
+
+  progressButton: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    backgroundColor: 'rgba(255,255,255,0.15)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 1,
+  },
+
+  progressHeader: {
+    backgroundColor: '#FFF',
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#E2E8F0',
+  },
+
+  progressBarTrack: {
+    flex: 1,
+    height: 8,
+    backgroundColor: '#E2E8F0',
+    borderRadius: 4,
+    overflow: 'hidden',
+  },
+
+  progressBarFill: {
+    height: 8,
+    backgroundColor: '#D4AF37',
+    borderRadius: 4,
+  },
+
+  progressHeaderText: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#8B1A1A',
+    minWidth: 80,
+    textAlign: 'right',
+  },
+
+  playerWrap: {
+    width: '100%',
+    aspectRatio: 16 / 9,
+    backgroundColor: '#0F172A',
+  },
+
+  video: {
+    flex: 1,
+    backgroundColor: '#000',
+  },
+
+  playerEmpty: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: 10,
+  },
+
+  playerEmptyTxt: {
+    color: 'rgba(255,255,255,0.45)',
+    fontSize: 15,
+  },
+
+  scrollContent: {
+    padding: isLargeTablet ? 28 : 20,
+    paddingBottom: isLargeTablet ? 80 : 60,
+  },
+
+  infoCard: {
+    backgroundColor: '#fff',
+    borderRadius: 16,
+    padding: isLargeTablet ? 24 : 18,
+    marginBottom: 22,
+    borderWidth: 0.5,
+    borderColor: '#E2E8F0',
+    elevation: 4,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.05,
+    shadowRadius: 6,
+  },
+
+  infoBadge: {
+    alignSelf: 'flex-start',
+    backgroundColor: '#FEF2F2',
+    borderRadius: 6,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    marginBottom: 10,
+    borderWidth: 0.5,
+    borderColor: '#FECACA',
+  },
+
+  infoBadgeTxt: {
+    fontSize: 12,
+    color: '#8B1A1A',
+    fontWeight: '700',
+  },
+
+  levelTitle: {
+    fontSize: isLargeTablet ? 20 : 17,
+    fontWeight: '700',
+    color: '#0F172A',
+    marginBottom: 8,
+    lineHeight: isLargeTablet ? 30 : 26,
+  },
+
+  levelIntro: {
+    fontSize: isLargeTablet ? 15 : 13,
+    color: '#64748B',
+    lineHeight: isLargeTablet ? 24 : 20,
+    marginBottom: 8,
+  },
+
+  durationInfo: {
+    fontSize: isLargeTablet ? 14 : 12,
+    color: '#94A3B8',
+    fontWeight: '500',
+  },
+
+  galleryContainer: {
+    marginTop: 16,
+    borderTopWidth: 1,
+    borderTopColor: '#E2E8F0',
+    paddingTop: 16,
+  },
+
+  galleryTitle: {
+    fontSize: isLargeTablet ? 17 : 15,
+    fontWeight: '600',
+    color: '#374151',
+  },
+
+  galleryScroll: {
+    paddingRight: 12,
+    paddingTop: 10,
+  },
+
+  galleryItem: {
+    borderRadius: 10,
+    marginRight: 10,
+    overflow: 'hidden',
+    position: 'relative',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+  },
+
+  galleryImage: {
+    width: '100%',
+    height: '100%',
+  },
+
+  galleryOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0,0,0,0.3)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    opacity: 0,
+  },
+
+  galleryBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    marginTop: 4,
+  },
+
+  galleryBadgeText: {
+    fontSize: 11,
+    color: '#8B1A1A',
+    fontWeight: '600',
+  },
+
+  galleryModalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.9)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+
+  galleryModalClose: {
+    position: 'absolute',
+    top: Platform.OS === 'ios' ? 60 : 50,
+    right: 24,
+    zIndex: 1,
+    padding: 10,
+  },
+
+  galleryModalImage: {
+    width: width * 0.85,
+    height: height * 0.8,
+  },
+
+  syllabusHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+
+  sectionLbl: {
+    fontSize: 12,
+    color: '#6B7280',
+    fontWeight: '600',
+    textTransform: 'uppercase',
+    letterSpacing: 1,
+  },
+
+  completedCount: {
+    fontSize: 13,
+    color: '#8B1A1A',
+    fontWeight: '600',
+  },
+
+  emptyBox: {
+    alignItems: 'center',
+    paddingVertical: 40,
+    gap: 10,
+  },
+
+  emptyTxt: {
+    color: '#94A3B8',
+    fontSize: 15,
+    fontStyle: 'italic',
+  },
+
+  syllabusRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#fff',
+    borderRadius: 14,
+    padding: isLargeTablet ? 18 : 14,
+    marginBottom: 10,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    gap: 12,
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.04,
+    shadowRadius: 3,
+  },
+
+  syllabusRowActive: {
+    borderColor: '#8B1A1A',
+    backgroundColor: '#FFF8F7',
+    borderWidth: isLargeTablet ? 3 : 2,
+  },
+
+  syllabusRowCompleted: {
+    borderColor: '#4CAF50',
+    backgroundColor: '#F0FFF4',
+    borderWidth: isLargeTablet ? 3 : 2,
+  },
+
+  syllabusRowLocked: {
+    opacity: 0.6,
+    backgroundColor: '#F8FAFC',
+  },
+
+  statusCircle: {
+    width: isLargeTablet ? 44 : 38,
+    height: isLargeTablet ? 44 : 38,
+    borderRadius: isLargeTablet ? 22 : 19,
+    backgroundColor: '#F1F5F9',
+    justifyContent: 'center',
+    alignItems: 'center',
+    flexShrink: 0,
+  },
+
+  statusCircleCompleted: {
+    backgroundColor: '#4CAF50',
+  },
+
+  indexTxt: {
+    fontSize: isLargeTablet ? 15 : 13,
+    fontWeight: '700',
+    color: '#64748B',
+  },
+
+  levelInfo: {
+    flex: 1,
+  },
+
+  syllabusName: {
+    fontSize: isLargeTablet ? 16 : 14,
+    fontWeight: '500',
+    color: '#374151',
+  },
+
+  syllabusNameActive: {
+    color: '#8B1A1A',
+    fontWeight: '700',
+  },
+
+  syllabusNameCompleted: {
+    color: '#2E7D32',
+    fontWeight: '600',
+  },
+
+  syllabusNameLocked: {
+    color: '#94A3B8',
+  },
+
+  durationText: {
+    fontSize: isLargeTablet ? 14 : 12,
+    color: '#94A3B8',
+    marginTop: 3,
+  },
+
+  watchingBadge: {
+    backgroundColor: '#FEF2F2',
+    borderRadius: 6,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderWidth: 0.5,
+    borderColor: '#FECACA',
+  },
+
+  watchingTxt: {
+    fontSize: 10,
+    color: '#8B1A1A',
+    fontWeight: '700',
+  },
+
+  completedBadge: {
+    backgroundColor: '#E8F5E9',
+    borderRadius: 6,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderWidth: 0.5,
+    borderColor: '#A5D6A7',
+  },
+
+  completedTxt: {
+    fontSize: 10,
+    color: '#2E7D32',
+    fontWeight: '700',
+  },
+
+  completionCard: {
+    backgroundColor: '#FFF8E1',
+    borderRadius: 16,
+    padding: isLargeTablet ? 32 : 24,
+    alignItems: 'center',
+    marginTop: 24,
+    borderWidth: isLargeTablet ? 3 : 2.5,
+    borderColor: '#D4AF37',
+  },
+
+  completionTitle: {
+    fontSize: isLargeTablet ? 24 : 20,
+    fontWeight: '800',
+    color: '#8B1A1A',
+    marginTop: 10,
+  },
+
+  completionSub: {
+    fontSize: isLargeTablet ? 17 : 15,
+    color: '#64748B',
+    textAlign: 'center',
+    marginTop: 6,
+  },
+
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.6)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+
+  modalContent: {
+    backgroundColor: '#FFF',
+    borderRadius: 28,
+    padding: 28,
+    width: width * 0.7,
+    maxWidth: 450,
+    alignItems: 'center',
+    elevation: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.2,
+    shadowRadius: 12,
+  },
+
+  modalIcon: {
+    marginBottom: 16,
+  },
+
+  modalTitle: {
+    fontSize: 22,
+    fontWeight: '800',
+    color: '#0F172A',
+    marginBottom: 10,
+  },
+
+  modalMessage: {
+    fontSize: 16,
+    color: '#64748B',
+    textAlign: 'center',
+    marginBottom: 20,
+    lineHeight: 24,
+  },
+
+  modalProgress: {
+    width: '100%',
+    marginBottom: 20,
+  },
+
+  progressTrack: {
+    height: 10,
+    backgroundColor: '#E2E8F0',
+    borderRadius: 5,
+    overflow: 'hidden',
+    marginBottom: 8,
+  },
+
+  progressFill: {
+    height: 10,
+    backgroundColor: '#D4AF37',
+    borderRadius: 5,
+  },
+
+  progressText: {
+    fontSize: 14,
+    color: '#64748B',
+    textAlign: 'center',
+  },
+
+  modalButton: {
+    backgroundColor: '#8B1A1A',
+    paddingVertical: 16,
+    paddingHorizontal: 40,
+    borderRadius: 14,
+    width: '100%',
+    alignItems: 'center',
+  },
+
+  modalButtonText: {
+    color: '#FFF',
+    fontSize: 18,
     fontWeight: '700',
   },
 });

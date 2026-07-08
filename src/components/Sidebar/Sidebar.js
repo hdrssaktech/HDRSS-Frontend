@@ -26,7 +26,7 @@ const sidebarWidth = isTablet
     { label: "Home",              icon: "home",             screen: "HomePage"    },
     { label: "About",             icon: "info",             screen: "AboutPage1"  },
     { label: "Principles",        icon: "scale",            screen: "Principles"  },
-    { label: "Quiz",              icon: "quiz",             screen: "QuizCategories" },
+    { label: "Quiz",              icon: "help",             screen: "QuizCategories" },
     { label: "Charities",         icon: "volunteer-activism",screen: "CharitiePage1"},
     { label: "HDRSS Leader",      icon: "person",           screen: "Member"      },
     { label: "Membership Form",   icon: "assignment",       screen: "Member1"     },

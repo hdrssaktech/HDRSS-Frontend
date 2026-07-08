@@ -57,6 +57,10 @@ export default function AstrologyPage2({ route }) {
     return 220;
   };
 
+  // Horizontal padding used by the FlatList's contentContainerStyle - needed
+  // so we can negate it and make the ad image / video bleed edge-to-edge
+  const listPadding = responsiveSize(16, 24, 32);
+
   // Fetch astrology data and advertisement data
   useEffect(() => {
     const loadAllData = async () => {
@@ -112,11 +116,18 @@ export default function AstrologyPage2({ route }) {
     return match ? match[1] : null;
   };
 
-  // Calculate columns based on screen size
+  // Calculate columns based on screen size - 3 on mobile, 4 on tablet & large tablet
   const numColumns = isTablet ? 4 : 3;
 
-  // Calculate card width for responsive grid
-  const cardWidth = isTablet ? (width - 96) / 4 : (width - 48) / 3;
+  // ---- CARD SIZE (SQUARE: width === height) ----
+  const cardGap = isTablet ? 12 : 8;
+  const cardWidth = Math.floor(
+    (width - listPadding * 2 - cardGap * (numColumns - 1)) / numColumns
+  );
+  const cardHeight = cardWidth; // square card
+
+  // ---- IMAGE SIZE (SQUARE, takes up most of the card) ----
+  const imageSize = Math.floor(cardWidth * 0.55);
 
   // Render advertisement item
   const renderAdItem = ({ item, index }) => (
@@ -135,15 +146,16 @@ export default function AstrologyPage2({ route }) {
     </View>
   );
 
-  // Render item for FlatList
+  // Render item for FlatList - image centered in card, name + title below
   const renderItem = ({ item }) => (
     <TouchableOpacity
       style={[
         styles.card,
         { 
           width: cardWidth,
-          padding: responsiveSize(10, 12, 14),
-          borderRadius: responsiveSize(12, 14, 16)
+          height: cardHeight,
+          padding: responsiveSize(8, 10, 12),
+          borderRadius: responsiveSize(16, 18, 20)
         }
       ]}
       activeOpacity={0.85}
@@ -153,34 +165,44 @@ export default function AstrologyPage2({ route }) {
         })
       }
     >
-      <Image
-        source={{ uri: item.image }}
-        style={[
-          styles.image,
-          { 
-            borderRadius: responsiveSize(10, 12, 14),
-            marginBottom: responsiveSize(8, 10, 12)
+      {/* IMAGE AREA - takes remaining space and centers the circle inside it */}
+      <View style={styles.imageArea}>
+        <View style={[
+          styles.imageWrapper,
+          {
+            width: imageSize,
+            height: imageSize,
+            borderRadius: imageSize / 2,
           }
-        ]}
-      />
-      <Text style={[
-        styles.name,
-        { 
-          fontSize: responsiveSize(13, 15, 17),
-          marginBottom: responsiveSize(4, 6, 8)
-        }
-      ]} numberOfLines={1}>
-        {item.name}
-      </Text>
-      <Text style={[
-        styles.title,
-        { 
-          fontSize: responsiveSize(11, 13, 15),
-          lineHeight: responsiveSize(14, 16, 18)
-        }
-      ]} numberOfLines={2}>
-        {item.title}
-      </Text>
+        ]}>
+          <Image
+            source={{ uri: item.image }}
+            style={styles.image}
+            resizeMode="cover"
+          />
+        </View>
+      </View>
+
+      {/* TEXT AREA - pinned at the bottom of the card */}
+      <View style={styles.textArea}>
+        <Text style={[
+          styles.name,
+          { fontSize: responsiveSize(12, 14, 16) }
+        ]} numberOfLines={1}>
+          {item.name}
+        </Text>
+
+        <Text style={[
+          styles.title,
+          { 
+            fontSize: responsiveSize(9, 11, 13),
+            lineHeight: responsiveSize(12, 14, 16),
+            marginTop: responsiveSize(2, 3, 4)
+          }
+        ]} numberOfLines={1}>
+          {item.title}
+        </Text>
+      </View>
     </TouchableOpacity>
   );
 
@@ -191,7 +213,11 @@ export default function AstrologyPage2({ route }) {
       {!adLoading && adData.images.length > 0 && (
         <View style={[
           styles.topAdContainer,
-          { marginBottom: responsiveSize(20, 25, 30) }
+          { 
+            marginBottom: responsiveSize(20, 25, 30),
+            marginHorizontal: -listPadding,
+            width: width,
+          }
         ]}>
           <Animated.FlatList
             ref={flatListRef}
@@ -212,68 +238,24 @@ export default function AstrologyPage2({ route }) {
             scrollEventThrottle={16}
             style={{ width: '100%' }}
           />
-          
-          {/* Dot Indicators */}
-          {adData.images.length > 1 && (
-            <View style={[
-              styles.dotContainer,
-              { bottom: responsiveSize(15, 20, 25) }
-            ]}>
-              {adData.images.map((_, index) => (
-                <View
-                  key={index}
-                  style={[
-                    styles.dot,
-                    { 
-                      backgroundColor: index === currentAdIndex ? '#93210A' : '#D3D3D3',
-                      width: index === currentAdIndex ? responsiveSize(10, 12, 14) : responsiveSize(6, 8, 10),
-                      height: responsiveSize(6, 8, 10),
-                      borderRadius: responsiveSize(3, 4, 5),
-                      marginHorizontal: responsiveSize(3, 4, 5)
-                    }
-                  ]}
-                />
-              ))}
-            </View>
-          )}
         </View>
       )}
-      
-      <Text style={[
-        styles.sectionTitle,
-        { 
-          fontSize: responsiveSize(18, 22, 26),
-          marginBottom: responsiveSize(20, 24, 28),
-          marginTop: responsiveSize(5, 8, 10)
-        }
-      ]}>
-        {astrologyType.name}
-      </Text>
     </>
   );
 
-  // List footer component for video
+  // List footer component for video - edge-to-edge, no title
   const ListFooter = () => (
     <>
-      {/* 📢 BOTTOM ADVERTISEMENT - YouTube Video */}
+      {/* 📢 BOTTOM ADVERTISEMENT - YouTube Video (edge-to-edge, no title) */}
       {!adLoading && adData.videos.length > 0 && (
         <View style={[
           styles.videoAdContainer,
           { 
             marginTop: responsiveSize(30, 35, 40),
-            marginBottom: responsiveSize(20, 25, 30)
+            marginHorizontal: -listPadding,
+            width: width,
           }
         ]}>
-          <Text style={[
-            styles.videoTitle,
-            { 
-              fontSize: responsiveSize(16, 20, 24),
-              marginBottom: responsiveSize(10, 12, 14)
-            }
-          ]}>
-            Watch Video
-          </Text>
-          
           {adData.videos.map((videoUrl, index) => {
             const videoId = extractYouTubeId(videoUrl);
             if (!videoId) return null;
@@ -285,7 +267,6 @@ export default function AstrologyPage2({ route }) {
                   styles.videoWrapper,
                   { 
                     width: '100%',
-                    borderRadius: responsiveSize(10, 14, 18),
                     marginBottom: responsiveSize(15, 20, 25)
                   }
                 ]}
@@ -295,7 +276,6 @@ export default function AstrologyPage2({ route }) {
                   play={false}
                   videoId={videoId}
                   webViewStyle={{ 
-                    borderRadius: responsiveSize(10, 14, 18),
                     overflow: 'hidden'
                   }}
                 />
@@ -307,7 +287,7 @@ export default function AstrologyPage2({ route }) {
     </>
   );
 
-  // Header component
+  // Header component - shows the category name passed via route params
   const Header = () => (
     <View style={[
       styles.header,
@@ -321,11 +301,14 @@ export default function AstrologyPage2({ route }) {
         <Ionicons name="chevron-back" size={isTablet ? 30 : 26} color="#fff" />
       </TouchableOpacity>
       
-      <Text style={[
-        styles.headerTitle,
-        isTablet && styles.headerTitleTablet
-      ]}>
-        Astrology
+      <Text 
+        style={[
+          styles.headerTitle,
+          isTablet && styles.headerTitleTablet
+        ]}
+        numberOfLines={1}
+      >
+        {astrologyType.name}
       </Text>
       
       <View style={[
@@ -345,7 +328,7 @@ export default function AstrologyPage2({ route }) {
         <Loader/>
       ) : data.length === 0 ? (
         <View style={styles.emptyContainer}>
-          <Icon name="error-outline" size={responsiveSize(60, 80, 100)} color="#93210A" />
+          <Ionicons name="alert-circle" size={responsiveSize(60, 80, 100)} color="#93210A" />
           <Text style={[
             styles.emptyText,
             { fontSize: responsiveSize(16, 20, 24) }
@@ -369,13 +352,13 @@ export default function AstrologyPage2({ route }) {
           contentContainerStyle={[
             styles.listContent,
             { 
-              paddingHorizontal: responsiveSize(16, 24, 32),
+              paddingHorizontal: listPadding,
               paddingBottom: responsiveSize(30, 40, 50)
             }
           ]}
           columnWrapperStyle={[
             styles.columnWrapper,
-            { marginBottom: responsiveSize(12, 16, 20) }
+            { marginBottom: responsiveSize(10, 14, 16) }
           ]}
           renderItem={renderItem}
           showsVerticalScrollIndicator={false}
@@ -391,7 +374,7 @@ export default function AstrologyPage2({ route }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#fff",
+    backgroundColor: "#d4cea6",
   },
 
   /* 🔴 HEADER */
@@ -456,26 +439,15 @@ const styles = StyleSheet.create({
 
   /* COLUMN WRAPPER */
   columnWrapper: {
-    justifyContent: "space-between",
-  },
-
-  /* 🏷️ SECTION TITLE */
-  sectionTitle: {
-    fontWeight: "bold",
-    color: "#93210A",
-    textAlign: "center",
+    justifyContent: "flex-start",
+    gap: 8,
   },
 
   /* 📢 TOP ADVERTISEMENT */
   topAdContainer: {
     position: 'relative',
     overflow: 'hidden',
-    borderRadius: 12,
-    elevation: 3,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
+    backgroundColor: '#000',
   },
   
   topAdImage: {
@@ -492,19 +464,6 @@ const styles = StyleSheet.create({
 
   dot: {
     backgroundColor: '#D3D3D3',
-  },
-
-  /* 🔮 LOADER */
-  loaderContainer: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    paddingVertical: 60,
-  },
-  
-  loaderText: {
-    color: "#666",
-    marginTop: 15,
   },
 
   /* EMPTY STATE */
@@ -528,52 +487,67 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
 
-  /* 🟧 CARD */
+  /* 🟧 CARD - clean square tile, column layout */
   card: {
-    backgroundColor: "#FFF7F5",
-    alignItems: "center",
-    elevation: 4,
-    shadowColor: "#000",
+    backgroundColor: "#FFFDF8",
+    flexDirection: "column",
+    shadowColor: "#93210A",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
-    shadowRadius: 6,
+    shadowRadius: 5,
+    elevation: 3,
+    borderWidth: 1,
+    borderColor: "#EADFC4",
   },
 
-  /* 🖼️ IMAGE */
+  /* Image area fills remaining space above the text and centers the circle inside it */
+  imageArea: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+
+  /* Circular image frame with gold ring */
+  imageWrapper: {
+    overflow: 'hidden',
+    backgroundColor: '#f5f0e6',
+    borderWidth: 2,
+    borderColor: "#D4AF37",
+  },
+
+  /* 🖼️ IMAGE - fills its wrapper exactly */
   image: {
-    width: "100%",
-    aspectRatio: 1,
-    backgroundColor: '#f0f0f0',
+    width: "105%",
+    height: "105%",
   },
 
-  /* 🏷️ NAME */
+  /* Text area pinned at the bottom of the card */
+  textArea: {
+    alignItems: "center",
+    justifyContent: "flex-end",
+  },
+
+  /* 🏷️ NAME (raasi name, shown first, prominent) */
   name: {
-    fontWeight: "bold",
+    fontWeight: "800",
     color: "#93210A",
     textAlign: "center",
   },
 
-  /* 📝 TITLE */
+  /* 📝 TITLE (shown below name, subtle) */
   title: {
-    color: "#444",
+    color: "#8a7a5c",
+    fontWeight: "500",
     textAlign: "center",
   },
 
   /* 🎥 VIDEO ADVERTISEMENT */
   videoAdContainer: {
     alignItems: 'center',
-    width: '100%',
-  },
-  
-  videoTitle: {
-    fontWeight: "bold",
-    color: "#93210A",
-    alignSelf: 'flex-start',
   },
   
   videoWrapper: {
     overflow: "hidden",
     backgroundColor: '#000',
-    width: '100%',
   },
 });

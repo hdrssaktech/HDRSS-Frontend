@@ -5,6 +5,9 @@ import { AuthContext, AuthProvider } from "./context/AuthContext";
 import { VoteProvider  } from "./context/VoteContext.js";
 import { LocationProvider } from "./context/LocationContext.js";
 import { LoaderProvider, useLoader } from "./context/LoaderContext.js";
+import { LanguageProvider } from "../src/pages/QuizPage/quizData.js";
+import { CartProvider } from "./context/CartContext";
+import { LanguageProvider as TourismLanguageProvider } from "./context/LanguageContext";
 
 
 import Loginpage from "./pages/AuthPage/LoginPage";
@@ -148,7 +151,7 @@ import QuizQuestions from "./pages/QuizPage/QuizQuestions.js";
 import ProductScreenCart from "./pages/ProductItems/ProductScreenCart.js";
 import ProductScreenCheckout from "./pages/ProductItems/ProductScreenCheckout.js";
 import ProductScreenOrderConfirm from "./pages/ProductItems/ProductScreenOrderConfirm.js";
-
+import ProductScreenOrder from "./pages/ProductItems/ProductScreenOrder.js";
 
 
 
@@ -329,6 +332,9 @@ function MainStackScreen() {
      <MainStack.Screen name="ProductScreenCart" component={withFooter(ProductScreenCart)}/>
      <MainStack.Screen name="ProductScreenCheckout" component={withFooter(ProductScreenCheckout)}/>
      <MainStack.Screen name="ProductScreenOrderConfirm" component={withFooter(ProductScreenOrderConfirm)}/>
+    {/* <MainStack.Screen name="ProductScreenCardHeader" component={withFooter(ProductScreenCartHeader)}/> */}
+    <MainStack.Screen name="ProductScreenOrder" component={withFooter(ProductScreenOrder)}/>
+
     </MainStack.Navigator>
   );
 }
@@ -350,11 +356,18 @@ export default function App() {
     <AuthProvider>
      <VoteProvider>
       <LocationProvider>
-        <LoaderProvider> 
+        <LoaderProvider>
+        <LanguageProvider> 
+           
+         <CartProvider>
        <RootNavigator />
+        </CartProvider>
+           
+        </LanguageProvider> 
        </LoaderProvider> 
       </LocationProvider>
      </VoteProvider>
+    
     </AuthProvider>
   );
 }

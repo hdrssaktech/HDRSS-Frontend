@@ -87,7 +87,16 @@ export default function DivinePage2() {
           borderRadius: isTablet ? 12 : 10,
         },
       ]}
-      onPress={() => navigation.navigate("DivinePage3", { data: item })}
+      // Pass the currently filtered list along as `relatedSongs` so
+      // DivinePage3 can page through it with Next / Previous, same as
+      // SloganPage3. The tapped item is still passed as `data` so
+      // DivinePage3 knows which song to open initially.
+      onPress={() =>
+        navigation.navigate("DivinePage3", {
+          data: item,
+          relatedSongs: filteredItems,
+        })
+      }
     >
       <View style={[styles.imageContainer, { aspectRatio: 0.85 }]}>
         <Image source={{ uri: item.bannerImage }} style={styles.image} resizeMode="cover" />

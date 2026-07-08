@@ -198,7 +198,7 @@ export default function HinduNoolgal2({ route, navigation }) {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#F5F5F5" },
+  container: { flex: 1, backgroundColor: "#d4cea6" },
 
   // Header (mobile)
   header: {

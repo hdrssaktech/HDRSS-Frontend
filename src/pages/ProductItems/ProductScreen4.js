@@ -1,4 +1,3 @@
-// screens/ProductScreen4.js
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import {
   ScrollView,
@@ -23,24 +22,36 @@ import {
 import Ionicons from "react-native-vector-icons/Ionicons";
 import YoutubePlayer from "react-native-youtube-iframe";
 import axios from "axios";
+import { useCart } from "../../context/CartContext";
+import HeaderCartOrders from "./ProductScreenHeaderCartOrders";
 
 const { width, height } = Dimensions.get("window");
-const isTablet = width > 768;
+const isTablet = width > 600;
 const isSmallDevice = width < 380;
 
-// Responsive sizing
+const C = {
+  primary: "#9D1B00",
+  primaryDark: "#9D1B00",
+  gold: "#D4AF37",
+  bg: "#F7F3F0",
+  surface: "#FFFFFF",
+  textDark: "#1A0A0A",
+  textMid: "#5C3A3A",
+  textLight: "#9E7070",
+  border: "#EDE0DC",
+};
+
 const responsive = {
-  imageHeight: isTablet ? height * 0.45 : height * 0.35,
-  contentPadding: isTablet ? 30 : 20,
-  nameSize: isTablet ? 30 : isSmallDevice ? 22 : 26,
-  priceSize: isTablet ? 34 : isSmallDevice ? 26 : 30,
-  sectionTitleSize: isTablet ? 22 : 18,
-  specificationSize: isTablet ? 17 : 15,
-  galleryImageSize: isTablet ? width * 0.28 : width * 0.38,
-  iconSize: isTablet ? 26 : 20,
-  actionBtnSize: isTablet ? 56 : 48,
-  videoHeight: isTablet ? 400 : 220,
-  headerPaddingTop: Platform.OS === "ios" ? (isTablet ? 50 : 40) : (isTablet ? 40 : 30),
+  imageHeight: isTablet ? height * 0.4 : height * 0.32,
+  contentPadding: isTablet ? 30 : 15,
+  nameSize: isTablet ? 28 : isSmallDevice ? 20 : 24,
+  priceSize: isTablet ? 32 : isSmallDevice ? 24 : 28,
+  sectionTitleSize: isTablet ? 20 : 17,
+  specificationSize: isTablet ? 16 : 14,
+  galleryImageSize: isTablet ? width * 0.26 : width * 0.36,
+  iconSize: isTablet ? 24 : 20,
+  actionBtnSize: isTablet ? 52 : 46,
+  videoHeight: isTablet ? 380 : 210,
 };
 
 const getYoutubeVideoId = (url) => {
@@ -66,6 +77,8 @@ export default function ProductScreen4({ route, navigation }) {
   const playerRef = useRef(null);
   const scaleAnim = useRef(new Animated.Value(1)).current;
 
+  const { addToCart } = useCart();
+
   const [productData, setProductData] = useState(product || {});
   const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
@@ -75,13 +88,8 @@ export default function ProductScreen4({ route, navigation }) {
   const [isVideoReady, setIsVideoReady] = useState(false);
   const [refreshKey, setRefreshKey] = useState(Date.now());
   const [showVideo, setShowVideo] = useState(false);
-
-  // ── CART STATE ──
-  const [cartItems, setCartItems] = useState(route.params?.cartItems || []);
   const [addedToCart, setAddedToCart] = useState(false);
-  const cartCount = cartItems.reduce((sum, i) => sum + i.quantity, 0);
 
-  // ── FETCH ──
   const fetchProductData = useCallback(async () => {
     try {
       setLoading(true);
@@ -97,7 +105,6 @@ export default function ProductScreen4({ route, navigation }) {
           setIsVideoReady(false);
           setPlaying(false);
           setShowVideo(false);
-          Alert.alert("Success", "Product data refreshed!");
         }
       }
     } catch {
@@ -118,61 +125,44 @@ export default function ProductScreen4({ route, navigation }) {
     fetchProductData();
   }, [fetchProductData]);
 
-  // ── CONTACT FUNCTIONS ──
   const onShare = async () => {
     try {
-      await Share.share({
-        message: `Check out: ${productData.productName}\nPrice: ₹${productData.price}`,
-      });
+      await Share.share({ message: `Check out: ${productData.productName}\nPrice: ₹${productData.price}` });
     } catch {
       Alert.alert("Error", "Failed to share");
     }
   };
 
-  const handleCall = () => {
-    Linking.openURL(`tel:${productData.phoneNumber?.replace(/\s/g, "") || "+919876543210"}`)
-      .catch(() => Alert.alert("Error", "Unable to call"));
-  };
+  const handleCall = () =>
+    Linking.openURL(`tel:${productData.phoneNumber?.replace(/\s/g, "") || "+919876543210"}`).catch(() =>
+      Alert.alert("Error", "Unable to call")
+    );
 
-  const handleWhatsApp = () => {
-    Linking.openURL(`https://wa.me/${productData.whatsappNumber?.replace(/\s/g, "") || "+919876543210"}`)
-      .catch(() => Alert.alert("Error", "Unable to open WhatsApp"));
-  };
+  const handleWhatsApp = () =>
+    Linking.openURL(`https://wa.me/${productData.whatsappNumber?.replace(/\s/g, "") || "+919876543210"}`).catch(() =>
+      Alert.alert("Error", "Unable to open WhatsApp")
+    );
 
-  const handleLocation = () => {
-    Linking.openURL(productData.locationLink || "https://maps.google.com")
-      .catch(() => Alert.alert("Error", "Unable to open location"));
-  };
+  const handleLocation = () =>
+    Linking.openURL(productData.locationLink || "https://maps.google.com").catch(() =>
+      Alert.alert("Error", "Unable to open location")
+    );
 
-  // ── ADD TO CART ──
   const handleAddToCart = () => {
-    setCartItems((prev) => {
-      const exists = prev.find((i) => i.id === productData.id);
-      if (exists) {
-        return prev.map((i) =>
-          i.id === productData.id ? { ...i, quantity: i.quantity + 1 } : i
-        );
-      }
-      return [...prev, { ...productData, quantity: 1 }];
-    });
-    
+    addToCart(productData, 1);
     setAddedToCart(true);
     Animated.sequence([
       Animated.spring(scaleAnim, { toValue: 0.92, useNativeDriver: true, speed: 30 }),
       Animated.spring(scaleAnim, { toValue: 1, useNativeDriver: true, speed: 20 }),
     ]).start();
-    
-    setTimeout(() => setAddedToCart(false), 2000);
+    setTimeout(() => setAddedToCart(false), 1600);
   };
 
-  // ── BUY NOW → CheckoutScreen ──
   const handleBuyNow = () => {
     if (!productData || !productData.id) {
       Alert.alert("Error", "Product data is not available");
       return;
     }
-    
-    // Navigate to CheckoutScreen with the product
     navigation.navigate("ProductScreenCheckout", {
       items: [{ ...productData, quantity: 1 }],
       totalAmount: parseFloat(productData.price) || 0,
@@ -180,79 +170,49 @@ export default function ProductScreen4({ route, navigation }) {
     });
   };
 
-  // ── OPEN CART → CartScreen ──
-  const handleOpenCart = () => {
-    if (cartItems.length === 0) {
-      Alert.alert("Cart is Empty", "Please add items to your cart first.");
-      return;
-    }
-    
-    navigation.navigate("ProductScreenCart", {
-      cartItems: cartItems,
-      onUpdateCart: (updatedItems) => {
-        setCartItems(updatedItems);
-      },
-    });
-  };
-
-  // ── VIDEO ──
   const toggleVideo = () => {
     setShowVideo((v) => !v);
     setPlaying((v) => !v);
   };
 
-  // ── RENDER GALLERY ──
   const renderGalleryItem = ({ item }) => (
     <Image
       source={{ uri: item }}
-      style={[
-        styles.galleryImage,
-        {
-          width: responsive.galleryImageSize,
-          height: responsive.galleryImageSize,
-        },
-      ]}
+      style={[styles.galleryImage, { width: responsive.galleryImageSize, height: responsive.galleryImageSize }]}
       resizeMode="cover"
     />
   );
 
-  // ── RENDER CONTACT BUTTONS ──
   const renderContactButtons = () => (
     <View style={styles.actionRow}>
       {[
-        { icon: "call", color: "#8B1A1A", fn: handleCall, label: "Call" },
+        { icon: "call", color: C.primary, fn: handleCall, label: "Call" },
         { icon: "logo-whatsapp", color: "#25D366", fn: handleWhatsApp, label: "WhatsApp" },
         { icon: "location", color: "#DC2626", fn: handleLocation, label: "Location" },
       ].map(({ icon, color, fn, label }) => (
-        <TouchableOpacity
-          key={icon}
-          style={[
-            styles.actionBtn,
-            {
-              backgroundColor: color,
-              width: responsive.actionBtnSize,
-              height: responsive.actionBtnSize,
-              borderRadius: responsive.actionBtnSize / 2,
-            },
-          ]}
-          onPress={fn}
-        >
-          <Ionicons name={icon} size={isTablet ? 28 : 24} color="#fff" />
-        </TouchableOpacity>
+        <View key={icon} style={styles.actionItem}>
+          <TouchableOpacity
+            style={[
+              styles.actionBtn,
+              { backgroundColor: color, width: responsive.actionBtnSize, height: responsive.actionBtnSize, borderRadius: responsive.actionBtnSize / 2 },
+            ]}
+            onPress={fn}
+            activeOpacity={0.85}
+          >
+            <Ionicons name={icon} size={isTablet ? 26 : 22} color="#fff" />
+          </TouchableOpacity>
+          <Text style={styles.actionLabel}>{label}</Text>
+        </View>
       ))}
     </View>
   );
 
-  // ── RENDER VIDEO ──
   const renderVideo = () => {
     if (!videoId) {
       return (
         <View style={styles.videoSection}>
-          <Text style={[styles.sectionTitle, { fontSize: responsive.sectionTitleSize }]}>
-            Video
-          </Text>
           <View style={styles.noVideoContainer}>
-            <Ionicons name="videocam-off" size={isTablet ? 80 : 50} color="#CBD5E1" />
+            <Ionicons name="videocam-off" size={isTablet ? 70 : 46} color="#CBD5E1" />
             <Text style={styles.noVideoText}>No video available</Text>
           </View>
         </View>
@@ -261,19 +221,15 @@ export default function ProductScreen4({ route, navigation }) {
 
     return (
       <View style={styles.videoSection}>
-        <Text style={[styles.sectionTitle, { fontSize: responsive.sectionTitleSize }]}>
-          Product Video
-        </Text>
         {!showVideo ? (
           <TouchableOpacity onPress={toggleVideo} activeOpacity={0.9} style={styles.videoTouchable}>
             <ImageBackground
               source={{ uri: `https://i.ytimg.com/vi/${videoId}/hq720.jpg` }}
               style={[styles.videoThumbnail, { height: responsive.videoHeight }]}
-              imageStyle={{ borderRadius: 0 }}
             >
               <View style={styles.videoOverlay}>
                 <View style={styles.playIconContainer}>
-                  <Ionicons name="play-circle" size={isTablet ? 80 : 60} color="#FF0000" />
+                  <Ionicons name="play-circle" size={isTablet ? 76 : 56} color="#FF0000" />
                 </View>
                 <Text style={styles.playText}>Tap to Play Video</Text>
               </View>
@@ -288,49 +244,19 @@ export default function ProductScreen4({ route, navigation }) {
               width={width}
               videoId={videoId}
               play={playing}
-              initialPlayerParams={{
-                controls: true,
-                modestbranding: true,
-                rel: 0,
-                fs: 1,
-              }}
+              initialPlayerParams={{ controls: true, modestbranding: true, rel: 0, fs: 1 }}
               onChangeState={(s) => {
-                if (s === "ended") {
-                  setPlaying(false);
-                  setShowVideo(false);
-                }
-                if (s === "playing") {
-                  setIsVideoReady(true);
-                  setIsLoading(false);
-                }
+                if (s === "ended") { setPlaying(false); setShowVideo(false); }
+                if (s === "playing") { setIsVideoReady(true); setIsLoading(false); }
                 if (s === "loading") setIsLoading(true);
-                if (s === "ready") {
-                  setIsVideoReady(true);
-                  setIsLoading(false);
-                }
+                if (s === "ready") { setIsVideoReady(false); setIsLoading(false); }
               }}
-              onReady={() => {
-                setIsLoading(false);
-                setIsVideoReady(true);
-              }}
-              onError={() => {
-                Alert.alert("Error", "Failed to load video");
-                setIsLoading(false);
-                setShowVideo(false);
-              }}
-              webViewProps={{
-                allowsInlineMediaPlayback: true,
-                mediaPlaybackRequiresUserAction: false,
-              }}
+              onReady={() => { setIsLoading(false); setIsVideoReady(true); }}
+              onError={() => { Alert.alert("Error", "Failed to load video"); setIsLoading(false); setShowVideo(false); }}
+              webViewProps={{ allowsInlineMediaPlayback: true, mediaPlaybackRequiresUserAction: false }}
             />
-            <TouchableOpacity
-              style={styles.closeVideoBtn}
-              onPress={() => {
-                setShowVideo(false);
-                setPlaying(false);
-              }}
-            >
-              <Ionicons name="close-circle" size={isTablet ? 40 : 32} color="#fff" />
+            <TouchableOpacity style={styles.closeVideoBtn} onPress={() => { setShowVideo(false); setPlaying(false); }}>
+              <Ionicons name="close-circle" size={isTablet ? 38 : 30} color="#fff" />
             </TouchableOpacity>
             {isLoading && !isVideoReady && (
               <View style={styles.loaderContainer}>
@@ -344,64 +270,40 @@ export default function ProductScreen4({ route, navigation }) {
     );
   };
 
-  // ── MAIN RENDER ──
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: "#F8FAFC" }}>
+    <SafeAreaView style={styles.safeArea}>
+      <StatusBar backgroundColor={C.primaryDark} barStyle="light-content" />
+      
+      {/* Fixed Header - positioned with proper padding */}
+      <View style={styles.headerContainer}>
+        <TouchableOpacity style={styles.roundBtn} onPress={() => navigation.goBack()}>
+          <Ionicons name="chevron-back" size={responsive.iconSize} color="#fff" />
+        </TouchableOpacity>
+
+        <Text style={styles.headerTitle} numberOfLines={1}>Product Details</Text>
+
+        <View style={styles.headerRight}>
+          <HeaderCartOrders navigation={navigation} iconSize={responsive.iconSize} />
+          <TouchableOpacity style={[styles.roundBtn, { marginLeft: 8 }]} onPress={onShare}>
+            <Ionicons name="share-social" size={responsive.iconSize} color="#fff" />
+          </TouchableOpacity>
+        </View>
+      </View>
+
+      {/* Scrollable Content */}
       <ScrollView
         style={styles.container}
         showsVerticalScrollIndicator={false}
         bounces={false}
-        contentContainerStyle={{ paddingBottom: 110 }}
-        refreshControl={
-          <RefreshControl
-            refreshing={refreshing}
-            onRefresh={onRefresh}
-            colors={["#8B1A1A"]}
-            tintColor="#8B1A1A"
-          />
-        }
+        contentContainerStyle={styles.scrollContent}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={[C.primary]} tintColor={C.primary} />}
       >
-        <StatusBar backgroundColor="#9D1B00" barStyle="light-content" />
-
-        {/* HEADER */}
-        <View style={[styles.headerContainer, { paddingTop: responsive.headerPaddingTop }]}>
-          <TouchableOpacity style={styles.roundBtn} onPress={() => navigation.goBack()}>
-            <Ionicons name="chevron-back" size={responsive.iconSize} color="#fff" />
-          </TouchableOpacity>
-
-          <Text style={styles.headerTitle} numberOfLines={1}>
-            Product Details
-          </Text>
-
-          <View style={styles.headerRight}>
-            {/* Cart icon with badge */}
-            <TouchableOpacity style={styles.roundBtn} onPress={handleOpenCart}>
-              <Ionicons name="cart" size={responsive.iconSize} color="#fff" />
-              {cartCount > 0 && (
-                <View style={styles.badge}>
-                  <Text style={styles.badgeText}>{cartCount > 9 ? "9+" : cartCount}</Text>
-                </View>
-              )}
-            </TouchableOpacity>
-            <TouchableOpacity style={[styles.roundBtn, { marginLeft: 8 }]} onPress={onShare}>
-              <Ionicons name="share-social" size={responsive.iconSize} color="#fff" />
-            </TouchableOpacity>
-          </View>
-        </View>
-
-        {/* BANNER IMAGE */}
         <Image
-          source={{
-            uri:
-              productData.bannerImage ||
-              productData.image ||
-              "https://via.placeholder.com/400",
-          }}
+          source={{ uri: productData.bannerImage || productData.image || "https://via.placeholder.com/400" }}
           style={[styles.mainImage, { height: responsive.imageHeight }]}
           resizeMode="cover"
         />
 
-        {/* BODY CONTENT */}
         <View style={[styles.content, { paddingHorizontal: responsive.contentPadding }]}>
           <View style={styles.headerSection}>
             <Text style={[styles.productName, { fontSize: responsive.nameSize }]}>
@@ -411,70 +313,66 @@ export default function ProductScreen4({ route, navigation }) {
               <Text style={[styles.productPrice, { fontSize: responsive.priceSize }]}>
                 ₹{productData.price || "0.00"}
               </Text>
-              {loading && <ActivityIndicator size="small" color="#8B1A1A" style={{ marginLeft: 10 }} />}
+              {loading && <ActivityIndicator size="small" color={C.primary} style={{ marginLeft: 10 }} />}
             </View>
           </View>
 
           {renderContactButtons()}
-          <View style={styles.divider} />
 
-          {/* SPECIFICATIONS */}
-          <View style={styles.section}>
-            <Text style={[styles.sectionTitle, { fontSize: responsive.sectionTitleSize }]}>
-              Specifications
-            </Text>
+          <View style={styles.card}>
+            <Text style={[styles.sectionTitle, { fontSize: responsive.sectionTitleSize }]}>Specifications</Text>
             <Text style={[styles.specText, { fontSize: responsive.specificationSize }]}>
               {productData.productSpecification || "No specifications available"}
             </Text>
           </View>
-          <View style={styles.divider} />
+        </View>
 
-          {/* GALLERY */}
-          {productData.galleryImages?.length > 0 && (
-            <View style={styles.section}>
-              <Text style={[styles.sectionTitle, { fontSize: responsive.sectionTitleSize }]}>
-                Gallery
-              </Text>
-              <FlatList
-                horizontal
-                data={productData.galleryImages}
-                renderItem={renderGalleryItem}
-                keyExtractor={(_, i) => `g-${i}`}
-                showsHorizontalScrollIndicator={false}
-                contentContainerStyle={{ paddingVertical: 5 }}
-              />
-            </View>
-          )}
-          <View style={styles.divider} />
+        {/* Gallery - Full Width without Container */}
+        {productData.galleryImages?.length > 0 && (
+          <View style={styles.gallerySection}>
+            <Text style={[styles.galleryTitle, { fontSize: responsive.sectionTitleSize, paddingHorizontal: responsive.contentPadding }]}>
+              Gallery
+            </Text>
+            <FlatList
+              horizontal
+              data={productData.galleryImages}
+              renderItem={renderGalleryItem}
+              keyExtractor={(_, i) => `g-${i}`}
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.galleryList}
+            />
+          </View>
+        )}
 
-          {/* VIDEO */}
+        {/* Video - Full Width without Container */}
+        <View style={styles.videoSectionWrapper}>
+          <Text style={[styles.videoTitle, { fontSize: responsive.sectionTitleSize, paddingHorizontal: responsive.contentPadding }]}>
+            Product Video
+          </Text>
           {renderVideo()}
         </View>
+
+        {/* Extra bottom padding for scrolling */}
+        <View style={styles.bottomPadding} />
       </ScrollView>
 
-      {/* ── STICKY BOTTOM BAR ── */}
+      {/* Fixed Bottom Bar */}
       <View style={styles.bottomBar}>
-        {/* ADD TO CART */}
         <Animated.View style={{ flex: 1, transform: [{ scale: scaleAnim }] }}>
           <TouchableOpacity
             style={[styles.cartBtn, addedToCart && styles.cartBtnAdded]}
             onPress={handleAddToCart}
             activeOpacity={0.85}
           >
-            <Ionicons
-              name={addedToCart ? "checkmark-circle" : "cart-outline"}
-              size={isTablet ? 24 : 21}
-              color={addedToCart ? "#fff" : "#8B1A1A"}
-            />
+            <Ionicons name={addedToCart ? "checkmark-circle" : "cart-outline"} size={isTablet ? 22 : 19} color={addedToCart ? "#fff" : C.primary} />
             <Text style={[styles.cartBtnText, addedToCart && styles.cartBtnTextAdded]}>
               {addedToCart ? "Added!" : "Add to Cart"}
             </Text>
           </TouchableOpacity>
         </Animated.View>
 
-        {/* BUY NOW */}
         <TouchableOpacity style={styles.buyBtn} onPress={handleBuyNow} activeOpacity={0.85}>
-          <Ionicons name="flash" size={isTablet ? 24 : 21} color="#fff" />
+          <Ionicons name="flash" size={isTablet ? 22 : 19} color="#fff" />
           <Text style={styles.buyBtnText}>Buy Now</Text>
         </TouchableOpacity>
       </View>
@@ -482,70 +380,60 @@ export default function ProductScreen4({ route, navigation }) {
   );
 }
 
-// ── STYLES ──
 const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: C.bg,
+  },
+
   container: {
     flex: 1,
-    backgroundColor: "#F8FAFC",
+    backgroundColor: C.bg,
+  },
+
+  scrollContent: {
+    paddingBottom: 100,
   },
 
   headerContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    backgroundColor: "#9D1B00",
-    paddingBottom: 16,
-    paddingHorizontal: 20,
-    borderBottomLeftRadius: 25,
-    borderBottomRightRadius: 25,
-    elevation: 5,
-    shadowColor: "#8B1A1A",
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.3,
-    shadowRadius: 6,
+    backgroundColor: C.primary,
+       paddingTop: Platform.OS === "ios" ? (isTablet ? 60 : 58) : (isTablet ? 50 : 46),
+       paddingBottom: isTablet ? 22 : 21,
+       paddingHorizontal: isTablet ? 24 : 20,
+       flexDirection: "row",
+       alignItems: "center",
+       justifyContent: "space-between",
+       borderBottomLeftRadius: isTablet ? 30 : 25,
+       borderBottomRightRadius: isTablet ? 30 : 25,
+       elevation: 4,
+       shadowColor: "#9D1B00",
+       shadowOffset: { width: 0, height: 2 },
+       shadowOpacity: 0.2,
+       shadowRadius: 4,
+   
   },
 
   roundBtn: {
-    width: isTablet ? 50 : 40,
-    height: isTablet ? 50 : 40,
-    borderRadius: isTablet ? 25 : 20,
+    width: isTablet ? 46 : 38,
+    height: isTablet ? 46 : 38,
+    borderRadius: isTablet ? 23 : 19,
     backgroundColor: "rgba(255,255,255,0.15)",
     justifyContent: "center",
     alignItems: "center",
-    position: "relative",
   },
 
   headerTitle: {
     color: "#fff",
-    fontSize: isTablet ? 24 : 20,
+    fontSize: isTablet ? 22 : 18,
     fontWeight: "bold",
     flex: 1,
     textAlign: "center",
-    marginHorizontal: 10,
+    marginHorizontal: isTablet ? 12 : 8,
   },
 
   headerRight: {
     flexDirection: "row",
     alignItems: "center",
-  },
-
-  badge: {
-    position: "absolute",
-    top: -3,
-    right: -3,
-    backgroundColor: "#D4AF37",
-    borderRadius: 10,
-    minWidth: 18,
-    height: 18,
-    justifyContent: "center",
-    alignItems: "center",
-    paddingHorizontal: 3,
-  },
-
-  badgeText: {
-    color: "#301913",
-    fontSize: 10,
-    fontWeight: "bold",
   },
 
   mainImage: {
@@ -556,18 +444,18 @@ const styles = StyleSheet.create({
   content: {
     flex: 1,
     paddingTop: 20,
-    paddingBottom: 20,
+    paddingBottom: 10,
   },
 
   headerSection: {
-    marginBottom: 12,
+    marginBottom: 14,
   },
 
   productName: {
     fontWeight: "bold",
-    color: "#0F172A",
+    color: C.textDark,
     marginBottom: 6,
-    lineHeight: isTablet ? 40 : 32,
+    lineHeight: isTablet ? 36 : 30,
   },
 
   priceRow: {
@@ -578,15 +466,19 @@ const styles = StyleSheet.create({
 
   productPrice: {
     fontWeight: "bold",
-    color: "#8B1A1A",
+    color: C.primary,
   },
 
   actionRow: {
     flexDirection: "row",
     justifyContent: "space-around",
-    marginTop: 12,
-    marginBottom: 15,
-    paddingHorizontal: isTablet ? 40 : 20,
+    marginBottom: 16,
+    paddingHorizontal: isTablet ? 40 : 12,
+  },
+
+  actionItem: {
+    alignItems: "center",
+    gap: 6,
   },
 
   actionBtn: {
@@ -599,44 +491,84 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
   },
 
-  divider: {
-    height: 1,
-    backgroundColor: "#E2E8F0",
-    marginVertical: isTablet ? 24 : 18,
+  actionLabel: {
+    fontSize: isTablet ? 12 : 11,
+    color: C.textMid,
+    fontWeight: "600",
   },
 
-  section: {
-    marginBottom: 8,
+  card: {
+    backgroundColor: C.surface,
+    borderRadius: 18,
+    padding: isTablet ? 20 : 16,
+    marginHorizontal: responsive.contentPadding,
+    marginBottom: 14,
+    borderWidth: 1,
+    borderColor: C.border,
+    elevation: 1,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 3,
   },
 
   sectionTitle: {
     fontWeight: "700",
-    color: "#0F172A",
+    color: C.textDark,
     marginBottom: 10,
   },
 
   specText: {
-    lineHeight: 24,
-    color: "#475569",
+    lineHeight: 22,
+    color: C.textMid,
     textAlign: "justify",
-    paddingVertical: 6,
-    paddingHorizontal: 4,
+  },
+
+  // Gallery Section - Full Width
+  gallerySection: {
+    marginTop: 10,
+    marginBottom: 14,
+  },
+
+  galleryTitle: {
+    fontWeight: "700",
+    color: C.textDark,
+    marginBottom: 12,
+  },
+
+  galleryList: {
+    paddingHorizontal: responsive.contentPadding,
+    paddingVertical: 5,
   },
 
   galleryImage: {
-    borderRadius: 15,
+    borderRadius: 14,
     marginRight: 12,
     backgroundColor: "#F1F5F9",
     borderWidth: 1,
-    borderColor: "#E2E8F0",
+    borderColor: C.border,
+  },
+
+  // Video Section - Full Width
+  videoSectionWrapper: {
+    marginTop: 10,
+    marginBottom: 14,
+  },
+
+  videoTitle: {
+    fontWeight: "700",
+    color: C.textDark,
+    marginBottom: 12,
   },
 
   videoSection: {
-    marginVertical: 5,
+    width: width,
   },
 
   videoTouchable: {
-    marginHorizontal: -responsive.contentPadding,
+    width: width,
+    borderRadius: 0,
+    overflow: "hidden",
   },
 
   videoThumbnail: {
@@ -661,7 +593,7 @@ const styles = StyleSheet.create({
 
   playText: {
     color: "#fff",
-    fontSize: isTablet ? 18 : 16,
+    fontSize: isTablet ? 17 : 15,
     fontWeight: "600",
     marginTop: 12,
     textShadowColor: "rgba(0,0,0,0.8)",
@@ -672,7 +604,8 @@ const styles = StyleSheet.create({
   videoWrapper: {
     backgroundColor: "#000",
     position: "relative",
-    marginHorizontal: -responsive.contentPadding,
+    width: width,
+    overflow: "hidden",
   },
 
   closeVideoBtn: {
@@ -705,25 +638,22 @@ const styles = StyleSheet.create({
   },
 
   noVideoContainer: {
-    backgroundColor: "#F1F5F9",
-    borderRadius: 16,
-    padding: isTablet ? 60 : 40,
+    backgroundColor: "#FAF6F3",
+    padding: isTablet ? 50 : 32,
     alignItems: "center",
     justifyContent: "center",
-    marginTop: 8,
-    borderWidth: 1,
-    borderColor: "#E2E8F0",
-    borderStyle: "dashed",
+    borderTopWidth: 1,
+    borderBottomWidth: 1,
+    borderColor: C.border,
   },
 
   noVideoText: {
-    color: "#94A3B8",
-    fontSize: isTablet ? 18 : 16,
+    color: C.textLight,
+    fontSize: isTablet ? 16 : 14,
     textAlign: "center",
     marginTop: 10,
   },
 
-  // STICKY BOTTOM BAR
   bottomBar: {
     position: "absolute",
     bottom: 0,
@@ -731,17 +661,19 @@ const styles = StyleSheet.create({
     right: 0,
     flexDirection: "row",
     backgroundColor: "#fff",
-    paddingHorizontal: 16,
+    paddingHorizontal: isTablet ? 20 : 16,
     paddingVertical: isTablet ? 16 : 12,
-    paddingBottom: Platform.OS === "ios" ? (isTablet ? 34 : 28) : (isTablet ? 16 : 12),
+    paddingBottom: Platform.OS === "ios" ? (isTablet ? 34 : 26) : (isTablet ? 16 : 12),
     borderTopWidth: 1,
-    borderTopColor: "#E2E8F0",
+    borderTopColor: C.border,
     elevation: 20,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: -3 },
     shadowOpacity: 0.1,
     shadowRadius: 8,
     gap: 12,
+    backgroundColor: "#fff",
+    zIndex: 10,
   },
 
   cartBtn: {
@@ -751,9 +683,9 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     backgroundColor: "#FFF5F5",
     borderWidth: 2,
-    borderColor: "#8B1A1A",
+    borderColor: C.primary,
     borderRadius: isTablet ? 16 : 14,
-    paddingVertical: isTablet ? 16 : 14,
+    paddingVertical: isTablet ? 15 : 13,
     gap: 8,
   },
 
@@ -763,8 +695,8 @@ const styles = StyleSheet.create({
   },
 
   cartBtnText: {
-    color: "#8B1A1A",
-    fontSize: isTablet ? 16 : 15,
+    color: C.primary,
+    fontSize: isTablet ? 16 : 14,
     fontWeight: "700",
   },
 
@@ -777,12 +709,12 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "#8B1A1A",
+    backgroundColor: C.primary,
     borderRadius: isTablet ? 16 : 14,
-    paddingVertical: isTablet ? 16 : 14,
+    paddingVertical: isTablet ? 15 : 13,
     gap: 8,
     elevation: 4,
-    shadowColor: "#8B1A1A",
+    shadowColor: C.primary,
     shadowOffset: { width: 0, height: 3 },
     shadowOpacity: 0.4,
     shadowRadius: 6,
@@ -790,7 +722,11 @@ const styles = StyleSheet.create({
 
   buyBtnText: {
     color: "#fff",
-    fontSize: isTablet ? 16 : 15,
+    fontSize: isTablet ? 16 : 14,
     fontWeight: "700",
+  },
+
+  bottomPadding: {
+    height: isTablet ? 40 : 30,
   },
 });

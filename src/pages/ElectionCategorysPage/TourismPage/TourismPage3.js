@@ -12,7 +12,6 @@ import {
   SafeAreaView,
   Modal,
   Animated,
-  PanResponder,
 } from "react-native";
 import { Ionicons, FontAwesome } from "@expo/vector-icons";
 import { useNavigation, useRoute } from "@react-navigation/native";
@@ -20,8 +19,9 @@ import { Video } from "expo-av";
 import YoutubePlayer from "react-native-youtube-iframe";
 import { fetchTourismById } from "../../../Controller/TourismController/TourismController";
 import Loader from "../../../components/Alert/Loader";
+import { useLanguage } from "../../../context/LanguageContext";
+import { t, getLocalizedField, sortByDirection, DIRECTION_LABELS } from "../../../utils/localization";
 
-/* ── Colour tokens ── */
 const C = {
   primary: "#93210A",
   dark:    "#301913",
@@ -33,13 +33,8 @@ const C = {
   border:  "rgba(48,25,19,0.25)",
 };
 
-/* ══════════════════════════════════════
-   ZOOM MODAL COMPONENT
-══════════════════════════════════════ */
 function ZoomModal({ visible, imageUri, onClose }) {
   const { width, height } = useWindowDimensions();
-
-  // Scale animation value
   const scale = React.useRef(new Animated.Value(1)).current;
   const [currentScale, setCurrentScale] = useState(1);
 
@@ -56,7 +51,6 @@ function ZoomModal({ visible, imageUri, onClose }) {
   };
 
   const handleClose = () => {
-    // Reset scale on close
     scale.setValue(1);
     setCurrentScale(1);
     onClose();
@@ -71,13 +65,10 @@ function ZoomModal({ visible, imageUri, onClose }) {
       statusBarTranslucent
     >
       <View style={zm.overlay}>
-
-        {/* Close button — top right */}
         <TouchableOpacity style={zm.closeBtn} onPress={handleClose} activeOpacity={0.85}>
           <Ionicons name="close" size={22} color={C.white} />
         </TouchableOpacity>
 
-        {/* Zoomable image */}
         <Animated.Image
           source={{ uri: imageUri }}
           style={[
@@ -88,10 +79,7 @@ function ZoomModal({ visible, imageUri, onClose }) {
           resizeMode="contain"
         />
 
-        {/* ── Circular Zoom Controls ── */}
         <View style={zm.zoomRow}>
-
-          {/* Zoom Out */}
           <TouchableOpacity
             style={[zm.zoomBtn, currentScale <= 1 && zm.zoomBtnDisabled]}
             onPress={zoomOut}
@@ -101,12 +89,10 @@ function ZoomModal({ visible, imageUri, onClose }) {
             <Ionicons name="remove" size={22} color={C.white} />
           </TouchableOpacity>
 
-          {/* Scale indicator */}
           <View style={zm.scaleLabel}>
             <Text style={zm.scaleLabelText}>{currentScale.toFixed(1)}×</Text>
           </View>
 
-          {/* Zoom In */}
           <TouchableOpacity
             style={[zm.zoomBtn, currentScale >= 3 && zm.zoomBtnDisabled]}
             onPress={zoomIn}
@@ -115,12 +101,9 @@ function ZoomModal({ visible, imageUri, onClose }) {
           >
             <Ionicons name="add" size={22} color={C.white} />
           </TouchableOpacity>
-
         </View>
 
-        {/* Hint text */}
         <Text style={zm.hint}>Tap + / − to zoom</Text>
-
       </View>
     </Modal>
   );
@@ -145,9 +128,7 @@ const zm = StyleSheet.create({
     justifyContent:  "center",
     zIndex:          10,
   },
-  image: {
-    borderRadius: 12,
-  },
+  image: { borderRadius: 12 },
   zoomRow: {
     flexDirection:  "row",
     alignItems:     "center",
@@ -157,7 +138,7 @@ const zm = StyleSheet.create({
   zoomBtn: {
     width:           54,
     height:          54,
-    borderRadius:    27,           // perfect circle
+    borderRadius:    27,
     backgroundColor: C.primary,
     alignItems:      "center",
     justifyContent:  "center",
@@ -196,13 +177,11 @@ const zm = StyleSheet.create({
   },
 });
 
-/* ══════════════════════════════════════
-   MAIN PAGE
-══════════════════════════════════════ */
 export default function TourismPage3() {
   const navigation = useNavigation();
   const route      = useRoute();
-  const { id }     = route.params;          // ✅ used everywhere, no `item.id`
+  const { id }     = route.params;
+  const { language } = useLanguage();
 
   const { width } = useWindowDimensions();
   const isTablet  = width >= 600;
@@ -212,7 +191,6 @@ export default function TourismPage3() {
   const [playing,     setPlaying]     = useState(false);
   const [expanded,    setExpanded]    = useState(false);
 
-  // Zoom modal state
   const [zoomVisible, setZoomVisible] = useState(false);
   const [zoomUri,     setZoomUri]     = useState(null);
 
@@ -264,7 +242,7 @@ export default function TourismPage3() {
       <SafeAreaView style={styles.safe}>
         <View style={styles.center}>
           <Ionicons name="location-outline" size={48} color={C.primary} />
-          <Text style={styles.noDataText}>No data found</Text>
+          <Text style={styles.noDataText}>{t("noData", language)}</Text>
         </View>
       </SafeAreaView>
     );
@@ -273,20 +251,21 @@ export default function TourismPage3() {
   const youtubeVideoId = getYouTubeVideoId(data?.video);
   const HP = isTablet ? 32 : 16;
 
+  const localizedName        = getLocalizedField(data, "name", language);
+  const localizedTitle       = getLocalizedField(data, "title", language);
+  const localizedDescription = getLocalizedField(data, "description", language);
+  const localizedSession     = getLocalizedField(data, "session", language) || data.session;
+
   return (
     <SafeAreaView style={styles.safe}>
       <StatusBar barStyle="light-content" backgroundColor={C.primary} />
 
-      {/* Zoom Modal */}
       <ZoomModal
         visible={zoomVisible}
         imageUri={zoomUri}
         onClose={() => setZoomVisible(false)}
       />
 
-      {/* ══════════════════════════════
-          HEADER
-      ══════════════════════════════ */}
       <View style={[styles.header, isTablet && styles.headerTablet]}>
         <TouchableOpacity
           style={[styles.backBtn, isTablet && styles.backBtnTablet]}
@@ -300,17 +279,13 @@ export default function TourismPage3() {
           style={[styles.headerTitle, isTablet && styles.headerTitleTablet]}
           numberOfLines={1}
         >
-          {data.name}
+          {localizedName}
         </Text>
 
         <View style={[styles.backBtn, isTablet && styles.backBtnTablet, { backgroundColor: "transparent" }]} />
       </View>
 
       <ScrollView showsVerticalScrollIndicator={false}>
-
-        {/* ══════════════════════════════
-            BANNER
-        ══════════════════════════════ */}
         <View>
           <Image
             source={{ uri: data.bannerImage }}
@@ -323,9 +298,6 @@ export default function TourismPage3() {
           </View>
         </View>
 
-        {/* ══════════════════════════════
-            INFO CARD
-        ══════════════════════════════ */}
         <View
           style={[
             styles.infoCard,
@@ -335,7 +307,6 @@ export default function TourismPage3() {
             },
           ]}
         >
-          {/* LEFT */}
           <View style={styles.infoLeft}>
             <View style={styles.infoTitleRow}>
               <View style={styles.goldBar} />
@@ -343,11 +314,11 @@ export default function TourismPage3() {
                 style={[styles.infoTitle, isTablet && styles.infoTitleTablet]}
                 numberOfLines={2}
               >
-                {data.title}
+                {localizedTitle}
               </Text>
             </View>
 
-            {data.session && (
+            {localizedSession && (
               <View style={styles.detailRow}>
                 <View style={[styles.detailIconWrap, { backgroundColor: "rgba(230,126,34,0.15)" }]}>
                   <Ionicons name="calendar-outline" size={isTablet ? 15 : 13} color="#E67E22" />
@@ -356,7 +327,7 @@ export default function TourismPage3() {
                   style={[styles.detailText, isTablet && styles.detailTextTablet]}
                   numberOfLines={1}
                 >
-                  {data.session}
+                  {localizedSession}
                 </Text>
               </View>
             )}
@@ -398,7 +369,6 @@ export default function TourismPage3() {
             )}
           </View>
 
-          {/* RIGHT — ✅ Fixed: `id` instead of `item.id` */}
           <View style={styles.infoRight}>
             <TouchableOpacity
               style={[styles.tourBtn, isTablet && styles.tourBtnTablet]}
@@ -413,10 +383,10 @@ export default function TourismPage3() {
                 />
               </View>
               <Text style={[styles.tourBtnText, isTablet && styles.tourBtnTextTablet]}>
-                Click
+                {t("clickHere", language)}
               </Text>
               <Text style={[styles.tourBtnSub, isTablet && styles.tourBtnSubTablet]}>
-                Here more info
+                {t("moreInfo", language)}
               </Text>
               <Ionicons
                 name="chevron-forward"
@@ -428,13 +398,10 @@ export default function TourismPage3() {
           </View>
         </View>
 
-        {/* ══════════════════════════════
-            DESCRIPTION
-        ══════════════════════════════ */}
         <View style={[styles.section, { marginHorizontal: HP }]}>
           <View style={styles.secHeadRow}>
             <Text style={[styles.secHeading, isTablet && styles.secHeadingTablet]}>
-              Description
+              {t("description", language)}
             </Text>
             <View style={styles.secHeadLine} />
           </View>
@@ -444,7 +411,7 @@ export default function TourismPage3() {
               style={[styles.descText, isTablet && styles.descTextTablet]}
               numberOfLines={expanded ? undefined : 6}
             >
-              {data.description}
+              {localizedDescription}
             </Text>
 
             <TouchableOpacity
@@ -453,7 +420,7 @@ export default function TourismPage3() {
               activeOpacity={0.8}
             >
               <Text style={[styles.readMoreText, isTablet && styles.readMoreTextTablet]}>
-                {expanded ? "Read Less" : "Read More"}
+                {expanded ? t("readLess", language) : t("readMore", language)}
               </Text>
               <Ionicons
                 name={expanded ? "chevron-up" : "chevron-down"}
@@ -464,14 +431,11 @@ export default function TourismPage3() {
           </View>
         </View>
 
-        {/* ══════════════════════════════
-            GALLERY — tap any image to zoom
-        ══════════════════════════════ */}
         {data.gallery?.length > 0 && (
           <View style={[styles.section, { marginHorizontal: HP }]}>
             <View style={styles.secHeadRow}>
               <Text style={[styles.secHeading, isTablet && styles.secHeadingTablet]}>
-                Gallery
+                {t("gallery", language)}
               </Text>
               <View style={styles.secHeadLine} />
             </View>
@@ -493,9 +457,6 @@ export default function TourismPage3() {
                     style={[styles.galleryImg, isTablet && styles.galleryImgTablet]}
                     resizeMode="cover"
                   />
-
-                 
-                  {/* gold bottom accent */}
                   <View style={styles.galleryAccent} />
                 </TouchableOpacity>
               ))}
@@ -503,14 +464,11 @@ export default function TourismPage3() {
           </View>
         )}
 
-        {/* ══════════════════════════════
-            VIDEO
-        ══════════════════════════════ */}
         {data.video && (
           <View style={[styles.section, { marginHorizontal: 0 }]}>
             <View style={[styles.secHeadRow, { marginHorizontal: HP }]}>
               <Text style={[styles.secHeading, isTablet && styles.secHeadingTablet]}>
-                Video
+                {t("video", language)}
               </Text>
               <View style={styles.secHeadLine} />
             </View>
@@ -542,15 +500,10 @@ export default function TourismPage3() {
   );
 }
 
-/* ══════════════════════════════════════
-   STYLES
-══════════════════════════════════════ */
 const styles = StyleSheet.create({
   safe:       { flex: 1, backgroundColor: C.bg },
   center:     { flex: 1, justifyContent: "center", alignItems: "center", gap: 12 },
   noDataText: { fontSize: 16, fontWeight: "700", color: C.dark, marginTop: 8 },
-
-  /* ── HEADER ── */
   header: {
     flexDirection:           "row",
     alignItems:              "center",
@@ -592,8 +545,6 @@ const styles = StyleSheet.create({
     marginHorizontal: 8,
   },
   headerTitleTablet: { fontSize: 22 },
-
-  /* ── BANNER ── */
   banner:       { width: "100%", height: 210 },
   bannerTablet: { height: 340 },
   bannerFade: {
@@ -612,8 +563,6 @@ const styles = StyleSheet.create({
     borderRadius:    20,
     padding:         6,
   },
-
-  /* ── INFO CARD ── */
   infoCard: {
     flexDirection:   "row",
     backgroundColor: C.card,
@@ -675,7 +624,6 @@ const styles = StyleSheet.create({
   },
   detailTextTablet: { fontSize: 14 },
   detailLink: { color: C.primary },
-
   infoRight: {
     justifyContent:    "center",
     alignItems:        "center",
@@ -713,8 +661,6 @@ const styles = StyleSheet.create({
     letterSpacing: 0.3,
   },
   tourBtnSubTablet: { fontSize: 12 },
-
-  /* ── SECTIONS ── */
   section: { marginTop: 22 },
   secHeadRow: {
     flexDirection: "row",
@@ -736,8 +682,6 @@ const styles = StyleSheet.create({
     backgroundColor: C.border,
     borderRadius:    1,
   },
-
-  /* ── DESCRIPTION ── */
   descCard: {
     backgroundColor: C.card,
     borderRadius:    12,
@@ -773,8 +717,6 @@ const styles = StyleSheet.create({
     letterSpacing: 0.3,
   },
   readMoreTextTablet: { fontSize: 15 },
-
-  /* ── GALLERY ── */
   galleryCard: {
     marginRight:  12,
     borderRadius: 12,
@@ -797,30 +739,6 @@ const styles = StyleSheet.create({
     height:          3,
     backgroundColor: C.gold,
   },
-  /* circular search badge on each gallery thumbnail */
-  zoomBadge: {
-    position:        "absolute",
-    top:             8,
-    right:           8,
-    width:           28,
-    height:          28,
-    borderRadius:    14,
-    backgroundColor: "rgba(147,33,10,0.75)",
-    borderWidth:     1.5,
-    borderColor:     C.gold,
-    alignItems:      "center",
-    justifyContent:  "center",
-  },
-  zoomBadgeTablet: { width: 36, height: 36, borderRadius: 18 },
-  galleryHint: {
-    marginTop:  8,
-    fontSize:   11,
-    color:      "rgba(48,25,19,0.5)",
-    fontStyle:  "italic",
-    textAlign:  "center",
-  },
-
-  /* ── VIDEO ── */
   videoEdge: {
     width:             "100%",
     backgroundColor:   C.dark,

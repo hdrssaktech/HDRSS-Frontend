@@ -10,6 +10,7 @@ import {
   useWindowDimensions,
   Animated,
   Platform,
+  Dimensions,
 } from "react-native";
 
 import { useNavigation } from "@react-navigation/native";
@@ -17,6 +18,8 @@ import { fetchAstrologyTypes } from "../../../Controller/AstrologyController/Ast
 import YoutubePlayer from "react-native-youtube-iframe";
 import Loader from "../../../components/Alert/Loader";
 import { Ionicons } from "@expo/vector-icons";
+
+const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
 export default function AstrologyPage1() {
   const navigation = useNavigation();
@@ -40,16 +43,20 @@ export default function AstrologyPage1() {
   };
 
   const getAdHeight = () => {
-    if (isLargeTablet) return 220;
-    if (isTablet) return 280;
+    if (isLargeTablet) return 250;
+    if (isTablet) return 200;
     return 150;
   };
   
   const getVideoHeight = () => {
-    if (isLargeTablet) return 280;
-    if (isTablet) return 380;
+    if (isLargeTablet) return 320;
+    if (isTablet) return 280;
     return 200;
   };
+
+  // Padding used by the ScrollView's contentContainerStyle - needed so we can
+  // negate it and make the ad image / video bleed edge-to-edge
+  const scrollPadding = responsiveSize(8, 15, 22);
 
   useEffect(() => {
     const loadAllData = async () => {
@@ -105,7 +112,7 @@ export default function AstrologyPage1() {
     return match ? match[1] : null;
   };
 
-  // 🔹 Handle card press → Navigate to next page
+  // Handle card press → Navigate to next page
   const handleCardPress = (item) => {
     navigation.navigate("AstrologyPage2", {
       astrologyType: item,
@@ -113,17 +120,24 @@ export default function AstrologyPage1() {
   };
 
   // Calculate card width for responsive grid
-  const cardWidth = isTablet ? (width - 96) / 4 : (width - 48) / 3; // 4 columns on tablet, 3 on mobile
+  const getCardWidth = () => {
+    const padding = isTablet ? 32 : 16;
+    const gap = isTablet ? 16 : 12;
+    const columns = isTablet ? 4 : 3;
+    return Math.floor((width - padding - (gap * (columns - 1))) / columns);
+  };
+
+  const cardWidth = getCardWidth();
 
   // Render advertisement item
   const renderAdItem = ({ item, index }) => (
-    <View style={{ width }}>
+    <View style={{ width: SCREEN_WIDTH }}>
       <Image
         source={{ uri: item }}
         style={[
           styles.topAdImage,
           { 
-            width: width,
+            width: SCREEN_WIDTH,
             height: getAdHeight()
           }
         ]}
@@ -134,7 +148,7 @@ export default function AstrologyPage1() {
 
   return (
     <View style={styles.container}>
-      {/* 🔴 HEADER */}
+      {/* HEADER */}
       <View style={[styles.header, isTablet && styles.headerTablet]}>
         <TouchableOpacity
           style={[styles.backButton, isTablet && styles.backButtonTablet]}
@@ -144,30 +158,31 @@ export default function AstrologyPage1() {
         </TouchableOpacity>
         
         <Text style={[styles.headerTitle, isTablet && styles.headerTitleTablet]}>
-          Astrology
+          ஜோதிடம்
         </Text>
         
         <View style={[styles.headerSpacer, isTablet && styles.headerSpacerTablet]} />
       </View>
 
-      {/* 🔹 CONTENT */}
+      {/* CONTENT */}
       <ScrollView 
         contentContainerStyle={[
           styles.scrollContainer,
           { 
-            padding: responsiveSize(8, 15, 22),
+            padding: scrollPadding,
             paddingBottom: responsiveSize(30, 40, 50)
           }
         ]}
         showsVerticalScrollIndicator={false}
       >
-        {/* 📢 TOP ADVERTISEMENT - Full Width Image Carousel */}
+        {/* TOP ADVERTISEMENT - Full Width Image Carousel (edge-to-edge) */}
         {!adLoading && adData.images.length > 0 && (
           <View style={[
             styles.topAdContainer,
             { 
               marginBottom: responsiveSize(20, 25, 30),
-              width: '100%'
+              marginHorizontal: -scrollPadding,
+              width: width,
             }
           ]}>
             <Animated.FlatList
@@ -183,7 +198,7 @@ export default function AstrologyPage1() {
                 { useNativeDriver: false }
               )}
               onMomentumScrollEnd={(event) => {
-                const newIndex = Math.round(event.nativeEvent.contentOffset.x / width);
+                const newIndex = Math.round(event.nativeEvent.contentOffset.x / SCREEN_WIDTH);
                 setCurrentAdIndex(newIndex);
               }}
               scrollEventThrottle={16}
@@ -194,7 +209,7 @@ export default function AstrologyPage1() {
             {adData.images.length > 1 && (
               <View style={[
                 styles.dotContainer,
-                { bottom: responsiveSize(15, 20, 25) }
+                { bottom: responsiveSize(8, 12, 15) }
               ]}>
                 {adData.images.map((_, index) => (
                   <View
@@ -202,10 +217,10 @@ export default function AstrologyPage1() {
                     style={[
                       styles.dot,
                       { 
-                        backgroundColor: index === currentAdIndex ? '#93210A' : '#D3D3D3',
-                        width: index === currentAdIndex ? responsiveSize(10, 12, 14) : responsiveSize(6, 8, 10),
-                        height: responsiveSize(6, 8, 10),
-                        borderRadius: responsiveSize(3, 4, 5),
+                        backgroundColor: index === currentAdIndex ? '#93210A' : 'rgba(255,255,255,0.6)',
+                        width: index === currentAdIndex ? responsiveSize(20, 24, 28) : responsiveSize(8, 10, 12),
+                        height: responsiveSize(4, 5, 6),
+                        borderRadius: responsiveSize(2, 3, 4),
                         marginHorizontal: responsiveSize(3, 4, 5)
                       }
                     ]}
@@ -216,7 +231,7 @@ export default function AstrologyPage1() {
           </View>
         )}
 
-        {/* 🔮 ASTROLOGY TYPES GRID */}
+        {/* ASTROLOGY TYPES GRID */}
         {loading ? (
           <Loader/>
         ) : astrologyData.length === 0 ? (
@@ -226,13 +241,13 @@ export default function AstrologyPage1() {
               styles.emptyText,
               { fontSize: responsiveSize(16, 20, 24) }
             ]}>
-              No astrology data found
+              ஜோதிட தகவல்கள் இல்லை
             </Text>
             <Text style={[
               styles.emptySubtext,
               { fontSize: responsiveSize(14, 16, 18) }
             ]}>
-              Please try again later
+              பிறகு முயற்சிக்கவும்
             </Text>
           </View>
         ) : (
@@ -240,11 +255,11 @@ export default function AstrologyPage1() {
             <Text style={[
               styles.sectionTitle,
               { 
-                fontSize: responsiveSize(18, 22, 26),
+                fontSize: responsiveSize(17, 24, 28),
                 marginBottom: responsiveSize(20, 24, 28)
               }
             ]}>
-              Astrology Services
+              ஜோதிட சேவைகள்
             </Text>
             
             <View style={[
@@ -259,7 +274,7 @@ export default function AstrologyPage1() {
                       styles.card,
                       { 
                         width: cardWidth,
-                        padding: responsiveSize(8, 12, 16),
+                        padding: responsiveSize(10, 14, 18),
                         marginBottom: responsiveSize(12, 16, 20),
                         borderRadius: responsiveSize(12, 16, 20)
                       }
@@ -272,9 +287,9 @@ export default function AstrologyPage1() {
                       style={[
                         styles.cardImage,
                         { 
-                          width: responsiveSize(70, 90, 110),
-                          height: responsiveSize(70, 90, 110),
-                          borderRadius: responsiveSize(8, 12, 16),
+                          width: responsiveSize(80, 90, 110),
+                          height: responsiveSize(80, 90, 110),
+                          borderRadius: responsiveSize(10, 14, 18),
                           marginBottom: responsiveSize(8, 10, 12)
                         }
                       ]}
@@ -282,7 +297,7 @@ export default function AstrologyPage1() {
                     <Text style={[
                       styles.cardText,
                       { 
-                        fontSize: responsiveSize(13, 16, 18),
+                        fontSize: responsiveSize(10, 16, 18),
                         lineHeight: responsiveSize(16, 20, 22)
                       }
                     ]} numberOfLines={2}>
@@ -295,25 +310,18 @@ export default function AstrologyPage1() {
           </>
         )}
 
-        {/* 📢 BOTTOM ADVERTISEMENT - YouTube Video */}
+        {/* BOTTOM ADVERTISEMENT - YouTube Video (edge-to-edge, no title) */}
         {!adLoading && adData.videos.length > 0 && (
-          <View style={[
-            styles.videoAdContainer,
-            { 
-              marginTop: responsiveSize(20, 25, 30),
-              width: '100%'
-            }
-          ]}>
-            <Text style={[
-              styles.videoTitle,
-              { 
-                fontSize: responsiveSize(16, 20, 24),
-                marginBottom: responsiveSize(10, 12, 14)
+          <View
+            style={[
+              styles.videoAdContainer,
+              {
+                marginTop: responsiveSize(20, 25, 30),
+                marginHorizontal: -scrollPadding,
+                width: width,
               }
-            ]}>
-              Watch Video
-            </Text>
-            
+            ]}
+          >
             {adData.videos.map((videoUrl, index) => {
               const videoId = extractYouTubeId(videoUrl);
               if (!videoId) return null;
@@ -325,7 +333,6 @@ export default function AstrologyPage1() {
                     styles.videoWrapper,
                     { 
                       width: '100%',
-                      borderRadius: responsiveSize(10, 14, 18),
                       marginBottom: responsiveSize(15, 20, 25)
                     }
                   ]}
@@ -335,7 +342,6 @@ export default function AstrologyPage1() {
                     play={false}
                     videoId={videoId}
                     webViewStyle={{ 
-                      borderRadius: responsiveSize(10, 14, 18),
                       overflow: 'hidden'
                     }}
                   />
@@ -354,23 +360,25 @@ export default function AstrologyPage1() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#fff",
+    backgroundColor: "#d4cea6",
   },
 
-  /* 🔴 HEADER */
+  /* HEADER */
   header: {
-   flexDirection: "row",
+    flexDirection: "row",
     alignItems: "center",
     backgroundColor: "#93210A",
-    paddingTop:40,
-    paddingBottom:30,
+    paddingTop: 40,
+    paddingBottom: 30,
     borderBottomLeftRadius: 20,
     borderBottomRightRadius: 20,
   },
   headerTablet: {
-   paddingTop:45,
-    paddingBottom:28,
+    paddingTop: 60,
+    paddingBottom: 30,
     paddingHorizontal: 18,
+    borderBottomLeftRadius: 28,
+    borderBottomRightRadius: 28,
   },
   
   backButton: {
@@ -380,7 +388,7 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(255,255,255,0.15)",
     alignItems: "center",
     justifyContent: "center",
-    marginLeft:15,
+    marginLeft: 15,
   },
   backButtonTablet: {
     width: 50,
@@ -392,7 +400,7 @@ const styles = StyleSheet.create({
     flex: 1,
     textAlign: "center",
     color: "#fff",
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: "800",
     letterSpacing: 0.3,
   },
@@ -407,16 +415,17 @@ const styles = StyleSheet.create({
     width: 50,
   },
 
-  /* 📜 CONTENT */
+  /* CONTENT */
   scrollContainer: {
     flexGrow: 1,
   },
 
-  /* 📢 TOP ADVERTISEMENT */
+  /* TOP ADVERTISEMENT */
   topAdContainer: {
     alignItems: "center",
     position: 'relative',
     overflow: 'hidden',
+    backgroundColor: '#000',
   },
   
   topAdImage: {
@@ -433,19 +442,6 @@ const styles = StyleSheet.create({
 
   dot: {
     backgroundColor: '#D3D3D3',
-  },
-
-  /* 🔮 LOADER */
-  loaderContainer: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    paddingVertical: 60,
-  },
-  
-  loaderText: {
-    color: "#666",
-    marginTop: 15,
   },
 
   /* EMPTY STATE */
@@ -468,14 +464,14 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
 
-  /* 🏷️ SECTION TITLE */
+  /* SECTION TITLE */
   sectionTitle: {
     fontWeight: "bold",
     color: "#93210A",
     textAlign: "center",
   },
 
-  /* 🔳 GRID CONTAINER */
+  /* GRID CONTAINER */
   gridContainer: {
     width: '100%',
   },
@@ -483,39 +479,38 @@ const styles = StyleSheet.create({
   grid: {
     flexDirection: "row",
     flexWrap: "wrap",
-    justifyContent: "space-between",
+    justifyContent: "flex-start",
+    gap: 12,
   },
 
-  /* 🟧 CARD */
+  /* CARD */
   card: {
-    backgroundColor: "#FFF7F5",
+    backgroundColor: "#FFFDF8",
     alignItems: "center",
     elevation: 4,
     shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.12,
     shadowRadius: 6,
+    borderWidth: 1,
+    borderColor: "rgba(147,33,10,0.1)",
   },
   
   cardImage: {
     backgroundColor: '#f0f0f0',
+    borderWidth: 2,
+    borderColor: "#93210A",
   },
   
   cardText: {
-    fontWeight: "600",
-    color: "#93210A",
+    fontWeight: "700",
+    color: "#301913",
     textAlign: "center",
   },
 
-  /* 🎥 VIDEO ADVERTISEMENT */
+  /* VIDEO ADVERTISEMENT */
   videoAdContainer: {
     alignItems: 'center',
-  },
-  
-  videoTitle: {
-    fontWeight: "bold",
-    color: "#93210A",
-    alignSelf: 'flex-start',
   },
   
   videoWrapper: {

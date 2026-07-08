@@ -76,8 +76,8 @@ export default function PoojaPage1({ navigation }) {
     (width - HORIZONTAL_PADDING * 2 - GAP * (numColumns - 1)) / numColumns
   );
 
-  // Footer height scales with card width so text never overflows
-  const footerMinHeight = isTablet ? 40 : 32;
+  // Footer height is now FIXED so it never shrinks/shifts for single-line text
+  const footerHeight = isTablet ? 40 : 34;
   const footerFontSize = isTablet ? 11 : 10;
   const arrowSize = isTablet ? 18 : 16;
 
@@ -108,14 +108,15 @@ export default function PoojaPage1({ navigation }) {
         />
       </View>
 
-      {/* Footer */}
+      {/* Footer — fixed height, no white peeking on single-line titles */}
       <View
         style={[
           styles.cardFooter,
           {
             paddingHorizontal: isTablet ? 8 : 6,
-            paddingVertical: isTablet ? 7 : 6,
-            minHeight: footerMinHeight,
+            height: footerHeight,
+            borderBottomLeftRadius: isTablet ? 12 : 10,
+            borderBottomRightRadius: isTablet ? 12 : 10,
           },
         ]}
       >
@@ -128,6 +129,8 @@ export default function PoojaPage1({ navigation }) {
             },
           ]}
           numberOfLines={2}
+          includeFontPadding={false}
+          textAlignVertical="center"
         >
           {item.title || "Untitled"}
         </Text>
@@ -627,6 +630,7 @@ const styles = StyleSheet.create({
   cardFooter: {
     flexDirection: "row",
     alignItems: "center",
+    justifyContent: "space-between",
     backgroundColor: "#301913",
     gap: 4,
   },

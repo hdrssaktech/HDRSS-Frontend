@@ -137,7 +137,6 @@ export default function StoryPage2({ route, navigation }) {
               <Text style={[styles.sectionLabel, isTablet && styles.sectionLabelTablet]}>
                 படத்தொகுப்பு
               </Text>
-              <Text style={styles.galleryCount}>{gallery.length} படங்கள்</Text>
             </View>
 
             <ScrollView
@@ -160,7 +159,7 @@ export default function StoryPage2({ route, navigation }) {
                   />
                   {/* subtle index */}
                   <View style={styles.galleryIndexBadge}>
-                    <Text style={styles.galleryIndexText}>{index + 1}</Text>
+                  
                   </View>
                 </View>
               ))}

@@ -85,7 +85,9 @@ export default function SloganPage2() {
           borderRadius: isTablet ? 12 : 10,
         },
       ]}
-      onPress={() => navigation.navigate("SloganPage3", { data: item })}
+      onPress={() =>
+        navigation.navigate("SloganPage3", { data: item, relatedSongs: filteredItems })
+      }
     >
       {/* Image */}
       <View style={[styles.imageContainer, { aspectRatio: 0.85 }]}>

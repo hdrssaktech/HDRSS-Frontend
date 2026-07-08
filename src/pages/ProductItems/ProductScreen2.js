@@ -11,12 +11,14 @@ import {
   StatusBar,
   ActivityIndicator,
   Animated,
+  ScrollView,
+  SafeAreaView,
 } from "react-native";
 import Ionicons from "react-native-vector-icons/Ionicons";
 import { getProductTypes } from "../../api/api";
+import HeaderCartOrders from "./ProductScreenHeaderCartOrders";
 
 const { width } = Dimensions.get("window");
-
 const isTablet = width >= 600;
 const NUM_COLUMNS = isTablet ? 4 : 3;
 
@@ -26,6 +28,7 @@ const gap = isTablet ? 20 : 12;
 
 const CARD_WIDTH = (availableWidth - gap * (NUM_COLUMNS - 1)) / NUM_COLUMNS;
 const AD_WIDTH = width;
+const AD_HEIGHT = isTablet ? 280 : 200;
 
 export default function ProductScreen2({ navigation, route }) {
   const category = route?.params?.category || "Products";
@@ -47,14 +50,11 @@ export default function ProductScreen2({ navigation, route }) {
 
   useEffect(() => {
     if (!loading) {
-      Animated.timing(fadeAnim, {
-        toValue: 1,
-        duration: 400,
-        useNativeDriver: true,
-      }).start();
+      Animated.timing(fadeAnim, { toValue: 1, duration: 400, useNativeDriver: true }).start();
     }
   }, [loading]);
 
+  // Auto-scrolling ad carousel
   useEffect(() => {
     if (adImages.length > 1) {
       const interval = setInterval(() => {
@@ -85,9 +85,7 @@ export default function ProductScreen2({ navigation, route }) {
   const loadProductTypes = async () => {
     try {
       const data = await getProductTypes();
-      const filtered = data.filter(
-        (item) => item.productCategoryId === categoryId
-      );
+      const filtered = data.filter((item) => item.productCategoryId === categoryId);
       setProductTypes(filtered);
       setFilteredProducts(filtered);
 
@@ -113,11 +111,10 @@ export default function ProductScreen2({ navigation, route }) {
   const renderAdItem = ({ item }) => (
     <View style={styles.adSlideContainer}>
       <Image source={{ uri: item }} style={styles.adImage} resizeMode="cover" />
-      <View style={styles.adOverlay} />
     </View>
   );
 
-  const renderItem = ({ item, index }) => (
+  const renderItem = ({ item }) => (
     <Animated.View
       style={[
         styles.cardWrapper,
@@ -125,10 +122,7 @@ export default function ProductScreen2({ navigation, route }) {
           opacity: fadeAnim,
           transform: [
             {
-              translateY: fadeAnim.interpolate({
-                inputRange: [0, 1],
-                outputRange: [20, 0],
-              }),
+              translateY: fadeAnim.interpolate({ inputRange: [0, 1], outputRange: [20, 0] }),
             },
           ],
         },
@@ -146,122 +140,125 @@ export default function ProductScreen2({ navigation, route }) {
       >
         <View style={styles.circleRing}>
           <View style={styles.circleImageContainer}>
-            <Image
-              source={{ uri: item.image }}
-              style={styles.image}
-              resizeMode="contain"
-            />
+            <Image source={{ uri: item.image }} style={styles.image} resizeMode="contain" />
           </View>
         </View>
-        {/* ✅ REMOVED the namePill container and underline */}
-        <Text style={styles.name} numberOfLines={2}>
-          {item.typeName}
-        </Text>
+        <Text style={styles.name} numberOfLines={2}>{item.typeName}</Text>
       </TouchableOpacity>
     </Animated.View>
   );
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
       <StatusBar backgroundColor="#9D1B00" barStyle="light-content" />
 
       <View style={styles.headerContainer}>
-        <TouchableOpacity
-          style={styles.backButton}
-          onPress={() => navigation.goBack()}
-        >
+        <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
           <Ionicons name="chevron-back" size={isTablet ? 34 : 28} color="#FFFFFF" />
         </TouchableOpacity>
 
         <View style={styles.headerTitleWrapper}>
-          <Text style={styles.heading} numberOfLines={1}>
-            {category}
-          </Text>
+          <Text style={styles.heading} numberOfLines={1}>{category}</Text>
         </View>
-        <View style={styles.headerPlaceholder} />
+
+        <HeaderCartOrders navigation={navigation} iconSize={isTablet ? 24 : 20} />
       </View>
 
-      {adImages.length > 0 && (
-        <View style={styles.adSection}>
-          <FlatList
-            ref={scrollViewRef}
-            data={adImages}
-            renderItem={renderAdItem}
-            keyExtractor={(item, index) => `ad-${index}`}
-            horizontal
-            pagingEnabled
-            showsHorizontalScrollIndicator={false}
-            scrollEnabled={false}
-            snapToInterval={AD_WIDTH}
-            decelerationRate="fast"
-            onMomentumScrollEnd={(event) => {
-              const index = Math.round(
-                event.nativeEvent.contentOffset.x / AD_WIDTH
-              );
-              setCurrentAdIndex(index);
-            }}
-          />
-        </View>
-      )}
-
-      <View style={styles.searchContainer}>
-        <Ionicons name="search-outline" size={isTablet ? 24 : 20} color="#9D1B00" />
-        <TextInput
-          placeholder="Search items..."
-          placeholderTextColor="#94A3B8"
-          value={searchText}
-          onChangeText={setSearchText}
-          style={styles.searchInput}
-        />
-        {searchText.length > 0 && (
-          <TouchableOpacity onPress={() => setSearchText("")} style={styles.clearButton}>
-            <Ionicons name="close-circle" size={isTablet ? 20 : 18} color="#94A3B8" />
-          </TouchableOpacity>
+      <ScrollView 
+        style={styles.mainScrollView}
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={styles.scrollContent}
+      >
+        {adImages.length > 0 && (
+          <View style={styles.adSection}>
+            <FlatList
+              ref={scrollViewRef}
+              data={adImages}
+              renderItem={renderAdItem}
+              keyExtractor={(item, index) => `ad-${index}`}
+              horizontal
+              pagingEnabled
+              showsHorizontalScrollIndicator={false}
+              snapToInterval={AD_WIDTH}
+              decelerationRate="fast"
+              onMomentumScrollEnd={(event) => {
+                const index = Math.round(event.nativeEvent.contentOffset.x / AD_WIDTH);
+                setCurrentAdIndex(index);
+              }}
+              scrollEnabled={adImages.length > 1}
+            /></View>
         )}
-        <View style={styles.categoryBadgeContainer}>
-          <Ionicons name="layers-outline" size={isTablet ? 14 : 12} color="#9D1B00" />
-          <Text style={styles.categoryBadgeText} numberOfLines={1}>
-            {category}
-          </Text>
-        </View>
-      </View>
 
-      <View style={styles.sectionHeader}>
-        <View style={styles.sectionAccentBar} />
-        <Text style={styles.subTitleText}>Categories</Text>
-      </View>
-
-      {loading ? (
-        <View style={styles.loaderContainer}>
-          <ActivityIndicator size="large" color="#9D1B00" />
-          <Text style={styles.loaderText}>Loading...</Text>
+        <View style={styles.searchContainer}>
+          <Ionicons name="search-outline" size={isTablet ? 24 : 20} color="#9D1B00" />
+          <TextInput
+            placeholder="Search items..."
+            placeholderTextColor="#94A3B8"
+            value={searchText}
+            onChangeText={setSearchText}
+            style={styles.searchInput}
+          />
+          {searchText.length > 0 && (
+            <TouchableOpacity onPress={() => setSearchText("")} style={styles.clearButton}>
+              <Ionicons name="close-circle" size={isTablet ? 20 : 18} color="#94A3B8" />
+            </TouchableOpacity>
+          )}
+          <View style={styles.categoryBadgeContainer}>
+            <Ionicons name="layers-outline" size={isTablet ? 14 : 12} color="#9D1B00" />
+            <Text style={styles.categoryBadgeText} numberOfLines={1}>{category}</Text>
+          </View>
         </View>
-      ) : (
-        <FlatList
-          data={filteredProducts}
-          renderItem={renderItem}
-          keyExtractor={(item) => item.id.toString()}
-          numColumns={NUM_COLUMNS}
-          key={NUM_COLUMNS}
-          showsVerticalScrollIndicator={false}
-          contentContainerStyle={styles.listContainer}
-          columnWrapperStyle={styles.row}
-          ListEmptyComponent={
-            <View style={styles.emptyContainer}>
-              <Ionicons name="search-outline" size={isTablet ? 56 : 48} color="#CBD5E1" />
-              <Text style={styles.emptyText}>No items found</Text>
-            </View>
-          }
-        />
-      )}
-    </View>
+
+        <View style={styles.sectionHeader}>
+          <View style={styles.sectionAccentBar} />
+          <Text style={styles.subTitleText}>Categories</Text>
+        </View>
+
+        {loading ? (
+          <View style={styles.loaderContainer}>
+            <ActivityIndicator size="large" color="#9D1B00" />
+            <Text style={styles.loaderText}>Loading...</Text>
+          </View>
+        ) : (
+          <View style={styles.gridContainer}>
+            {filteredProducts.length > 0 ? (
+              <View style={styles.grid}>
+                {filteredProducts.map((item) => (
+                  <View key={item.id.toString()} style={styles.gridItem}>
+                    {renderItem({ item })}
+                  </View>
+                ))}
+              </View>
+            ) : (
+              <View style={styles.emptyContainer}>
+                <Ionicons name="search-outline" size={isTablet ? 56 : 48} color="#CBD5E1" />
+                <Text style={styles.emptyText}>No items found</Text>
+              </View>
+            )}
+          </View>
+        )}
+        
+        {/* Bottom padding for better scrolling */}
+        <View style={styles.bottomPadding} />
+      </ScrollView>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
+  container: { 
+    flex: 1, 
+    backgroundColor: "#F8F8F8" 
+  },
+
+  mainScrollView: {
     flex: 1,
     backgroundColor: "#F8F8F8",
+  },
+
+  scrollContent: {
+    flexGrow: 1,
+    paddingBottom: isTablet ? 20 : 10,
   },
 
   headerContainer: {
@@ -269,19 +266,19 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    ...(!isTablet && {
-      height: 100,
-      borderBottomLeftRadius: 30,
-      borderBottomRightRadius: 30,
-      paddingHorizontal: 20,
-      paddingTop: 25,
+    ...(!isTablet && { 
+      height: 100, 
+      borderBottomLeftRadius: 30, 
+      borderBottomRightRadius: 30, 
+      paddingHorizontal: 20, 
+      paddingTop: 25 
     }),
-    ...(isTablet && {
-      height: 130,
-      borderBottomLeftRadius: 40,
-      borderBottomRightRadius: 40,
-      paddingHorizontal: 40,
-      paddingTop: 30,
+    ...(isTablet && { 
+      height: 130, 
+      borderBottomLeftRadius: 40, 
+      borderBottomRightRadius: 40, 
+      paddingHorizontal: 40, 
+      paddingTop: 30 
     }),
     shadowColor: "#9D1B00",
     shadowOffset: { width: 0, height: 6 },
@@ -299,47 +296,55 @@ const styles = StyleSheet.create({
     height: isTablet ? 55 : 40,
   },
 
-  headerTitleWrapper: {
-    flex: 1,
-    alignItems: "center",
+  headerTitleWrapper: { 
+    flex: 1, 
+    alignItems: "center" 
+  },
+  
+  heading: { 
+    color: "#FFFFFF", 
+    fontWeight: "bold", 
+    fontSize: isTablet ? 30 : 22, 
+    marginHorizontal: isTablet ? 20 : 10, 
+    letterSpacing: 0.3 
   },
 
-  heading: {
-    color: "#FFFFFF",
-    fontWeight: "bold",
-    fontSize: isTablet ? 30 : 22,
-    marginHorizontal: isTablet ? 20 : 10,
-    letterSpacing: 0.3,
-  },
-
-  headerPlaceholder: {
-    width: isTablet ? 75 : 55,
-  },
-
-  adSection: {
+  adSection: { 
     position: "relative",
+    marginTop: isTablet ? 10 : 5,
+  },
+  
+  adSlideContainer: { 
+    width: AD_WIDTH, 
+    height: AD_HEIGHT, 
+    overflow: "hidden" 
+  },
+  
+  adImage: { 
+    width: "100%", 
+    height: "100%" 
   },
 
-  adSlideContainer: {
-    width: AD_WIDTH,
-    height: isTablet ? 280 : 160,
-    overflow: "hidden",
-  },
-
-  adImage: {
-    width: "100%",
-    height: "100%",
-  },
-
-  adOverlay: {
+  adDotsContainer: {
     position: "absolute",
-    bottom: 0,
-    left: 0,
-    right: 0,
-    height: "40%",
-    backgroundColor: "transparent",
+    bottom: 12,
+    flexDirection: "row",
+    justifyContent: "center",
+    width: "100%",
+    gap: 8,
   },
-
+  
+  adDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: "rgba(255,255,255,0.5)",
+  },
+  
+  adDotActive: {
+    backgroundColor: "#FFD700",
+    width: 20,
+  },
 
   searchContainer: {
     flexDirection: "row",
@@ -359,151 +364,161 @@ const styles = StyleSheet.create({
     borderRadius: isTablet ? 20 : 16,
   },
 
-  searchInput: {
-    flex: 1,
-    color: "#0F172A",
-    marginLeft: isTablet ? 10 : 8,
-    marginRight: 4,
-    fontSize: isTablet ? 17 : 14,
-    paddingVertical: 0,
+  searchInput: { 
+    flex: 1, 
+    color: "#0F172A", 
+    marginLeft: isTablet ? 10 : 8, 
+    marginRight: 4, 
+    fontSize: isTablet ? 17 : 14, 
+    paddingVertical: 0 
   },
-
-  clearButton: {
-    paddingHorizontal: 4,
-    justifyContent: "center",
-    alignItems: "center",
+  
+  clearButton: { 
+    paddingHorizontal: 4, 
+    justifyContent: "center", 
+    alignItems: "center" 
   },
 
   categoryBadgeContainer: {
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: "row", 
+    alignItems: "center", 
     backgroundColor: "#FDF2F2",
-    borderWidth: 1,
-    borderColor: "#F8D0D0",
+    borderWidth: 1, 
+    borderColor: "#F8D0D0", 
     borderRadius: isTablet ? 12 : 9,
-    paddingVertical: isTablet ? 7 : 5,
-    paddingHorizontal: isTablet ? 12 : 9,
-    marginLeft: 6,
+    paddingVertical: isTablet ? 7 : 5, 
+    paddingHorizontal: isTablet ? 12 : 9, 
+    marginLeft: 6, 
     maxWidth: width * 0.28,
   },
-
-  categoryBadgeText: {
-    color: "#9D1B00",
-    fontWeight: "700",
-    fontSize: isTablet ? 13 : 11,
-    marginLeft: 4,
-    textTransform: "capitalize",
+  
+  categoryBadgeText: { 
+    color: "#9D1B00", 
+    fontWeight: "700", 
+    fontSize: isTablet ? 13 : 11, 
+    marginLeft: 4, 
+    textTransform: "capitalize" 
   },
 
-  sectionHeader: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginTop: isTablet ? 24 : 18,
-    marginBottom: isTablet ? 14 : 10,
-    marginHorizontal: horizontalPadding,
+  sectionHeader: { 
+    flexDirection: "row", 
+    alignItems: "center", 
+    marginTop: isTablet ? 24 : 18, 
+    marginBottom: isTablet ? 14 : 10, 
+    marginHorizontal: horizontalPadding 
+  },
+  
+  sectionAccentBar: { 
+    width: isTablet ? 5 : 4, 
+    height: isTablet ? 26 : 20, 
+    borderRadius: 999, 
+    backgroundColor: "#9D1B00", 
+    marginRight: isTablet ? 12 : 10 
+  },
+  
+  subTitleText: { 
+    flex: 1, 
+    color: "#0F172A", 
+    fontWeight: "800", 
+    fontSize: isTablet ? 22 : 18, 
+    letterSpacing: -0.3 
   },
 
-  sectionAccentBar: {
-    width: isTablet ? 5 : 4,
-    height: isTablet ? 26 : 20,
-    borderRadius: 999,
-    backgroundColor: "#9D1B00",
-    marginRight: isTablet ? 12 : 10,
-  },
-
-  subTitleText: {
-    flex: 1,
-    color: "#0F172A",
-    fontWeight: "800",
-    fontSize: isTablet ? 22 : 18,
-    letterSpacing: -0.3,
-  },
-
-  listContainer: {
-    paddingBottom: isTablet ? 50 : 40,
+  gridContainer: {
     paddingHorizontal: horizontalPadding,
+    paddingBottom: isTablet ? 20 : 10,
   },
 
-  row: {
+  grid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
     justifyContent: "flex-start",
     gap: gap,
+  },
+
+  gridItem: {
+    width: CARD_WIDTH,
     marginBottom: isTablet ? 28 : 20,
   },
 
-  cardWrapper: {
-    width: CARD_WIDTH,
-    alignItems: "center",
+  cardWrapper: { 
+    width: CARD_WIDTH, 
+    alignItems: "center" 
   },
-
-  card: {
-    width: CARD_WIDTH,
-    alignItems: "center",
+  
+  card: { 
+    width: CARD_WIDTH, 
+    alignItems: "center" 
   },
 
   circleRing: {
-    width: CARD_WIDTH,
-    height: CARD_WIDTH,
+    width: CARD_WIDTH, 
+    height: CARD_WIDTH, 
     borderRadius: CARD_WIDTH / 2,
-    borderWidth: isTablet ? 2.5 : 2,
-    borderColor: "#F3C5C5",
+    borderWidth: isTablet ? 2.5 : 2, 
+    borderColor: "#F3C5C5", 
     padding: isTablet ? 4 : 3,
-    shadowColor: "#9D1B00",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.12,
+    shadowColor: "#9D1B00", 
+    shadowOffset: { width: 0, height: 4 }, 
+    shadowOpacity: 0.12, 
     shadowRadius: 8,
-    elevation: 4,
+    elevation: 4, 
     backgroundColor: "#FFFFFF",
   },
 
   circleImageContainer: {
-    flex: 1,
-    borderRadius: CARD_WIDTH / 2,
+    flex: 1, 
+    borderRadius: CARD_WIDTH / 2, 
     backgroundColor: "#FDF5F5",
-    alignItems: "center",
-    justifyContent: "center",
-    overflow: "hidden",
+    alignItems: "center", 
+    justifyContent: "center", 
+    overflow: "hidden", 
     padding: isTablet ? 14 : 10,
   },
 
-  image: {
-    width: "120%",
-    height: "100%",
+  image: { 
+    width: "120%", 
+    height: "100%" 
   },
 
-  // ✅ Updated name style - no underline
-  name: {
-    textAlign: "center",
-    fontWeight: "700",
-    color: "#1A1A2E",
-    fontSize: isTablet ? 15 : 12,
-    lineHeight: isTablet ? 20 : 16,
-    marginTop: isTablet ? 10 : 7,
-    width: "100%",
+  name: { 
+    textAlign: "center", 
+    fontWeight: "700", 
+    color: "#1A1A2E", 
+    fontSize: isTablet ? 15 : 12, 
+    lineHeight: isTablet ? 20 : 16, 
+    marginTop: isTablet ? 10 : 7, 
+    width: "100%" 
   },
 
-  loaderContainer: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
+  loaderContainer: { 
+    flex: 1, 
+    alignItems: "center", 
+    justifyContent: "center", 
     gap: 12,
+    paddingVertical: isTablet ? 60 : 40,
+  },
+  
+  loaderText: { 
+    color: "#9D1B00", 
+    fontSize: isTablet ? 16 : 14, 
+    fontWeight: "600", 
+    opacity: 0.7 
   },
 
-  loaderText: {
-    color: "#9D1B00",
-    fontSize: isTablet ? 16 : 14,
-    fontWeight: "600",
-    opacity: 0.7,
+  emptyContainer: { 
+    alignItems: "center", 
+    paddingVertical: isTablet ? 80 : 60, 
+    gap: isTablet ? 14 : 12 
+  },
+  
+  emptyText: { 
+    color: "#94A3B8", 
+    fontSize: isTablet ? 17 : 15, 
+    fontWeight: "500" 
   },
 
-  emptyContainer: {
-    alignItems: "center",
-    marginTop: isTablet ? 80 : 60,
-    gap: isTablet ? 14 : 12,
-  },
-
-  emptyText: {
-    color: "#94A3B8",
-    fontSize: isTablet ? 17 : 15,
-    fontWeight: "500",
+  bottomPadding: {
+    height: isTablet ? 40 : 30,
   },
 });

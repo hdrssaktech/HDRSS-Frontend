@@ -502,17 +502,17 @@ import ProductScreen1 from "../../pages/ProductItems/ProductScreen1";
 const FEATURES = [
   { id: 0,label: "பஞ்சாங்கம்", image: require("../../../assets/panchagam/panchagam.jpg") },
   { id: 1, label: "இந்துத்துவா", image: require("../../../assets/hinduthua/hindu.webp") },
-  { id: 2, label: "வரலாறு", image: require("../../../assets/Left Swap/History.jpeg") },
-  { id: 3, label: "ஜோதிடம்", image: require("../../../assets/Left Swap/Astrology.webp") },
+  { id: 2, label: "வரலாறு", image: require("../../../assets/Left Swap/history2.png") },
+  { id: 3, label: "ஜோதிடம்", image: require("../../../assets/Left Swap/astrology.jpg") },
   { id: 4, label: "கதைகள்", image: require("../../../assets/Left Swap/Story.jpg") },
   { id: 5, label: "பூஜை", image: require("../../../assets/Left Swap/poojai.jpg") },
-  { id: 6, label: "யாத்திரை", image: require("../../../assets/Left Swap/tourism.jpg") },
+  { id: 6, label: "யாத்திரை", image: require("../../../assets/Left Swap/tourism1.jpg") },
   { id: 7, label: "வாஸ்து", image: require("../../../assets/Left Swap/vasthu.jpeg") },
   { id: 8, label: "மந்திரம்", image: require("../../../assets/home-bg-img/ohm-img.png") },
   { id: 9, label: "பக்திப் பாடல்கள்", image: require("../../../assets/home-bg-img/ruthurasa-img.png") },
   { id: 10, label: "நூல்கள்", image: require("../../../assets/hinduthua/Noolgal.jpg") },
   { id: 11, label: "மேட்ரிமோனி", image: require("../../../assets/hinduthua/matrimony.png") },
-    // { id: 12, label: "குருகுலம்", image: require("../../../assets/hinduthua/gurukulam.png") }
+  { id: 12, label: "குருகுலம்", image: require("../../../assets/Left Swap/gurukulam.jpg") }
 ];
 
 const columns = 25; 
@@ -621,7 +621,7 @@ export default function HomePage() {
     <View style={styles.container}>
       {/* 🏺 VINTAGE PARCHMENT BASE GRADIENT */}
       <LinearGradient
-       colors={["#E8D9A0", "#C9B96A", "#8A9459"]}
+       colors={["#C9B96A", "#C9B96A", "#C9B96A"]}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
         style={StyleSheet.absoluteFillObject}
@@ -767,7 +767,7 @@ export default function HomePage() {
                         if (item.label === "வாஸ்து") navigation.navigate("VaasthuPage");
                         if (item.label === "இந்துத்துவா") navigation.navigate("HinduThuvm");
                         if (item.label === "பஞ்சாங்கம்") navigation.navigate("Panchangam");
-                        if (item.label === "Matrimony") navigation.navigate("matrimonyBtn");
+                        if (item.label === "மேட்ரிமோனி") navigation.navigate("matrimonyBtn");
                         if (item.label === "நூல்கள்") navigation.navigate("HinduNoolgal1" ,{ categoryTypes: 'நூல்கள்' });
                         if (item.label === "மந்திரம்") navigation.navigate("SloganPage1",{ name: item.label });
                         if (item.label === "பக்திப் பாடல்கள்") navigation.navigate("DivinePage1",{ name: item.label });
@@ -878,16 +878,19 @@ const getStyles = (isTablet) =>
     },
 
     newsCard: {
-      flexDirection: "row",
-      backgroundColor: "#ffffff",
-      marginHorizontal: 15,
-      marginVertical: 8,
-      padding: 10,
-      elevation: 4,
-      overflow: "hidden",
-      borderWidth: 1,
-      borderColor: "#D4AF37", // subtle gold border, ties into your accent color
-      borderRadius: 6,
+     flexDirection: "row",
+     marginHorizontal: 15,
+  marginVertical: 8,
+  padding: 10,
+  overflow: "hidden",
+  borderWidth: 1,
+  borderColor: "#D4AF37",   // gold border, matches your header token
+  borderRadius: 6,
+  elevation: 4,
+  shadowColor: "#301913",
+  shadowOpacity: 0.12,
+  shadowRadius: 6,
+  shadowOffset: { width: 0, height: 2 },
     },
 
     newsImage: {

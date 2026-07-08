@@ -12,25 +12,24 @@ import {
   Modal,
   TextInput,
   Platform,
+  useWindowDimensions,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import axios from "axios";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import Loader from "../../../../components/Alert/Loader";
 
-const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
-const isTablet = SCREEN_WIDTH >= 600;
-const numColumns = isTablet ? 3 : 2;
-const H_PADDING = isTablet ? 24 : 16;
-const GAP = isTablet ? 20 : 12;
-const CARD_WIDTH = (SCREEN_WIDTH - H_PADDING * 2 - GAP * (numColumns - 1)) / numColumns;
-const CARD_HEIGHT = CARD_WIDTH * 1.2;
-
+const { height: SCREEN_HEIGHT } = Dimensions.get("window");
 const ALL = "அனைத்தும்";
 
 const HinduNoolgal1 = () => {
   const navigation = useNavigation();
   const route = useRoute();
+  const { width } = useWindowDimensions();
+  
+  const isTablet = width >= 600;
+  const numColumns = isTablet ? 4 : 3;
+
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -60,15 +59,10 @@ const HinduNoolgal1 = () => {
     }
   };
 
-  // Unique names for modal list
   const filterOptions = [ALL, ...new Set(categories.map((c) => c.name).filter(Boolean))];
-
-  // Modal list filtered by search
   const modalOptions = filterOptions.filter((opt) =>
     opt.toLowerCase().includes(modalSearch.toLowerCase())
   );
-
-  // Main grid filtered by selected name
   const filteredCategories =
     activeFilter === ALL
       ? categories
@@ -80,200 +74,396 @@ const HinduNoolgal1 = () => {
     setModalSearch("");
   };
 
+  // ── Precise card width calculation ──
+  const HORIZONTAL_PADDING = isTablet ? 20 : 12;
+  const GAP = isTablet ? 10 : 8;
+  const cardWidth = Math.floor(
+    (width - HORIZONTAL_PADDING * 2 - GAP * (numColumns - 1)) / numColumns
+  );
+
+  // ── Footer height scales with card width ──
+  const footerMinHeight = isTablet ? 40 : 32;
+  const footerFontSize = isTablet ? 11 : 10;
+
+  // ── Card radius ──
+  const cardRadius = isTablet ? 12 : 10;
+
   if (loading) return <Loader />;
 
-  const renderItem = ({ item, index }) => {
-    const isLastInRow = index % numColumns === numColumns - 1;
-    return (
-      <TouchableOpacity
-        activeOpacity={0.9}
-        onPress={() =>
-          navigation.navigate("HinduNoolgal2", {
-            categoryId: item.id,
-            categoryName: item.name,
-          })
-        }
+  const renderItem = ({ item }) => (
+    <TouchableOpacity
+      activeOpacity={0.82}
+      style={[
+        styles.card,
+        {
+          width: cardWidth,
+          borderRadius: cardRadius,
+          overflow: "hidden",
+        },
+      ]}
+      onPress={() =>
+        navigation.navigate("HinduNoolgal2", {
+          categoryId: item.id,
+          categoryName: item.name,
+        })
+      }
+    >
+      <View style={[styles.imageContainer, { aspectRatio: 0.85 }]}>
+        <Image
+          source={{ uri: item.image }}
+          style={styles.image}
+          resizeMode="cover"
+        />
+      </View>
+
+      <View
         style={[
-          styles.card,
-          isTablet && styles.cardTablet,
+          styles.cardFooter,
           {
-            width: CARD_WIDTH,
-            height: CARD_HEIGHT,
-            marginRight: !isLastInRow ? GAP : 0,
-            marginBottom: GAP,
+            paddingHorizontal: isTablet ? 8 : 6,
+            paddingVertical: isTablet ? 7 : 6,
+            minHeight: footerMinHeight,
           },
         ]}
       >
-        <View style={[styles.imageBox, { height: CARD_HEIGHT * 0.7 }]}>
-          <Image source={{ uri: item.image }} style={styles.image} resizeMode="cover" />
-        </View>
-        <View style={[styles.textContainer, { height: CARD_HEIGHT * 0.3 }]}>
-          <Text
-            style={[styles.cardTitle, isTablet && styles.cardTitleTablet]}
-            numberOfLines={2}
-            adjustsFontSizeToFit
-            minimumFontScale={0.8}
-          >
-            {item.name}
-          </Text>
-          <View style={styles.arrowContainer}>
-            <Ionicons name="arrow-forward" size={isTablet ? 18 : 16} color="#8B0000" />
-          </View>
-        </View>
-      </TouchableOpacity>
-    );
-  };
+        <Text
+          style={[
+            styles.cardTitle,
+            {
+              fontSize: footerFontSize,
+              lineHeight: footerFontSize + 4,
+            },
+          ]}
+          numberOfLines={2}
+        >
+          {item.name}
+        </Text>
+      </View>
+    </TouchableOpacity>
+  );
 
   return (
     <SafeAreaView style={styles.safe}>
-      <StatusBar backgroundColor="#93210A" barStyle="light-content" />
-      <View style={styles.container}>
+      <StatusBar barStyle="light-content" backgroundColor="#93210A" />
 
-        {/* HEADER */}
-        <View style={[styles.header, isTablet && styles.headerTablet]}>
+      {/* ── HEADER ── */}
+      <View style={[styles.header, isTablet && styles.headerTablet]}>
+        <TouchableOpacity
+          style={[styles.backButton, isTablet && styles.backButtonTablet]}
+          onPress={() => navigation.goBack()}
+        >
+          <Ionicons name="chevron-back" size={isTablet ? 30 : 26} color="#fff" />
+        </TouchableOpacity>
+        <Text style={[styles.headerTitle, isTablet && styles.headerTitleTablet]}>
+          {categoryTypes}
+        </Text>
+        <View style={styles.headerSide} />
+      </View>
+
+      {/* ── FILTER BAR ── */}
+      {!error && categories.length > 0 && (
+        <View
+          style={[
+            styles.filterBar,
+            {
+              paddingHorizontal: isTablet ? 20 : 12,
+              paddingVertical: isTablet ? 12 : 10,
+              gap: isTablet ? 12 : 8,
+            },
+          ]}
+        >
           <TouchableOpacity
-            style={[styles.backButton, isTablet && styles.backButtonTablet]}
-            onPress={() => navigation.goBack()}
-            activeOpacity={0.85}
+            style={[
+              styles.filterPill,
+              activeFilter !== ALL && styles.filterPillActive,
+              {
+                paddingHorizontal: isTablet ? 14 : 12,
+                paddingVertical: isTablet ? 9 : 8,
+                maxWidth: isTablet ? "40%" : "55%",
+                borderRadius: isTablet ? 24 : 20,
+              },
+            ]}
+            onPress={() => {
+              setModalSearch("");
+              setModalVisible(true);
+            }}
+            activeOpacity={0.8}
           >
-            <Ionicons name="chevron-back" size={isTablet ? 30 : 24} color="#fff" />
+            <Ionicons
+              name="funnel"
+              size={isTablet ? 15 : 13}
+              color={activeFilter !== ALL ? "#fff" : "#93210A"}
+            />
+            <Text
+              style={[
+                styles.filterPillText,
+                activeFilter !== ALL && styles.filterPillTextActive,
+                { fontSize: isTablet ? 13 : 12 },
+              ]}
+              numberOfLines={1}
+            >
+              {activeFilter}
+            </Text>
+            <Ionicons
+              name="chevron-down"
+              size={isTablet ? 15 : 13}
+              color={activeFilter !== ALL ? "#fff" : "#93210A"}
+            />
           </TouchableOpacity>
-          <Text style={[styles.headerTitle, isTablet && styles.headerTitleTablet]}>
-            {categoryTypes}
-          </Text>
-          <View style={[styles.headerSpacer, isTablet && styles.headerSpacerTablet]} />
-        </View>
 
-        {/* FILTER TRIGGER */}
-        {!error && (
-          <View style={styles.filterTriggerWrapper}>
+          {activeFilter !== ALL && (
             <TouchableOpacity
-              style={styles.filterTrigger}
-              onPress={() => { setModalSearch(""); setModalVisible(true); }}
+              style={[
+                styles.clearPill,
+                {
+                  width: isTablet ? 34 : 28,
+                  height: isTablet ? 34 : 28,
+                  borderRadius: isTablet ? 17 : 14,
+                },
+              ]}
+              onPress={() => setActiveFilter(ALL)}
               activeOpacity={0.8}
             >
-              <Ionicons name="funnel-outline" size={16} color="#93210A" />
-              <Text style={styles.filterTriggerText} numberOfLines={1}>
-                {activeFilter}
-              </Text>
-              <Ionicons name="chevron-down" size={16} color="#93210A" />
+              <Ionicons name="close" size={isTablet ? 15 : 13} color="#93210A" />
             </TouchableOpacity>
+          )}
+        </View>
+      )}
 
-            {activeFilter !== ALL && (
-              <TouchableOpacity
-                style={styles.clearBtn}
-                onPress={() => setActiveFilter(ALL)}
-                activeOpacity={0.8}
-              >
-                <Ionicons name="close-circle" size={18} color="#93210A" />
-                <Text style={styles.clearBtnText}>Clear</Text>
+      {/* ── FILTER MODAL ── */}
+      <Modal
+        visible={modalVisible}
+        animationType="slide"
+        transparent
+        onRequestClose={() => setModalVisible(false)}
+      >
+        <TouchableOpacity
+          style={styles.modalOverlay}
+          activeOpacity={1}
+          onPress={() => setModalVisible(false)}
+        />
+        <View
+          style={[
+            styles.modalSheet,
+            {
+              height: isTablet ? SCREEN_HEIGHT * 0.6 : SCREEN_HEIGHT * 0.68,
+              borderTopLeftRadius: isTablet ? 36 : 28,
+              borderTopRightRadius: isTablet ? 36 : 28,
+            },
+          ]}
+        >
+          <View
+            style={[
+              styles.modalHandle,
+              {
+                width: isTablet ? 50 : 40,
+                height: isTablet ? 5 : 4,
+                marginTop: isTablet ? 16 : 12,
+              },
+            ]}
+          />
+
+          <View
+            style={[
+              styles.modalHeader,
+              {
+                paddingHorizontal: isTablet ? 28 : 20,
+                paddingTop: isTablet ? 20 : 14,
+                paddingBottom: isTablet ? 16 : 12,
+              },
+            ]}
+          >
+            <View>
+              <Text style={[styles.modalTitle, { fontSize: isTablet ? 18 : 15 }]}>
+                வகையைத் தேர்ந்தெடுக்கவும்
+              </Text>
+              <Text style={[styles.modalSubtitle, { fontSize: isTablet ? 13 : 11 }]}>
+                Filter by category
+              </Text>
+            </View>
+            <TouchableOpacity
+              onPress={() => setModalVisible(false)}
+              style={[
+                styles.modalCloseBtn,
+                {
+                  width: isTablet ? 40 : 32,
+                  height: isTablet ? 40 : 32,
+                  borderRadius: isTablet ? 20 : 16,
+                },
+              ]}
+              activeOpacity={0.7}
+            >
+              <Ionicons name="close" size={isTablet ? 22 : 18} color="#93210A" />
+            </TouchableOpacity>
+          </View>
+
+          <View
+            style={[
+              styles.modalSearchBar,
+              {
+                marginHorizontal: isTablet ? 24 : 16,
+                marginVertical: isTablet ? 14 : 10,
+                paddingHorizontal: isTablet ? 16 : 12,
+                paddingVertical: isTablet ? 12 : 10,
+                borderRadius: isTablet ? 18 : 14,
+              },
+            ]}
+          >
+            <Ionicons name="search-outline" size={isTablet ? 20 : 16} color="#93210A" />
+            <TextInput
+              style={[styles.modalSearchInput, { fontSize: isTablet ? 15 : 13 }]}
+              placeholder="தேடுக..."
+              placeholderTextColor="#bbb"
+              value={modalSearch}
+              onChangeText={setModalSearch}
+              autoCorrect={false}
+            />
+            {modalSearch.length > 0 && (
+              <TouchableOpacity onPress={() => setModalSearch("")}>
+                <Ionicons name="close-circle" size={isTablet ? 20 : 16} color="#ccc" />
               </TouchableOpacity>
             )}
           </View>
-        )}
 
-        {/* FILTER MODAL */}
-        <Modal
-          visible={modalVisible}
-          animationType="slide"
-          transparent
-          onRequestClose={() => setModalVisible(false)}
-        >
-          <TouchableOpacity
-            style={styles.modalOverlay}
-            activeOpacity={1}
-            onPress={() => setModalVisible(false)}
-          />
-          <View style={styles.modalSheet}>
-
-            <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>வகையைத் தேர்ந்தெடுக்கவும்</Text>
-              <TouchableOpacity
-                onPress={() => setModalVisible(false)}
-                style={styles.modalCloseBtn}
-                activeOpacity={0.7}
-              >
-                <Ionicons name="close" size={22} color="#333" />
-              </TouchableOpacity>
-            </View>
-
-            <View style={styles.modalSearchBar}>
-              <Ionicons name="search" size={17} color="#93210A" />
-              <TextInput
-                style={styles.modalSearchInput}
-                placeholder="தேடுக..."
-                placeholderTextColor="#aaa"
-                value={modalSearch}
-                onChangeText={setModalSearch}
-                autoCorrect={false}
-              />
-              {modalSearch.length > 0 && (
-                <TouchableOpacity onPress={() => setModalSearch("")} activeOpacity={0.7}>
-                  <Ionicons name="close-circle" size={17} color="#aaa" />
-                </TouchableOpacity>
-              )}
-            </View>
-
-            <FlatList
-              data={modalOptions}
-              keyExtractor={(item) => item}
-              showsVerticalScrollIndicator={false}
-              keyboardShouldPersistTaps="handled"
-              contentContainerStyle={styles.modalList}
-              renderItem={({ item }) => {
-                const selected = activeFilter === item;
-                return (
-                  <TouchableOpacity
-                    style={[styles.modalItem, selected && styles.modalItemActive]}
-                    onPress={() => handleSelect(item)}
-                    activeOpacity={0.75}
+          <FlatList
+            data={modalOptions}
+            keyExtractor={(item) => item}
+            showsVerticalScrollIndicator={false}
+            keyboardShouldPersistTaps="handled"
+            contentContainerStyle={[
+              styles.modalList,
+              {
+                paddingHorizontal: isTablet ? 20 : 12,
+                paddingBottom: isTablet ? 48 : 36,
+                paddingTop: isTablet ? 8 : 4,
+              },
+            ]}
+            numColumns={isTablet ? 4 : 2}
+            key={isTablet ? "tablet-modal-grid" : "phone-modal-grid"}
+            columnWrapperStyle={[
+              styles.modalRow,
+              {
+                gap: isTablet ? 10 : 8,
+                marginBottom: isTablet ? 10 : 8,
+              },
+            ]}
+            renderItem={({ item }) => {
+              const selected = activeFilter === item;
+              return (
+                <TouchableOpacity
+                  style={[
+                    styles.modalChip,
+                    selected && styles.modalChipActive,
+                    {
+                      paddingVertical: isTablet ? 12 : 12,
+                      paddingHorizontal: isTablet ? 10 : 12,
+                      borderRadius: isTablet ? 12 : 12,
+                      minHeight: isTablet ? 50 : 48,
+                    },
+                  ]}
+                  onPress={() => handleSelect(item)}
+                  activeOpacity={0.75}
+                >
+                  {selected && (
+                    <Ionicons
+                      name="checkmark-circle"
+                      size={isTablet ? 16 : 14}
+                      color="#93210A"
+                      style={{ marginRight: 4 }}
+                    />
+                  )}
+                  <Text
+                    style={[
+                      styles.modalChipText,
+                      selected && styles.modalChipTextActive,
+                      { fontSize: isTablet ? 13 : 13 },
+                    ]}
+                    numberOfLines={2}
                   >
-                    <Text style={[styles.modalItemText, selected && styles.modalItemTextActive]}>
-                      {item}
-                    </Text>
-                    {selected && (
-                      <Ionicons name="checkmark-circle" size={20} color="#93210A" />
-                    )}
-                  </TouchableOpacity>
-                );
-              }}
-              ListEmptyComponent={
-                <View style={styles.modalEmpty}>
-                  <Text style={styles.modalEmptyText}>எதுவும் கிடைக்கவில்லை</Text>
-                </View>
-              }
-            />
-          </View>
-        </Modal>
+                    {item}
+                  </Text>
+                </TouchableOpacity>
+              );
+            }}
+            ListEmptyComponent={
+              <View style={styles.modalEmpty}>
+                <Ionicons name="search-outline" size={isTablet ? 44 : 36} color="#eee" />
+                <Text style={[styles.modalEmptyText, { fontSize: isTablet ? 16 : 14 }]}>
+                  எதுவும் கிடைக்கவில்லை
+                </Text>
+              </View>
+            }
+          />
+        </View>
+      </Modal>
 
-        {/* ERROR STATE */}
+      {/* ── GRID ── */}
+      <View style={styles.contentWrapper}>
         {error ? (
           <View style={styles.center}>
-            <Ionicons name="alert-circle-outline" size={isTablet ? 60 : 50} color="#8B0000" />
-            <Text style={styles.errorText}>{error}</Text>
+            <Ionicons name="alert-circle-outline" size={isTablet ? 60 : 52} color="#93210A" />
+            <Text style={[styles.errorText, isTablet && styles.errorTextTablet]}>{error}</Text>
             <TouchableOpacity style={styles.retryBtn} onPress={fetchCategories}>
-              <Text style={styles.retryText}>மீண்டும் முயற்சிக்கவும்</Text>
+              <Text style={[styles.retryText, isTablet && styles.retryTextTablet]}>
+                மீண்டும் முயற்சிக்கவும்
+              </Text>
             </TouchableOpacity>
+          </View>
+        ) : !categories.length ? (
+          <View style={styles.center}>
+            <Ionicons name="folder-open-outline" size={isTablet ? 60 : 52} color="#ccc" />
+            <Text style={[styles.emptyText, isTablet && styles.emptyTextTablet]}>
+              பகுப்புகள் கிடைக்கவில்லை
+            </Text>
           </View>
         ) : (
           <FlatList
             data={filteredCategories}
-            key={`${numColumns}`}
-            keyExtractor={(item) => String(item.id)}
+            key={`grid-${numColumns}`}
             numColumns={numColumns}
-            showsVerticalScrollIndicator={false}
-            contentContainerStyle={[
-              styles.listContent,
-              filteredCategories.length === 0 && styles.emptyContent,
-            ]}
             renderItem={renderItem}
+            keyExtractor={(item, idx) => String(item?.id ?? idx)}
+            contentContainerStyle={[
+              styles.listContainer,
+              filteredCategories.length === 0 && styles.emptyContent,
+              {
+                paddingHorizontal: HORIZONTAL_PADDING,
+                paddingTop: isTablet ? 16 : 12,
+                paddingBottom: isTablet ? 40 : 32,
+              },
+            ]}
+            columnWrapperStyle={{
+              gap: GAP,
+              marginBottom: GAP,
+              justifyContent: "flex-start",
+            }}
+            showsVerticalScrollIndicator={false}
             ListEmptyComponent={
               <View style={styles.center}>
-                <Ionicons name="folder-open-outline" size={56} color="#ccc" />
-                <Text style={styles.emptyText}>பகுப்புகள் கிடைக்கவில்லை</Text>
+                <View
+                  style={[
+                    styles.emptyIconWrap,
+                    {
+                      width: isTablet ? 100 : 80,
+                      height: isTablet ? 100 : 80,
+                      borderRadius: isTablet ? 50 : 40,
+                    },
+                  ]}
+                >
+                  <Ionicons
+                    name="book-outline"
+                    size={isTablet ? 50 : 40}
+                    color="#93210A"
+                  />
+                </View>
+                <Text style={[styles.emptyTitle, { fontSize: isTablet ? 20 : 16 }]}>
+                  எதுவும் கிடைக்கவில்லை
+                </Text>
+                <Text style={[styles.emptySubtitle, { fontSize: isTablet ? 14 : 12 }]}>
+                  No books found for this filter
+                </Text>
               </View>
             }
-            ListFooterComponent={<View style={{ height: 20 }} />}
           />
         )}
       </View>
@@ -284,151 +474,222 @@ const HinduNoolgal1 = () => {
 export default HinduNoolgal1;
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: "#fff" },
-  container: { flex: 1, backgroundColor: "#fff" },
+  safe: { flex: 1, backgroundColor: "#d4cea6" },
 
-  /* HEADER — original unchanged */
+  contentWrapper: { flex: 1, backgroundColor: "#d4cea6" },
+
+  /* ── HEADER ── */
   header: {
     flexDirection: "row",
     alignItems: "center",
     backgroundColor: "#93210A",
-    paddingTop: Platform.OS === "ios" ? 12 : 40,
+    paddingTop: 40,
     paddingBottom: 30,
     borderBottomLeftRadius: 20,
     borderBottomRightRadius: 20,
   },
-  headerTablet: { paddingTop: Platform.OS === "ios" ? 16 : 45, paddingBottom: 28, paddingHorizontal: 18 },
+  headerTablet: {
+    paddingTop: 60,
+    paddingBottom: 30,
+    paddingHorizontal: 18,
+    borderBottomLeftRadius: 28,
+    borderBottomRightRadius: 28,
+  },
+  headerSide: { width: 44, justifyContent: "center", alignItems: "flex-start" },
+  headerTitle: {
+    flex: 1,
+    textAlign: "center",
+    color: "#fff",
+    fontSize: 18,
+    fontWeight: "800",
+    letterSpacing: 0.3,
+  },
+  headerTitleTablet: { fontSize: 24 },
   backButton: {
-    width: 40, height: 40, borderRadius: 20,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
     backgroundColor: "rgba(255,255,255,0.15)",
-    alignItems: "center", justifyContent: "center", marginLeft: 15,
+    alignItems: "center",
+    justifyContent: "center",
+    marginLeft: 15,
   },
   backButtonTablet: { width: 50, height: 50, borderRadius: 25 },
-  headerTitle: {
-    flex: 1, textAlign: "center", color: "#fff",
-    fontSize: 18, fontWeight: "800", letterSpacing: 0.3,
-  },
-  headerTitleTablet: { fontSize: 22 },
-  headerSpacer: { width: 36 },
-  headerSpacerTablet: { width: 44 },
 
-  /* FILTER TRIGGER */
-  filterTriggerWrapper: {
-    flexDirection: "row", alignItems: "center",
-    backgroundColor: "#fff", paddingHorizontal: 16,
-    paddingVertical: 10, borderBottomWidth: 1,
-    borderBottomColor: "rgba(0,0,0,0.06)", gap: 10,
-    elevation: 2, shadowColor: "#000",
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05, shadowRadius: 3,
+  /* ── FILTER BAR ── */
+  filterBar: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "rgba(255,255,255,0.5)",
+    borderBottomWidth: 1,
+    borderBottomColor: "rgba(147,33,10,0.08)",
   },
-  filterTrigger: {
-    flex: 1, flexDirection: "row", alignItems: "center",
-    backgroundColor: "#FFF0EE", borderRadius: 10,
-    paddingHorizontal: 12, paddingVertical: 9,
-    borderWidth: 1.5, borderColor: "rgba(147,33,10,0.2)", gap: 8,
-  },
-  filterTriggerText: { flex: 1, fontSize: 13, fontWeight: "700", color: "#93210A" },
-  clearBtn: {
-    flexDirection: "row", alignItems: "center", gap: 4,
-    paddingHorizontal: 10, paddingVertical: 8, borderRadius: 8,
-    backgroundColor: "#FFF0EE", borderWidth: 1.5,
+  filterPill: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    backgroundColor: "#FFF0EE",
+    borderWidth: 1.5,
     borderColor: "rgba(147,33,10,0.2)",
   },
-  clearBtnText: { fontSize: 12, fontWeight: "700", color: "#93210A" },
+  filterPillActive: {
+    backgroundColor: "#93210A",
+    borderColor: "#93210A",
+  },
+  filterPillText: {
+    fontWeight: "700",
+    color: "#93210A",
+    flex: 1,
+  },
+  filterPillTextActive: { color: "#fff" },
+  clearPill: {
+    backgroundColor: "#FFF0EE",
+    alignItems: "center",
+    justifyContent: "center",
+    borderWidth: 1.5,
+    borderColor: "rgba(147,33,10,0.2)",
+  },
 
-  /* MODAL */
-  modalOverlay: { flex: 1, backgroundColor: "rgba(0,0,0,0.45)" },
+  /* ── MODAL ── */
+  modalOverlay: { flex: 1, backgroundColor: "rgba(0,0,0,0.5)" },
   modalSheet: {
-    position: "absolute", bottom: 0, left: 0, right: 0,
-    height: SCREEN_HEIGHT * 0.65, backgroundColor: "#fff",
-    borderTopLeftRadius: 24, borderTopRightRadius: 24,
-    overflow: "hidden", elevation: 20, shadowColor: "#000",
-    shadowOffset: { width: 0, height: -4 },
-    shadowOpacity: 0.15, shadowRadius: 12,
+    position: "absolute",
+    bottom: 0,
+    left: 0,
+    right: 0,
+    backgroundColor: "#fff",
+    overflow: "hidden",
+    elevation: 24,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: -6 },
+    shadowOpacity: 0.18,
+    shadowRadius: 16,
+  },
+  modalHandle: {
+    borderRadius: 2,
+    backgroundColor: "#E0D8D7",
+    alignSelf: "center",
   },
   modalHeader: {
-    flexDirection: "row", alignItems: "center",
+    flexDirection: "row",
+    alignItems: "flex-start",
     justifyContent: "space-between",
-    paddingHorizontal: 20, paddingVertical: 16,
-    borderBottomWidth: 1, borderBottomColor: "rgba(0,0,0,0.07)",
+    borderBottomWidth: 1,
+    borderBottomColor: "#F5EFEE",
   },
-  modalTitle: { fontSize: 16, fontWeight: "800", color: "#1A1A1A" },
+  modalTitle: { fontWeight: "800", color: "#1A1A1A" },
+  modalSubtitle: { color: "#999", fontWeight: "500", marginTop: 2 },
   modalCloseBtn: {
-    width: 34, height: 34, borderRadius: 17,
-    backgroundColor: "#F5F5F5",
-    alignItems: "center", justifyContent: "center",
+    backgroundColor: "#FFF0EE",
+    alignItems: "center",
+    justifyContent: "center",
   },
   modalSearchBar: {
-    flexDirection: "row", alignItems: "center",
-    backgroundColor: "#F5F5F5", borderRadius: 12,
-    marginHorizontal: 16, marginVertical: 12,
-    paddingHorizontal: 12, paddingVertical: 10,
-    gap: 8, borderWidth: 1, borderColor: "rgba(147,33,10,0.15)",
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#F8F4F3",
+    gap: 8,
+    borderWidth: 1.5,
+    borderColor: "rgba(147,33,10,0.12)",
   },
-  modalSearchInput: { flex: 1, fontSize: 14, color: "#1A1A1A", padding: 0, fontWeight: "500" },
-  modalList: { paddingHorizontal: 16, paddingBottom: 30 },
-  modalItem: {
-    flexDirection: "row", alignItems: "center",
-    justifyContent: "space-between",
-    paddingVertical: 14, paddingHorizontal: 12,
-    borderRadius: 10, marginBottom: 4, backgroundColor: "#fff",
+  modalSearchInput: {
+    flex: 1,
+    color: "#1A1A1A",
+    padding: 0,
+    fontWeight: "500",
   },
-  modalItemActive: { backgroundColor: "rgba(147,33,10,0.06)" },
-  modalItemText: { fontSize: 14, color: "#333", fontWeight: "500", flex: 1 },
-  modalItemTextActive: { color: "#93210A", fontWeight: "800" },
-  modalEmpty: { alignItems: "center", paddingTop: 40 },
-  modalEmptyText: { fontSize: 14, color: "#aaa", fontWeight: "600" },
+  modalList: { paddingBottom: 36 },
+  modalRow: { gap: 8, marginBottom: 8 },
+  modalChip: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#F8F4F3",
+    borderWidth: 1.5,
+    borderColor: "transparent",
+  },
+  modalChipActive: {
+    backgroundColor: "#FFF0EE",
+    borderColor: "#93210A",
+  },
+  modalChipText: { flex: 1, color: "#444", fontWeight: "500" },
+  modalChipTextActive: { color: "#93210A", fontWeight: "800" },
+  modalEmpty: { alignItems: "center", paddingTop: 50, gap: 10 },
+  modalEmptyText: { color: "#bbb", fontWeight: "600" },
 
-  /* LIST */
-  listContent: {
-    paddingHorizontal: H_PADDING,
-    paddingTop: isTablet ? 24 : 16,
-    paddingBottom: isTablet ? 40 : 30,
-  },
+  /* ── GRID ── */
+  listContainer: { paddingBottom: 32 },
   emptyContent: { flexGrow: 1 },
 
-  /* CARD — original unchanged */
+  /* ── CARD ── */
   card: {
-    backgroundColor: "#fff", borderRadius: 12, overflow: "hidden",
-    elevation: 3, shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1, shadowRadius: 4,
-    borderWidth: 1, borderColor: "#f0f0f0",
+    backgroundColor: "#301913",
+    overflow: "hidden",
+    elevation: 4,
+    shadowColor: "#000",
+    shadowOpacity: 0.10,
+    shadowRadius: 6,
+    shadowOffset: { width: 0, height: 3 },
   },
-  cardTablet: {
-    borderRadius: 16, elevation: 5,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.15, shadowRadius: 8,
+  imageContainer: {
+    width: "100%",
+    backgroundColor: "#1a0a00",
+    overflow: "hidden",
   },
-  imageBox: { width: "100%", backgroundColor: "#f5f5f5" },
-  image: { width: "100%", height: "100%" },
-  textContainer: {
-    flexDirection: "row", alignItems: "center",
-    justifyContent: "space-between",
-    backgroundColor: "#fff", paddingHorizontal: 10, paddingVertical: 8,
+  image: {
+    width: "100%",
+    height: "100%",
+  },
+  cardFooter: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#301913",
   },
   cardTitle: {
-    flex: 1, fontSize: 13, fontWeight: "700",
-    color: "#333", lineHeight: 18, paddingRight: 4,
+    flex: 1,
+    textAlign: "center",
+    flexShrink: 1,
+    fontWeight: "700",
+    color: "#FFFFFF",
   },
-  cardTitleTablet: { fontSize: 15, fontWeight: "800", lineHeight: 20 },
-  arrowContainer: { width: 20, alignItems: "center", justifyContent: "center" },
 
-  /* STATES */
+  /* ── EMPTY STATE ── */
   center: {
-    flex: 1, justifyContent: "center",
-    alignItems: "center", paddingTop: 80, gap: 12, paddingHorizontal: 32,
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    paddingTop: 80,
+    gap: 12,
   },
+  emptyIconWrap: {
+    backgroundColor: "#FFF0EE",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  emptyTitle: { color: "#555", fontWeight: "800" },
+  emptySubtitle: { color: "#aaa", fontWeight: "500" },
+
+  /* ── STATES ── */
   errorText: {
-    color: "#8B0000", fontSize: 16, textAlign: "center",
-    fontWeight: "700", lineHeight: 22, paddingHorizontal: 20,
+    color: "#93210A",
+    fontSize: 16,
+    textAlign: "center",
+    fontWeight: "700",
+    lineHeight: 22,
+    paddingHorizontal: 20,
   },
+  errorTextTablet: { fontSize: 20, lineHeight: 28 },
   emptyText: { color: "#777", fontSize: 16, fontWeight: "600" },
+  emptyTextTablet: { fontSize: 20 },
   retryBtn: {
-    marginTop: 8, backgroundColor: "#8B0000",
-    paddingHorizontal: 24, paddingVertical: 12,
-    borderRadius: 25, elevation: 2,
+    marginTop: 8,
+    backgroundColor: "#93210A",
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    borderRadius: 25,
+    elevation: 2,
   },
   retryText: { color: "#fff", fontWeight: "800", fontSize: 15 },
+  retryTextTablet: { fontSize: 18 },
 });

@@ -14,6 +14,8 @@ import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import { fetchTourismTypes } from "../../../Controller/TourismController/TourismController";
 import Loader from "../../../components/Alert/Loader";
+import { useLanguage } from "../../../context/LanguageContext";
+import { t, getLocalizedField, sortByDirection, DIRECTION_LABELS } from "../../../utils/localization";
 
 const C = {
   primary: "#93210A",
@@ -30,6 +32,7 @@ export default function TourismPage1() {
   const navigation = useNavigation();
   const { width }  = useWindowDimensions();
   const isTablet   = width >= 600;
+  const { language } = useLanguage();
 
   const [types,   setTypes]   = useState([]);
   const [loading, setLoading] = useState(true);
@@ -73,11 +76,11 @@ export default function TourismPage1() {
       onPress={() =>
         navigation.navigate("TourismPage2", {
           typeId:   item.id,
-          typeName: item.name,
+          typeName: getLocalizedField(item, "name", language),
+          typeObj:  item, // full object so Page2 can re-localize if language changes
         })
       }
     >
-      {/* Image */}
       <View style={[styles.imageWrap, { aspectRatio: 1.2 }]}>
         <Image
           source={{
@@ -90,7 +93,6 @@ export default function TourismPage1() {
         <View style={styles.imageOverlay} />
       </View>
 
-      {/* Footer — NO paddingVertical on wrapper, padding moved to Text and arrowDot */}
       <View
         style={[
           styles.cardFooter,
@@ -103,14 +105,13 @@ export default function TourismPage1() {
             {
               fontSize:      footerFontSize,
               lineHeight:    footerFontSize + 4,
-              // vertical padding ON the text so it expands the dark bg exactly
               paddingTop:    isTablet ? 8 : 6,
               paddingBottom: isTablet ? 8 : 6,
             },
           ]}
           numberOfLines={2}
         >
-          {item.name}
+          {getLocalizedField(item, "name", language)}
         </Text>
         <View
           style={[
@@ -136,7 +137,6 @@ export default function TourismPage1() {
     <SafeAreaView style={styles.safe}>
       <StatusBar barStyle="light-content" backgroundColor={C.primary} />
 
-      {/* ── HEADER ── */}
       <View style={[styles.header, isTablet && styles.headerTablet]}>
         <TouchableOpacity
           style={[styles.backBtn, isTablet && styles.backBtnTablet]}
@@ -149,12 +149,11 @@ export default function TourismPage1() {
           style={[styles.headerTitle, isTablet && styles.headerTitleTablet]}
           numberOfLines={1}
         >
-          சுற்றுலா இடங்கள்
+          {t("tourismTitle", language)}
         </Text>
         <View style={[styles.headerSpacer, isTablet && styles.headerSpacerTablet]} />
       </View>
 
-      {/* ── GRID ── */}
       <FlatList
         data={types}
         key="grid-2"
@@ -185,10 +184,10 @@ export default function TourismPage1() {
               />
             </View>
             <Text style={[styles.emptyTitle, isTablet && styles.emptyTitleTablet]}>
-              இடங்கள் எதுவும் இல்லை
+              {t("noPlaces", language)}
             </Text>
             <Text style={[styles.emptySub, isTablet && styles.emptySubTablet]}>
-              பின்னர் மீண்டும் பார்க்கவும்
+              {t("checkLater", language)}
             </Text>
           </View>
         }
@@ -199,8 +198,6 @@ export default function TourismPage1() {
 
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: C.bg },
-
-  /* ── HEADER ── */
   header: {
     flexDirection: "row",
     alignItems: "center",
@@ -244,10 +241,8 @@ const styles = StyleSheet.create({
   headerTitleTablet:  { fontSize: 24 },
   headerSpacer:       { width: 40 },
   headerSpacerTablet: { width: 50 },
-
-  /* ── CARD ── */
   card: {
-    backgroundColor: C.dark, // KEY: card bg = dark so no color leak ever
+    backgroundColor: C.dark,
     overflow: "hidden",
     elevation: 4,
     shadowColor: C.dark,
@@ -272,11 +267,6 @@ const styles = StyleSheet.create({
     height: "35%",
     backgroundColor: "rgba(48,25,19,0.18)",
   },
-
-  /* ── CARD FOOTER ──
-     No paddingVertical here at all.
-     Padding is on the Text itself so the dark bg fills exactly the text height.
-     Card bg is also C.dark so even if there is any sub-pixel gap it stays dark. */
   cardFooter: {
     backgroundColor: C.dark,
     flexDirection: "row",
@@ -295,8 +285,6 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     flexShrink: 0,
   },
-
-  /* ── EMPTY STATE ── */
   empty: {
     flex: 1,
     alignItems: "center",

@@ -75,28 +75,49 @@ export default function HistoryPage2() {
 
   const footerFontSize = isTablet ? 11 : 10;
   const arrowSize = isTablet ? 18 : 16;
+  const footerHeight = isTablet ? 44 : 38; // fixed height so it never shifts
 
   const renderItem = ({ item }) => (
     <TouchableOpacity
       activeOpacity={0.82}
-      style={[styles.card, { width: cardWidth, borderRadius: isTablet ? 12 : 10 }]}
+      style={[
+        styles.card,
+        {
+          width: cardWidth,
+          borderRadius: isTablet ? 12 : 10,
+          backgroundColor: "#FFFDF8",
+        },
+      ]}
       onPress={() => navigation.navigate("HistoryPage3", { data: item })}
     >
-      <View style={[styles.imageContainer, { aspectRatio: 0.85 }]}>
-        <Image
-          source={{ uri: item.bannerImage }}
-          style={styles.image}
-          resizeMode="cover"
-        />
+      {/* Square image (1:1 aspect ratio) */}
+      <View style={[styles.imageContainer, { aspectRatio: 1 }]}>
+        {item.bannerImage ? (
+          <Image
+            source={{ uri: item.bannerImage }}
+            style={styles.image}
+            resizeMode="cover"
+          />
+        ) : (
+          <View style={styles.imagePlaceholder}>
+            <Ionicons
+              name="image-outline"
+              size={isTablet ? 32 : 26}
+              color="#ddd"
+            />
+          </View>
+        )}
       </View>
 
+      {/* Footer — fixed height, always centered */}
       <View
         style={[
           styles.cardFooter,
           {
             paddingHorizontal: isTablet ? 8 : 6,
-            paddingVertical: isTablet ? 7 : 5,
-            minHeight: isTablet ? 40 : 34,
+            height: footerHeight,
+            borderBottomLeftRadius: isTablet ? 12 : 10,
+            borderBottomRightRadius: isTablet ? 12 : 10,
           },
         ]}
       >
@@ -106,6 +127,8 @@ export default function HistoryPage2() {
             { fontSize: footerFontSize, lineHeight: footerFontSize + 4 },
           ]}
           numberOfLines={2}
+          includeFontPadding={false}
+          textAlignVertical="center"
         >
           {item.title}
         </Text>
@@ -455,7 +478,7 @@ const styles = StyleSheet.create({
     flex: 1,
     textAlign: "center",
     color: "#fff",
-    fontSize: 18,
+    fontSize: 17,
     fontWeight: "800",
     letterSpacing: 0.3,
   },
@@ -584,17 +607,29 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.10,
     shadowRadius: 6,
     shadowOffset: { width: 0, height: 3 },
+    backgroundColor: "#FFFDF8",
   },
   imageContainer: {
     width: "100%",
-    backgroundColor: "#1a0a00",
+    backgroundColor: "#F3EFE6",
     overflow: "hidden",
+    position: "relative",
   },
-  image: { width: "100%", height: "100%" },
+  image: {
+    width: "100%",
+    height: "100%",
+  },
+  imagePlaceholder: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#F3EFE6",
+  },
   cardFooter: {
     width: "100%",
     flexDirection: "row",
     alignItems: "center",
+    justifyContent: "space-between",
     backgroundColor: "#301913",
     gap: 4,
   },

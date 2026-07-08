@@ -15,8 +15,9 @@ import { Ionicons } from "@expo/vector-icons";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { fetchTourismByType } from "../../../Controller/TourismController/TourismController";
 import Loader from "../../../components/Alert/Loader";
+import { useLanguage } from "../../../context/LanguageContext";
+import { t, getLocalizedField, sortByDirection, DIRECTION_LABELS } from "../../../utils/localization";
 
-/* ── Shared colour tokens (identical to TourismPage1) ── */
 const C = {
   primary: "#93210A",
   dark:    "#301913",
@@ -31,7 +32,12 @@ const C = {
 export default function TourismPage2() {
   const navigation = useNavigation();
   const route      = useRoute();
-  const { typeId, typeName } = route.params;
+  const { typeId, typeName, typeObj } = route.params;
+  const { language } = useLanguage();
+
+  const displayedTypeName = typeObj
+    ? getLocalizedField(typeObj, "name", language)
+    : typeName;
 
   const { width }      = useWindowDimensions();
   const isTablet       = width >= 600;
@@ -42,7 +48,6 @@ export default function TourismPage2() {
   const [searchText,     setSearchText]     = useState("");
   const [loading,        setLoading]        = useState(true);
 
-  /* ── Responsive helpers ── */
   const numColumns     = isLargeTablet ? 3 : isTablet ? 3 : 2;
   const HORIZONTAL_PAD = isTablet ? 32 : 16;
   const GAP            = isTablet ? 16 : 10;
@@ -56,16 +61,15 @@ export default function TourismPage2() {
   );
 
   const footerFontSize = isTablet ? 15 : 13;
-  const arrowSize      = isTablet ? 26 : 22;
   const dotSize        = isTablet ? 26 : 22;
 
-  /* ── Data ── */
   useEffect(() => {
     const load = async () => {
       try {
         const data = await fetchTourismByType(typeId);
-        setPlaces(Array.isArray(data) ? data : []);
-        setFilteredPlaces(Array.isArray(data) ? data : []);
+        const sorted = sortByDirection(Array.isArray(data) ? data : []);
+        setPlaces(sorted);
+        setFilteredPlaces(sorted);
       } catch (e) {
         console.error("Error loading places:", e);
       } finally {
@@ -81,104 +85,108 @@ export default function TourismPage2() {
       setFilteredPlaces(places);
       return;
     }
+    const lower = text.toLowerCase();
     setFilteredPlaces(
       places.filter((p) =>
-        (p.name || p.title || "").toLowerCase().includes(text.toLowerCase())
+        getLocalizedField(p, "name", language).toLowerCase().includes(lower) ||
+        getLocalizedField(p, "title", language).toLowerCase().includes(lower)
       )
     );
   };
 
   if (loading) return <Loader />;
 
-  /* ── Card ── */
-  const renderItem = ({ item }) => (
-    <TouchableOpacity
-      style={[
-        styles.card,
-        {
-          width:        cardWidth,
-          borderRadius: isTablet ? 12 : 10,
-        },
-      ]}
-      activeOpacity={0.85}
-      onPress={() => navigation.navigate("TourismPage3", { id: item.id })}
-    >
-      {/* Image */}
-      <View style={[styles.imageWrap, { aspectRatio: 1.2 }]}>
-        <Image
-          source={{
-            uri:
-              item.bannerImage ||
-              item.image ||
-              "https://cdn-icons-png.flaticon.com/512/201/201623.png",
-          }}
-          style={styles.image}
-          resizeMode="cover"
-        />
-        {/* subtle vignette — matches Page1's imageOverlay */}
-        <View style={styles.imageOverlay} />
+  const renderItem = ({ item }) => {
+    const dirKey   = (item.direction || "").toLowerCase().trim();
+    const dirLabel = DIRECTION_LABELS[dirKey]?.[language];
 
-        {/* Location pin — top-right, gold tinted, no badge box */}
-        <View style={styles.pinWrap}>
-          <Ionicons name="location" size={isTablet ? 16 : 13} color={C.gold} />
-        </View>
-      </View>
-
-      {/* Footer — same pattern as TourismPage1 */}
-      <View
+    return (
+      <TouchableOpacity
         style={[
-          styles.cardFooter,
-          { paddingHorizontal: isTablet ? 12 : 10 },
+          styles.card,
+          {
+            width:        cardWidth,
+            borderRadius: isTablet ? 12 : 10,
+          },
         ]}
+        activeOpacity={0.85}
+        onPress={() => navigation.navigate("TourismPage3", { id: item.id })}
       >
-        <Text
-          style={[
-            styles.cardText,
-            {
-              fontSize:      footerFontSize,
-              lineHeight:    footerFontSize + 6,
-              paddingTop:    isTablet ? 12 : 10,
-              paddingBottom: isTablet ? 12 : 10,
-            },
-          ]}
-          numberOfLines={2}
-        >
-          {item.name || item.title}
-        </Text>
-
-        {/* Info button — gold dot, always visible */}
-        <TouchableOpacity
-          style={[
-            styles.infoDot,
-            {
-              width:        dotSize,
-              height:       dotSize,
-              borderRadius: dotSize / 2,
-            },
-          ]}
-          onPress={(e) => {
-            e.stopPropagation && e.stopPropagation();
-            navigation.navigate("TourismPlaces", { id: item.id });
-          }}
-          activeOpacity={0.75}
-        >
-          <Ionicons
-            name="information-circle"
-            size={isTablet ? 24 : 20}
-            color={C.dark}
+        <View style={[styles.imageWrap, { aspectRatio: 1.2 }]}>
+          <Image
+            source={{
+              uri:
+                item.bannerImage ||
+                item.image ||
+                "https://cdn-icons-png.flaticon.com/512/201/201623.png",
+            }}
+            style={styles.image}
+            resizeMode="cover"
           />
-        </TouchableOpacity>
+          <View style={styles.imageOverlay} />
 
-       
-      </View>
-    </TouchableOpacity>
-  );
+          <View style={styles.pinWrap}>
+            <Ionicons name="location" size={isTablet ? 16 : 13} color={C.gold} />
+          </View>
+
+          {dirLabel ? (
+            <View style={styles.directionTag}>
+              <Text style={styles.directionTagText}>{dirLabel}</Text>
+            </View>
+          ) : null}
+        </View>
+
+        <View
+          style={[
+            styles.cardFooter,
+            { paddingHorizontal: isTablet ? 12 : 10 },
+          ]}
+        >
+          <Text
+            style={[
+              styles.cardText,
+              {
+                fontSize:      footerFontSize,
+                lineHeight:    footerFontSize + 6,
+                paddingTop:    isTablet ? 12 : 10,
+                paddingBottom: isTablet ? 12 : 10,
+              },
+            ]}
+            numberOfLines={2}
+          >
+            {getLocalizedField(item, "name", language) || getLocalizedField(item, "title", language)}
+          </Text>
+
+          <TouchableOpacity
+            style={[
+              styles.infoDot,
+              {
+                width:        dotSize,
+                height:       dotSize,
+                borderRadius: dotSize / 2,
+              },
+            ]}
+            onPress={(e) => {
+              e.stopPropagation && e.stopPropagation();
+              navigation.navigate("TourismPlaces", { id: item.id });
+            }}
+            activeOpacity={0.75}
+          >
+            <Ionicons
+              name="information-circle"
+              size={isTablet ? 24 : 20}
+              color={C.dark}
+            />
+          </TouchableOpacity>
+        </View>
+      </TouchableOpacity>
+    );
+  };
 
   return (
     <SafeAreaView style={styles.safe}>
       <StatusBar barStyle="light-content" backgroundColor={C.primary} />
 
-      {/* ── HEADER — exact same as TourismPage1 ── */}
       <View style={[styles.header, isTablet && styles.headerTablet]}>
         <TouchableOpacity
           style={[styles.backBtn, isTablet && styles.backBtnTablet]}
@@ -195,14 +203,13 @@ export default function TourismPage2() {
           style={[styles.headerTitle, isTablet && styles.headerTitleTablet]}
           numberOfLines={3}
         >
-          {typeName}
+          {displayedTypeName}
         </Text>
         <View
           style={[styles.headerSpacer, isTablet && styles.headerSpacerTablet]}
         />
       </View>
 
-      {/* ── SEARCH BAR ── */}
       <View
         style={[
           styles.searchWrap,
@@ -216,7 +223,7 @@ export default function TourismPage2() {
           style={{ marginRight: 8 }}
         />
         <TextInput
-          placeholder="இடங்களை தேடுங்கள்..."
+          placeholder={t("searchPlaceholder", language)}
           value={searchText}
           onChangeText={handleSearch}
           style={[styles.searchInput, isTablet && styles.searchInputTablet]}
@@ -229,7 +236,6 @@ export default function TourismPage2() {
         )}
       </View>
 
-      {/* ── GRID ── */}
       <FlatList
         data={filteredPlaces}
         key={`grid-${numColumns}`}
@@ -271,12 +277,12 @@ export default function TourismPage2() {
             <Text
               style={[styles.emptyTitle, isTablet && styles.emptyTitleTablet]}
             >
-              இடங்கள் எதுவும் இல்லை
+              {t("noPlaces", language)}
             </Text>
             <Text
               style={[styles.emptySub, isTablet && styles.emptySubTablet]}
             >
-              பின்னர் மீண்டும் பார்க்கவும்
+              {t("checkLater", language)}
             </Text>
           </View>
         }
@@ -287,8 +293,6 @@ export default function TourismPage2() {
 
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: C.bg },
-
-  /* ── HEADER — copied verbatim from TourismPage1 ── */
   header: {
     flexDirection:           "row",
     alignItems:              "center",
@@ -332,12 +336,10 @@ const styles = StyleSheet.create({
   headerTitleTablet:  { fontSize: 24 },
   headerSpacer:       { width: 40 },
   headerSpacerTablet: { width: 50 },
-
-  /* ── SEARCH ── */
   searchWrap: {
     flexDirection:   "row",
     alignItems:      "center",
-    backgroundColor: C.card,           // warm beige card tone
+    backgroundColor: C.card,
     marginHorizontal: 16,
     marginTop:        14,
     marginBottom:     4,
@@ -365,10 +367,8 @@ const styles = StyleSheet.create({
     fontWeight:    "600",
   },
   searchInputTablet: { paddingVertical: 13, fontSize: 16 },
-
-  /* ── CARD — mirror of TourismPage1 card ── */
   card: {
-    backgroundColor: C.dark,   // dark bg so no colour leak ever
+    backgroundColor: C.dark,
     overflow:        "hidden",
     elevation:       4,
     shadowColor:     C.dark,
@@ -393,15 +393,25 @@ const styles = StyleSheet.create({
     height:          "35%",
     backgroundColor: "rgba(48,25,19,0.18)",
   },
-
-  /* Gold pin — top right, no badge box */
   pinWrap: {
     position:  "absolute",
     top:       8,
     right:     8,
   },
-
-  /* ── CARD FOOTER — identical structure to TourismPage1 ── */
+  directionTag: {
+    position:          "absolute",
+    top:               8,
+    left:              8,
+    backgroundColor:   "rgba(212,175,55,0.9)",
+    paddingHorizontal: 8,
+    paddingVertical:   3,
+    borderRadius:      8,
+  },
+  directionTagText: {
+    fontSize:   10,
+    fontWeight: "800",
+    color:      C.dark,
+  },
   cardFooter: {
     backgroundColor: C.dark,
     flexDirection:   "row",
@@ -415,24 +425,12 @@ const styles = StyleSheet.create({
     color:      C.white,
     textAlign:  "center",
   },
-
-  /* Info dot — gold circle, same size/style as arrowDot */
   infoDot: {
     backgroundColor: C.gold,
     alignItems:      "center",
     justifyContent:  "center",
     flexShrink:      0,
   },
-
-  /* Arrow dot — white circle, same as TourismPage1 */
-  arrowDot: {
-    backgroundColor: C.white,
-    alignItems:      "center",
-    justifyContent:  "center",
-    flexShrink:      0,
-  },
-
-  /* ── EMPTY STATE ── */
   empty: {
     flex:          1,
     alignItems:    "center",
