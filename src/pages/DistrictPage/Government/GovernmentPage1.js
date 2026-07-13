@@ -80,7 +80,7 @@ const GovernmentPage = () => {
 
   return (
     <LinearGradient
-      colors={["#FFF8F8", "#FCEEEE"]}
+      colors={["#FBEEDB", "#ede8d5"]}
       style={styles.container}
     >
       <StatusBar barStyle="light-content" backgroundColor="#93210A" />
@@ -184,7 +184,7 @@ const GovernmentPage = () => {
                     <Ionicons 
                       name="business" 
                       size={isTablet ? 64 : 48} 
-                      color="#fff" 
+                      color="#D4AF37" 
                     />
                   )}
                 </LinearGradient>
@@ -320,7 +320,7 @@ const styles = StyleSheet.create({
 
   headerSubtitle: {
     fontSize: 13,
-    color: "#fce4e4",
+    color: "#FBEEDB",
     textAlign: "center",
     marginTop: 4,
   },
@@ -336,17 +336,17 @@ const styles = StyleSheet.create({
 
   /* ================= CARD ================= */
   card: {
-    backgroundColor: "#fff",
+    backgroundColor: "#ede8d5",
     borderRadius: 16,
     marginBottom: 12,
-    shadowColor: "#000",
+    shadowColor: "#93210A",
     shadowOpacity: 0.15,
     shadowOffset: { width: 0, height: 4 },
     shadowRadius: 6,
     elevation: 5,
     overflow: "hidden",
     borderWidth: 1,
-    borderColor: "#f0f0f0",
+    borderColor: "#d4cea6",
   },
   cardTablet: {
     borderRadius: 20,
@@ -373,6 +373,7 @@ const styles = StyleSheet.create({
 
   cardContent: {
     padding: 12,
+    backgroundColor: "#ede8d5",
   },
   cardContentTablet: {
     padding: 16,

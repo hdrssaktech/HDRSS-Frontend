@@ -51,7 +51,8 @@ export default function AutoScrollAds() {
 
   if (loading) {
     return (
-      <View>
+      <View style={styles.loaderContainer}>
+        <ActivityIndicator size="large" color="#93210A" />
       </View>
     );
   }
@@ -77,63 +78,61 @@ export default function AutoScrollAds() {
             style={[
               styles.adImage,
               isTablet && styles.adImageTablet,
-              { width },
+              { width: width },
             ]}
             resizeMode="cover"
           />
         ))}
       </ScrollView>
-<View style={styles.buttonContainer}>
-<TouchableOpacity
-  style={styles.button}
-  onPress={() => navigation.navigate("PDFViewer")}
->
-  <Text style={styles.buttonText}>
-    University Details
-  </Text>
-</TouchableOpacity>
-  <TouchableOpacity
-    style={[styles.button, styles.secondButton]}
-    onPress={() =>  navigation.navigate("Caucus")}
-    activeOpacity={0.7}
-  >
-    <Text style={styles.buttonText}>Apply Now!</Text>
-  </TouchableOpacity>
-</View>
-
+      
+      {/* Button Container with separate mobile/tablet styles */}
+      <View style={isTablet ? styles.buttonContainerTablet : styles.buttonContainer}>
+        {/* University Details Button */}
+        <TouchableOpacity
+          style={isTablet ? styles.buttonTablet : styles.button}
+          onPress={() => navigation.navigate("PDFViewer")}
+          activeOpacity={0.8}
+        >
+          <Text style={isTablet ? styles.buttonTextTablet : styles.buttonText}>
+            University Details
+          </Text>
+        </TouchableOpacity>
+        
+        {/* Apply Now Button */}
+        <TouchableOpacity
+          style={isTablet ? [styles.buttonTablet, styles.secondButtonTablet] : [styles.button, styles.secondButton]}
+          onPress={() => navigation.navigate("Caucus")}
+          activeOpacity={0.8}
+        >
+          <Text style={isTablet ? styles.buttonTextTablet : styles.buttonText}>
+            Apply Now!
+          </Text>
+        </TouchableOpacity>
+      </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  /* 📱 MOBILE */
-   adContainer: {
+  /* 📱 MOBILE STYLES */
+  adContainer: {
     height: 340,
-    marginVertical:5,
+    marginVertical: 5,
   },
+  
   adImage: {
     height: 280,
-    
+    width: '100%',
   },
+  
   loaderContainer: {
     height: 300,
     justifyContent: "center",
     alignItems: "center",
   },
-  /* 📲 TABLET */
-  adContainerTablet: {
-    height: 450,
-    marginVertical:20,
-  },
-  adImageTablet: {
-    height: 400,
-  },
 
-  loaderContainerTablet: {
-    height: 300,
-  },
-
-  buttonContainer: {
+  /* Mobile Button Container */
+    buttonContainer: {
   flexDirection: "row",
   justifyContent: "space-between",
   alignItems: "center",
@@ -151,15 +150,64 @@ button: {
   alignItems: "center",
 },
 
-secondButton: {
-  backgroundColor: "#a72828",
-},
+  secondButton: {
+    backgroundColor: "#a72828",
+  },
 
-buttonText: {
-  color: "#fff",
-  fontSize: 16,
-  fontWeight: "600",
-},
+  buttonText: {
+    color: "#fff",
+    fontSize: 13,
+    fontWeight: "600",
+    textAlign: "center",
+  },
+
+  /* 📲 TABLET STYLES */
+  adContainerTablet: {
+    height: 580,
+    marginVertical: 20,
+  },
+  
+  adImageTablet: {
+    height: 480,
+    width: '100%',
+    borderRadius: 8,
+  },
+
+  /* Tablet Button Container */
+  buttonContainerTablet: {
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+    marginTop: 20,
+    paddingHorizontal: 30,
+    gap: 20,
+  },
+
+  /* Tablet Buttons */
+  buttonTablet: {
+    backgroundColor: "#a72828",
+    paddingVertical: 16,
+    paddingHorizontal: 40,
+    borderRadius: 12,
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    elevation: 6,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 5,
+  },
+
+  secondButtonTablet: {
+    backgroundColor: "#a72828",
+  },
+
+  buttonTextTablet: {
+    color: "#fff",
+    fontSize: 18,
+    fontWeight: "700",
+    textAlign: "center",
+    letterSpacing: 0.5,
+  },
 });
-
-

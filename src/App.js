@@ -152,6 +152,7 @@ import ProductScreenCart from "./pages/ProductItems/ProductScreenCart.js";
 import ProductScreenCheckout from "./pages/ProductItems/ProductScreenCheckout.js";
 import ProductScreenOrderConfirm from "./pages/ProductItems/ProductScreenOrderConfirm.js";
 import ProductScreenOrder from "./pages/ProductItems/ProductScreenOrder.js";
+import AllEventsPage from "./components/Events/EventPage1all events.js";
 
 
 
@@ -334,6 +335,7 @@ function MainStackScreen() {
      <MainStack.Screen name="ProductScreenOrderConfirm" component={withFooter(ProductScreenOrderConfirm)}/>
     {/* <MainStack.Screen name="ProductScreenCardHeader" component={withFooter(ProductScreenCartHeader)}/> */}
     <MainStack.Screen name="ProductScreenOrder" component={withFooter(ProductScreenOrder)}/>
+     <MainStack.Screen name="EventPage1all events" component={withFooter(AllEventsPage)}/>
 
     </MainStack.Navigator>
   );

@@ -237,8 +237,8 @@ const styles = StyleSheet.create({
   },
 
   heading: {
-    fontSize: isTablet ? 24 : 20,
-    fontWeight: "800",
+    fontSize: isTablet ? 24 : 19.5,
+    fontWeight: "700",
     color: C.primary,
     letterSpacing: 0.3,
   },

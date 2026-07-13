@@ -72,7 +72,7 @@ export default function EventPage() {
             activeOpacity={0.85}
           >
             <LinearGradient
-              colors={['#FFF5E1', '#ffd391']} // change gradient here
+              colors={['#cabb82', '#cabb82']} // parchment/cream matching homepage cards
               style={styles.gradientCard}
             >
               <Image source={{ uri: event.image }} style={styles.eventImage} />
@@ -111,7 +111,9 @@ const getStyles = (isTablet) =>
     elevation: 3,
     shadowColor: "#7c0000",
     borderRadius: 15,
-    overflow: "hidden"
+    overflow: "hidden",
+    borderWidth: 1,
+    borderColor: "#d4cea6",
   },
 
   gradientCard: {
@@ -122,16 +124,16 @@ const getStyles = (isTablet) =>
   },
 
     eventImage: {
-      width: "100%",
-      height: "85%",
-      borderRadius:5,
+      width: "109%",
+      height: "95%",
+      borderRadius: 5,
     },
     eventTitle: {
       fontSize: isTablet ? 18 : 14,
       fontWeight: "bold",
       marginTop: 5,
       textAlign: "center",
-      color: "#222",
+      color: "#301913",
     },
     centerContent: {
       flex: 1,
@@ -139,4 +141,3 @@ const getStyles = (isTablet) =>
       alignItems: "center",
     },
   });
-

@@ -27,12 +27,16 @@ export default function DistrictPage1() {
 
   const { width } = useWindowDimensions();
 
-  // ✅ Tablet detection (works for Android & iPad)
+  // ✅ Tablet detection
   const isTablet = width >= 600;
 
   // ✅ Columns
   const numColumns = isTablet ? 4 : 3;
-  const imageSize = width / numColumns - 20;
+  
+  // ✅ Calculate image size - ONLY for tablet
+  const imageSize = isTablet 
+    ? (width - (numColumns - 1) * 16 - 40) / numColumns - 10  // Tablet calculation
+    : width / numColumns - 20;  // Mobile - KEEP AS ORIGINAL
 
   useEffect(() => {
     const loadDistricts = async () => {
@@ -70,7 +74,7 @@ export default function DistrictPage1() {
   if (loading) {
     return (
       <View style={styles.center}>
-       
+        <ActivityIndicator size="large" color="#93210A" />
       </View>
     );
   }
@@ -110,8 +114,8 @@ export default function DistrictPage1() {
             ? item.name.toLowerCase() === locationName.toLowerCase()
             : true
         )}
-        key={numColumns}                 // 🔥 REQUIRED
-        numColumns={numColumns}          // 🔥 4 on tablet
+        key={numColumns}
+        numColumns={numColumns}
         keyExtractor={(item) => item.id.toString()}
         renderItem={({ item }) => (
           <TouchableOpacity
@@ -125,11 +129,15 @@ export default function DistrictPage1() {
           >
             <Image
               source={{ uri: item.image }}
-              style={{
-                width: imageSize,
-                height: imageSize,
-                borderRadius: 15,
-              }}
+              style={[
+                styles.image,
+                isTablet && styles.imageTablet,
+                { 
+                  width: imageSize,
+                  height: imageSize,
+                }
+              ]}
+              resizeMode="cover"
             />
             <Text
               style={[
@@ -221,9 +229,9 @@ const styles = StyleSheet.create({
     fontSize: 18,
   },
 
-  /* CARD */
+  /* CARD - MOBILE (KEPT AS ORIGINAL) */
   card: {
-   flex: 1,
+    flex: 1,
     alignItems: "center",
     margin: 5,
     backgroundColor: "#fff",
@@ -232,21 +240,34 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
 
+  /* CARD - TABLET (ONLY CHANGED) */
   cardTablet: {
-    margin: 10,
-    padding: 5,
+    margin: 8,
+    padding: 8,
     borderRadius: 14,
-    
+    elevation: 4,
+  },
+
+  /* IMAGE - MOBILE (KEPT AS ORIGINAL) */
+  image: {
+    borderRadius: 15,
+  },
+
+  /* IMAGE - TABLET (ONLY CHANGED) */
+  imageTablet: {
+    borderRadius: 16,
   },
 
   imageText: {
     fontSize: 12,
     fontWeight: "bold",
     marginTop: 6,
+    textAlign: "center",
   },
 
   imageTextTablet: {
     fontSize: 16,
+    marginTop: 8,
   },
 
   /* BUTTON */

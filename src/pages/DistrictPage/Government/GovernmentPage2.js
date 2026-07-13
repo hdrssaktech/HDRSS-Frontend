@@ -12,6 +12,7 @@ import {
   StatusBar,
   Platform,
 } from "react-native";
+import { LinearGradient } from "expo-linear-gradient";
 import { useRoute, useNavigation } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
 import Loader from "../../../components/Alert/Loader";
@@ -94,7 +95,9 @@ const GovernmentPage2 = () => {
 
   const renderEmptyState = () => (
     <View style={styles.emptyContainer}>
-      <Ionicons name="construct-outline" size={isTablet ? 80 : 60} color="#93210A" />
+      <View style={styles.emptyIconWrap}>
+        <Ionicons name="construct-outline" size={isTablet ? 60 : 46} color="#93210A" />
+      </View>
       <Text style={[styles.emptyText, isTablet && styles.emptyTextTablet]}>
         No services available
       </Text>
@@ -106,6 +109,10 @@ const GovernmentPage2 = () => {
   return (
     <View style={styles.container}>
       <StatusBar backgroundColor="#93210A" barStyle="light-content" />
+      <LinearGradient
+        colors={["#FBEEDB", "#ede8d5"]}
+        style={StyleSheet.absoluteFill}
+      />
 
       {/* Header */}
       <View style={[styles.header, isTablet && styles.headerTablet]}>
@@ -174,7 +181,7 @@ const GovernmentPage2 = () => {
                 ]}
               >
                 <View style={styles.cardContentRow}>
-                  {/* Image */}
+                  {/* Image — fully visible, gold ring frame, no overlay */}
                   <View style={[styles.imageContainer, isTablet && styles.imageContainerTablet]}>
                     <Image
                       source={{ uri: imageUrl }}
@@ -189,21 +196,27 @@ const GovernmentPage2 = () => {
                       {item?.name || "Unnamed Service"}
                     </Text>
 
-                    <Text style={[styles.localArea, isTablet && styles.localAreaTablet]} numberOfLines={2}>
-                      {item?.localArea || "No location info"}
-                    </Text>
+                    <View style={styles.localAreaRow}>
+                      <Ionicons name="location-sharp" size={isTablet ? 13 : 12} color="#B08900" />
+                      <Text style={[styles.localArea, isTablet && styles.localAreaTablet]} numberOfLines={2}>
+                        {item?.localArea || "No location info"}
+                      </Text>
+                    </View>
 
                     <View style={styles.actionsRow}>
                       <TouchableOpacity
                         onPress={() => callNumber(item.phoneNumber)}
                         style={[styles.callButton, isTablet && styles.callButtonTablet]}
+                        activeOpacity={0.85}
                       >
                         <Ionicons name="call" size={isTablet ? 18 : 16} color="#fff" />
+                        {isTablet && <Text style={styles.callButtonText}>Call</Text>}
                       </TouchableOpacity>
 
                       <TouchableOpacity
                         onPress={() => openMap(item.location)}
                         style={[styles.mapButton, isTablet && styles.mapButtonTablet]}
+                        activeOpacity={0.85}
                       >
                         <Ionicons name="map" size={isTablet ? 22 : 18} color="#93210A" />
                       </TouchableOpacity>
@@ -222,7 +235,7 @@ const GovernmentPage2 = () => {
 export default GovernmentPage2;
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#FFF8F8" },
+  container: { flex: 1, backgroundColor: "#d4cea6-" },
 
   /* Header */
   header: {
@@ -232,13 +245,13 @@ const styles = StyleSheet.create({
     paddingTop: Platform.OS === "ios" ? 10 : 40,
     paddingBottom: 30,
     paddingHorizontal: 16,
-    borderBottomLeftRadius: 20,
-    borderBottomRightRadius: 20,
-    elevation: 4,
+    borderBottomLeftRadius: 22,
+    borderBottomRightRadius: 22,
+    elevation: 6,
     shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 3,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.18,
+    shadowRadius: 8,
   },
   headerTablet: {
     paddingTop: Platform.OS === "ios" ? 15 : 45,
@@ -249,7 +262,7 @@ const styles = StyleSheet.create({
   },
   backButton: {
     width: 40, height: 40, borderRadius: 20,
-    backgroundColor: "rgba(255,255,255,0.15)",
+    backgroundColor: "rgba(255,255,255,0.18)",
     alignItems: "center", justifyContent: "center",
   },
   backButtonTablet: { width: 50, height: 50, borderRadius: 25 },
@@ -263,28 +276,23 @@ const styles = StyleSheet.create({
 
   /* Filter */
   filterWrapper: {
-    backgroundColor: "#fff",
+    backgroundColor: "#FBEEDB",
     borderBottomWidth: 1,
-    borderBottomColor: "rgba(0,0,0,0.06)",
-    elevation: 1,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.04,
-    shadowRadius: 2,
+    borderBottomColor: "rgba(212,175,55,0.25)",
   },
   filterBar: {
     flexDirection: "row",
     paddingHorizontal: 16,
-    paddingVertical: 10,
+    paddingVertical: 12,
     gap: 8,
   },
   chip: {
     paddingHorizontal: 14,
     paddingVertical: 7,
     borderRadius: 20,
-    backgroundColor: "#FFF0EE",
+    backgroundColor: "#FFFDF6",
     borderWidth: 1.5,
-    borderColor: "rgba(147,33,10,0.2)",
+    borderColor: "rgba(212,175,55,0.5)",
   },
   chipActive: { backgroundColor: "#93210A", borderColor: "#93210A" },
   chipText: { fontSize: 13, fontWeight: "700", color: "#93210A" },
@@ -292,7 +300,13 @@ const styles = StyleSheet.create({
 
   /* Empty */
   emptyContainer: { flex: 1, justifyContent: "center", alignItems: "center", padding: 40 },
-  emptyText: { marginTop: 16, color: "#93210A", fontSize: 16, fontWeight: "600", textAlign: "center" },
+  emptyIconWrap: {
+    width: 90, height: 90, borderRadius: 45,
+    backgroundColor: "#FFF0EE",
+    alignItems: "center", justifyContent: "center",
+    marginBottom: 4,
+  },
+  emptyText: { marginTop: 16, color: "#93210A", fontSize: 16, fontWeight: "700", textAlign: "center" },
   emptyTextTablet: { fontSize: 18, marginTop: 20 },
 
   /* List */
@@ -300,43 +314,57 @@ const styles = StyleSheet.create({
 
   /* Card */
   card: {
-    backgroundColor: "#fff",
+    backgroundColor: "#FFFDF6",
     borderRadius: 14, padding: 12,
     elevation: 4,
-    shadowColor: "#000", shadowOpacity: 0.15,
-    shadowOffset: { width: 0, height: 2 }, shadowRadius: 4,
-    borderWidth: 1, borderColor: "#f0f0f0",
+    shadowColor: "#000", shadowOpacity: 0.12,
+    shadowOffset: { width: 0, height: 2 }, shadowRadius: 5,
+    borderWidth: 1, borderColor: "rgba(212,175,55,0.35)",
   },
   cardTablet: {
     borderRadius: 18, padding: 16, elevation: 5,
-    shadowOpacity: 0.2, shadowOffset: { width: 0, height: 3 }, shadowRadius: 6,
+    shadowOpacity: 0.16, shadowOffset: { width: 0, height: 3 }, shadowRadius: 6,
   },
   cardContentRow: { flexDirection: "row", alignItems: "flex-start" },
 
-  imageContainer: { marginRight: 12 },
-  imageContainerTablet: { marginRight: 16 },
-  image: { width: 100, height: 100, borderRadius: 10, backgroundColor: "#f0f0f0" },
-  imageTablet: { width: 140, height: 140, borderRadius: 14 },
+  imageContainer: {
+    marginRight: 12,
+    borderRadius: 10,
+    borderWidth: 2,
+    borderColor: "#D4AF37",
+    overflow: "hidden",
+  },
+  imageContainerTablet: { marginRight: 16, borderRadius: 14 },
+  image: { width: 100, height: 100, backgroundColor: "#f0f0f0" },
+  imageTablet: { width: 140, height: 140 },
 
   detailsContainer: { flex: 1, flexDirection: "column", justifyContent: "space-between", minHeight: 100 },
   detailsContainerTablet: { minHeight: 140 },
 
-  title: { fontSize: 15, fontWeight: "700", color: "#93210A", marginBottom: 4, lineHeight: 20 },
+  title: { fontSize: 14, fontWeight: "700", color: "#93210A", marginBottom: 4, lineHeight: 20 },
   titleTablet: { fontSize: 15, marginBottom: 6, lineHeight: 22 },
 
-  localArea: { fontSize: 13, color: "#555", marginBottom: 6, lineHeight: 18 },
-  localAreaTablet: { fontSize: 14, marginBottom: 8, lineHeight: 20 },
+  localAreaRow: { flexDirection: "row", alignItems: "flex-start", gap: 4, marginBottom: 6 },
+  localArea: { flex: 1, fontSize: 13, color: "#6b5a4a", lineHeight: 18 },
+  localAreaTablet: { fontSize: 14, lineHeight: 20 },
 
-  actionsRow: { flexDirection: "row", gap: 12, alignItems: "center" },
+  actionsRow: { flexDirection: "row", gap: 10, alignItems: "center" },
   callButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
     backgroundColor: "#93210A", paddingVertical: 6, paddingHorizontal: 10,
     borderRadius: 8, elevation: 2,
     shadowColor: "#000", shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.1, shadowRadius: 2,
   },
-  callButtonTablet: { paddingVertical: 8, paddingHorizontal: 16, borderRadius: 10 },
+  callButtonTablet: { paddingVertical: 8, paddingHorizontal: 14, borderRadius: 10 },
+  callButtonText: { color: "#fff", fontSize: 13, fontWeight: "700" },
   mapButton: {
-    backgroundColor: "#f5e4e1", padding: 8, borderRadius: 8,
+    backgroundColor: "#FBEEDB",
+    borderWidth: 1.5,
+    borderColor: "#D4AF37",
+    padding: 8, borderRadius: 8,
     width: 36, height: 36, alignItems: "center", justifyContent: "center",
     elevation: 2, shadowColor: "#000", shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.1, shadowRadius: 2,
