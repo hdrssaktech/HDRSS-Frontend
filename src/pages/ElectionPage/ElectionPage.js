@@ -34,7 +34,7 @@ export default function HomeFeatureSection() {
   // 🔵 Explore More Features
   const features = [
     { id: 1, label: "History", image: require("../../../assets/Left Swap/History.jpeg") },
-    { id: 2, label: "Astrology", image: require("../../../assets/Left Swap/Astrology.webp") },
+    { id: 2, label: "Astrology", image: require("../../../assets/Left Swap/astrology.jpg") },
     { id: 3, label: "Stories", image: require("../../../assets/Left Swap/Story.jpg") },
     { id: 4, label: "Pooja", image: require("../../../assets/Left Swap/poojai.jpg") },
     { id: 5, label: "Tourism", image: require("../../../assets/Left Swap/tourism.jpg") },
