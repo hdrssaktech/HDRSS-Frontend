@@ -39,6 +39,7 @@ const formatDOB = (dob) => {
 };
 
 const formattedDOB = formatDOB(member.dob);
+const sonOf= member.sonOf;
 
 
 
@@ -271,7 +272,7 @@ const profileBase64 = member.image
           <div class="main" style="text-align:center;">
           <div class="info-box">
             <div class="row"><div class="label">NAME</div><div class="colon">:</div><div class="value">${member.name}</div></div>
-            <div class="row"><div class="label">S/O</div><div class="colon">:</div><div class="value">${member.fatherOrHusbandName}</div></div>
+            <div class="row"><div class="label">${member.sonOf}</div><div class="colon">:</div><div class="value">${member.fatherOrHusbandName}</div></div>
             <div class="row"><div class="label">DESIGNATION</div><div class="colon">:</div><div class="value">${member.designation}</div></div>
             <div class="row"><div class="label">DISTRICT</div><div class="colon">:</div><div class="value">${member.district.toUpperCase()}</div></div>
           </div>

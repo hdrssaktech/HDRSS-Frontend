@@ -13,6 +13,8 @@ import {
   Platform,
   Alert,
   Linking,
+  FlatList,
+  Modal
 } from "react-native";
 import Icon from "react-native-vector-icons/MaterialIcons";
 import { Ionicons } from "@expo/vector-icons";
@@ -22,6 +24,7 @@ import DateTimePicker from "@react-native-community/datetimepicker";
 import { createMember, uploadImage, sendIdCard } from "../../api/api";
 import { generateIdCard } from "../../pages/generateIdCard/generateIdCard";
 import CustomAlert from "../../components/Alert/CustomAlert";
+// import { Modal, Picker } from "react-native-web";
 
 export default function Membership1() {
   const route = useRoute();
@@ -57,6 +60,15 @@ export default function Membership1() {
   const [alertType, setAlertType] = useState("success");
   const [alertTitle, setAlertTitle] = useState("");
   const [alertMessage, setAlertMessage] = useState("");
+
+  const [sonOf, setSonOf] = useState("S/O");
+  const [dropdownVisible, setDropdownVisible] = useState(false);
+  
+  const relationOptions = [
+    { label: 'S/O (Son of)', value: 'S/O' },
+    { label: 'D/O (Daughter of)', value: 'D/O' },
+    { label: 'W/O (Wife of)', value: 'W/O' }
+  ];
 
   const showCustomAlert = (type, title, message) => {
   setAlertType(type);
@@ -142,6 +154,10 @@ const handleAddressChange = (text) => {
   setAddress(text);
 };
 
+const handleSonOF =(text) => {
+  setSonOf(text);
+}
+
   // ✅ Handle Submit
 const handleSubmit = async () => {
 
@@ -210,6 +226,7 @@ const handleSubmit = async () => {
       name: name.trim(),
       image: imageUrl,
       bloodGroup: bloodGroup.trim(),
+      sonOf: sonOf,
       fatherOrHusbandName: fatherName.trim(),
       dob: dob ? dob.trim() : null,
       residentialAddress: address.trim(),
@@ -239,6 +256,7 @@ const handleSubmit = async () => {
 
     const pdfUri = await generateIdCard({
       name,
+      sonOf,
       fatherOrHusbandName: fatherName,
       designation,
       district,
@@ -359,6 +377,47 @@ const handleSubmit = async () => {
             onChangeText={(text) => setDesignation(text.toUpperCase())}
             autoCapitalize="characters"
           />
+
+          <Text style={styles.label}>Relation:<Text style={styles.star}> * </Text></Text>
+      <TouchableOpacity 
+        style={styles.dropdownButton}
+        onPress={() => setDropdownVisible(true)}
+      >
+        <Text style={styles.dropdownButtonText}>{sonOf}</Text>
+        <Text style={styles.dropdownArrow}>▼</Text>
+      </TouchableOpacity>
+
+      {/* Dropdown Modal */}
+      <Modal
+        transparent={true}
+        visible={dropdownVisible}
+        animationType="fade"
+        onRequestClose={() => setDropdownVisible(false)}
+      >
+        <TouchableOpacity 
+          style={styles.modalOverlay}
+          activeOpacity={1}
+          onPress={() => setDropdownVisible(false)}
+        >
+          <View style={styles.modalContent}>
+            <FlatList
+              data={relationOptions}
+              keyExtractor={(item) => item.value}
+              renderItem={({ item }) => (
+                <TouchableOpacity
+                  style={styles.optionItem}
+                  onPress={() => {
+                    setSonOf(item.value);
+                    setDropdownVisible(false);
+                  }}
+                >
+                  <Text style={styles.optionText}>{item.label}</Text>
+                </TouchableOpacity>
+              )}
+            />
+          </View>
+        </TouchableOpacity>
+      </Modal>
 
           <Text style={styles.label}>Father / Husband Name:<Text style={styles.star}> * </Text></Text>
           <TextInput
@@ -712,4 +771,46 @@ loadingSubText: {
   fontSize: 13,
   textAlign: 'center',
 },
+dropdownButton: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 8,
+    padding: 12,
+    backgroundColor: '#f9f9f9',
+    marginBottom: 15,
+    height: 50,
+  },
+  dropdownButtonText: {
+    fontSize: 16,
+    color: '#333',
+  },
+  dropdownArrow: {
+    fontSize: 16,
+    color: '#666',
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalContent: {
+    backgroundColor: 'white',
+    borderRadius: 10,
+    width: '85%',
+    maxHeight: '40%',
+    padding: 10,
+  },
+  optionItem: {
+    padding: 15,
+    borderBottomWidth: 1,
+    borderBottomColor: '#eee',
+  },
+  optionText: {
+    fontSize: 16,
+    color: '#333',
+  },
 });
