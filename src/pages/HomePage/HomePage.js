@@ -15,7 +15,7 @@ import { useNavigation, useFocusEffect } from "@react-navigation/native";
 import { LinearGradient } from "expo-linear-gradient";
 import { Ionicons } from "@expo/vector-icons";
 
-/* COMPONENTS */
+/* COMPONENTS  Home*/
 import Advertisement from "../../components/Add/Advertisement";
 import InterviewVideos from "../../components/Add/InterviewVideos";
 import DistrictList from "../DistrictPage/DistrictPage1";
