@@ -2,7 +2,7 @@
   "expo": {
     "name": "KAAVI",
     "slug": "hdrssfrontent",
-    "version": "1.2.4",
+    "version": "1.2.5",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "hdrss",
@@ -18,7 +18,7 @@
       "predictiveBackGestureEnabled": false,
       "googleServicesFile": "./google-services.json",
       "package": "com.aktechnologies.hdrss",
-      "versionCode": 10,
+      "versionCode": 11,
       "networkSecurityConfig": "./network_security_config.xml",
       "permissions": [
         "INTERNET",
