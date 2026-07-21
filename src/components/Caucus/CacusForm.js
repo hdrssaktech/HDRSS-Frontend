@@ -18,6 +18,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import axios from 'axios';
+import { useNavigation } from '@react-navigation/native';
 
 // IMPORTANT: Update these URLs based on your setup
 const API_BASE_URL = "https://hdrss-backend.onrender.com";
@@ -26,21 +27,16 @@ const FORM_SUBMIT_URL = "https://hdrss-backend.onrender.com/api/CaucusForm";
 export default function PremiumBusinessForm() {
   const { width } = useWindowDimensions();
   const isTablet = width >= 600;
+  const navigation = useNavigation();
 
   const [formData, setFormData] = useState({
     name: "",
-    fatherName: "",
     dob: "",
     age: "",
     gender: "",
     type: "",
-    qualification: "",
     address: "",
-    district: "",
-    state: "",
-    pincode: "",
     phone: "",
-    email: "",
   });
 
   const [imageUri, setImageUri] = useState(null);
@@ -74,11 +70,11 @@ export default function PremiumBusinessForm() {
       const today = new Date();
       let age = today.getFullYear() - birthDate.getFullYear();
       const monthDiff = today.getMonth() - birthDate.getMonth();
-      
+
       if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
         age--;
       }
-      
+
       setFormData(prev => ({ ...prev, age: age.toString() }));
     }
   };
@@ -86,7 +82,7 @@ export default function PremiumBusinessForm() {
   const formatDOB = (text) => {
     // Remove non-numeric characters
     let cleaned = text.replace(/[^\d]/g, '');
-    
+
     // Format as DD/MM/YYYY
     if (cleaned.length <= 2) {
       return cleaned;
@@ -107,7 +103,7 @@ export default function PremiumBusinessForm() {
     try {
       // Request permission
       const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-      
+
       if (status !== 'granted') {
         Alert.alert(
           'Permission Required',
@@ -122,14 +118,14 @@ export default function PremiumBusinessForm() {
         mediaTypes: ImagePicker.MediaTypeOptions.Images,
         allowsEditing: true,
         aspect: [1, 1],
-        quality: 0.7, // Reduced quality for better upload
+        quality: 0.7,
         base64: false,
       });
 
       if (!result.canceled && result.assets && result.assets.length > 0) {
         const selectedImage = result.assets[0];
         setImageUri(selectedImage.uri);
-        
+
         // Upload image immediately
         await uploadImage(selectedImage);
       }
@@ -139,27 +135,22 @@ export default function PremiumBusinessForm() {
     }
   };
 
-  // Upload image to server - FIXED VERSION
+  // Upload image to server
   const uploadImage = async (asset) => {
     setIsUploading(true);
-    
+
     try {
-      // Create FormData with proper configuration
       const formData = new FormData();
-      
-      // Get file extension
       const uriParts = asset.uri.split('.');
       const fileType = uriParts[uriParts.length - 1];
-      
+
       const file = {
         uri: Platform.OS === 'ios' ? asset.uri.replace('file://', '') : asset.uri,
-        type: `image/${fileType}`, // Dynamic type based on file
+        type: `image/${fileType}`,
         name: `upload_${Date.now()}.${fileType}`,
       };
 
       formData.append('file', file);
-
-
 
       const response = await axios({
         method: 'POST',
@@ -169,13 +160,11 @@ export default function PremiumBusinessForm() {
           'Content-Type': 'multipart/form-data',
           'Accept': 'application/json',
         },
-        timeout: 60000, // 60 seconds
+        timeout: 60000,
         transformRequest: (data, headers) => {
-          // Return formData as-is, don't transform
           return data;
         },
       });
-
 
       if (response.data && response.data.fileUrl) {
         setUploadedImageUrl(response.data.fileUrl);
@@ -190,11 +179,11 @@ export default function PremiumBusinessForm() {
         status: error.response?.status,
         config: error.config,
       });
-      
-      setImageUri(null); // Clear the local image on failure
-      
+
+      setImageUri(null);
+
       let errorMessage = 'Failed to upload image. ';
-      
+
       if (error.code === 'ECONNABORTED') {
         errorMessage += 'Upload timeout. Please check your internet connection.';
       } else if (error.response) {
@@ -204,7 +193,7 @@ export default function PremiumBusinessForm() {
       } else {
         errorMessage += error.message;
       }
-      
+
       Alert.alert('Upload Failed', errorMessage);
     } finally {
       setIsUploading(false);
@@ -234,48 +223,29 @@ export default function PremiumBusinessForm() {
   const validateForm = () => {
     const requiredFields = [
       { key: 'name', label: 'Full Name' },
-      { key: 'fatherName', label: 'Father Name' },
-      { key: 'dob', label: 'Date of Birth' },
+      { key: 'phone', label: 'Mobile Number' },
       { key: 'gender', label: 'Gender' },
       { key: 'type', label: 'Type' },
-      { key: 'qualification', label: 'Qualification' },
+      { key: 'dob', label: 'Date of Birth' },
       { key: 'address', label: 'Address' },
-      { key: 'district', label: 'District' },
-      { key: 'state', label: 'State' },
-      { key: 'pincode', label: 'Pincode' },
-      { key: 'phone', label: 'Mobile Number' },
-      { key: 'email', label: 'Email Address' }
     ];
-    
+
     for (let field of requiredFields) {
       if (!formData[field.key] || formData[field.key].trim() === '') {
         Alert.alert('Validation Error', `Please fill in ${field.label}`);
         return false;
       }
     }
-    
+
     // Validate image upload
     if (!uploadedImageUrl) {
       Alert.alert('Validation Error', 'Please upload your image');
       return false;
     }
-    
-    // Validate email
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(formData.email)) {
-      Alert.alert('Validation Error', 'Please enter a valid email address');
-      return false;
-    }
-    
+
     // Validate phone
     if (formData.phone.length !== 10 || !/^\d+$/.test(formData.phone)) {
       Alert.alert('Validation Error', 'Please enter a valid 10-digit phone number');
-      return false;
-    }
-    
-    // Validate pincode
-    if (formData.pincode.length !== 6 || !/^\d+$/.test(formData.pincode)) {
-      Alert.alert('Validation Error', 'Please enter a valid 6-digit pincode');
       return false;
     }
 
@@ -289,7 +259,7 @@ export default function PremiumBusinessForm() {
       Alert.alert('Validation Error', 'You must be at least 18 years old to register');
       return false;
     }
-    
+
     return true;
   };
 
@@ -306,23 +276,16 @@ export default function PremiumBusinessForm() {
 
     const payload = {
       Name: formData.name.trim(),
-      FatherName: formData.fatherName.trim(),
       DateOfBirth: formatDateForAPI(formData.dob),
       Age: parseInt(formData.age),
       Gender: formData.gender,
       Type: formData.type,
-      Qualification: formData.qualification.trim(),
-      Address: `${formData.address.trim()}, ${formData.district.trim()}, ${formData.state.trim()}`,
-      Pincode: formData.pincode,
+      Address: formData.address.trim(),
       MobileNumber: formData.phone,
-      EmailAddress: formData.email.trim().toLowerCase(),
       image: uploadedImageUrl
     };
 
     try {
-
-  
-
       const response = await axios({
         method: 'POST',
         url: FORM_SUBMIT_URL,
@@ -333,8 +296,6 @@ export default function PremiumBusinessForm() {
         },
         timeout: 30000,
       });
-
-      
 
       if (response.status === 200 || response.status === 201) {
         Alert.alert(
@@ -347,18 +308,12 @@ export default function PremiumBusinessForm() {
                 // Reset form on success
                 setFormData({
                   name: "",
-                  fatherName: "",
                   dob: "",
                   age: "",
                   gender: "",
                   type: "",
-                  qualification: "",
                   address: "",
-                  district: "",
-                  state: "",
-                  pincode: "",
                   phone: "",
-                  email: "",
                 });
                 setImageUri(null);
                 setUploadedImageUrl(null);
@@ -374,31 +329,31 @@ export default function PremiumBusinessForm() {
         response: error.response?.data,
         status: error.response?.status,
       });
-      
+
       let errorMessage = 'Failed to submit registration. ';
-      
+
       if (error.response) {
-        errorMessage += error.response.data?.message || 
-                       error.response.data?.error || 
+        errorMessage += error.response.data?.message ||
+                       error.response.data?.error ||
                        `Server error: ${error.response.status}`;
       } else if (error.request) {
         errorMessage += 'No response from server. Please check your internet connection.';
       } else {
         errorMessage += error.message;
       }
-      
+
       Alert.alert('Submission Failed', errorMessage);
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  // UPI Payment
+  // UPI Payment - no fixed amount, user enters it in their UPI app
   const handleUPIPayment = async () => {
     if (!validateForm()) return;
 
     const upiURL =
-      "upi://pay?pa=hdrss.in-1@oksbi&pn=Manager&am=25000&cu=INR";
+      "upi://pay?pa=hdrss.in-1@oksbi&pn=Manager&cu=INR";
 
     try {
       const supported = await Linking.canOpenURL(upiURL);
@@ -423,6 +378,16 @@ export default function PremiumBusinessForm() {
 
       {/* HEADER */}
       <View style={styles.header}>
+        <TouchableOpacity
+          style={styles.backButton}
+          onPress={() => navigation.goBack()}
+          activeOpacity={0.7}
+        >
+          <View style={styles.backCircle}>
+            <Ionicons name="chevron-back" size={28} color="#ffffff" />
+          </View>
+        </TouchableOpacity>
+
         <Text
           style={[
             styles.headerTitle,
@@ -439,14 +404,14 @@ export default function PremiumBusinessForm() {
 
       {/* CARD */}
       <View style={[styles.card, isTablet && styles.cardTablet]}>
-        
+
         {/* Image Upload Section */}
         <Text style={styles.label}>Profile Image *</Text>
         <View style={styles.imageUploadContainer}>
           {imageUri ? (
             <View style={styles.imagePreviewContainer}>
-              <Image 
-                source={{ uri: imageUri }} 
+              <Image
+                source={{ uri: imageUri }}
                 style={styles.imagePreview}
                 resizeMode="cover"
               />
@@ -496,44 +461,18 @@ export default function PremiumBusinessForm() {
           editable={!isSubmitting}
         />
 
-        {/* Father Name */}
-        <Text style={styles.label}>Father Name *</Text>
+        {/* Mobile Number */}
+        <Text style={styles.label}>Mobile Number *</Text>
         <TextInput
-          placeholder="Enter father's name"
+          placeholder="Enter 10-digit mobile number"
           placeholderTextColor="#999"
+          keyboardType="phone-pad"
           style={styles.input}
-          value={formData.fatherName}
-          onChangeText={(text) => handleChange("fatherName", text)}
+          value={formData.phone}
+          onChangeText={(text) => handleChange("phone", text)}
+          maxLength={10}
           editable={!isSubmitting}
         />
-
-        {/* DOB & Age Row */}
-        <View style={styles.rowContainer}>
-          <View style={styles.halfWidth}>
-            <Text style={styles.label}>Date of Birth *</Text>
-            <TextInput
-              placeholder="DD/MM/YYYY"
-              placeholderTextColor="#999"
-              style={styles.input}
-              value={formData.dob}
-              onChangeText={handleDOBChange}
-              keyboardType="numeric"
-              maxLength={10}
-              editable={!isSubmitting}
-            />
-          </View>
-
-          <View style={styles.halfWidth}>
-            <Text style={styles.label}>Age</Text>
-            <TextInput
-              placeholder="Auto-calculated"
-              placeholderTextColor="#999"
-              style={[styles.input, styles.disabledInput]}
-              value={formData.age}
-              editable={false}
-            />
-          </View>
-        </View>
 
         {/* Gender */}
         <Text style={styles.label}>Gender *</Text>
@@ -561,14 +500,16 @@ export default function PremiumBusinessForm() {
           <Ionicons name="chevron-down" size={20} color="#666" />
         </TouchableOpacity>
 
-        {/* Qualification */}
-        <Text style={styles.label}>Qualification *</Text>
+        {/* DOB */}
+        <Text style={styles.label}>Date of Birth *</Text>
         <TextInput
-          placeholder="Enter your qualification"
+          placeholder="DD/MM/YYYY"
           placeholderTextColor="#999"
           style={styles.input}
-          value={formData.qualification}
-          onChangeText={(text) => handleChange("qualification", text)}
+          value={formData.dob}
+          onChangeText={handleDOBChange}
+          keyboardType="numeric"
+          maxLength={10}
           editable={!isSubmitting}
         />
 
@@ -581,72 +522,6 @@ export default function PremiumBusinessForm() {
           multiline
           value={formData.address}
           onChangeText={(text) => handleChange("address", text)}
-          editable={!isSubmitting}
-        />
-
-        {/* District & State Row */}
-        <View style={styles.rowContainer}>
-          <View style={styles.halfWidth}>
-            <Text style={styles.label}>District *</Text>
-            <TextInput
-              placeholder="Enter district"
-              placeholderTextColor="#999"
-              style={styles.input}
-              value={formData.district}
-              onChangeText={(text) => handleChange("district", text)}
-              editable={!isSubmitting}
-            />
-          </View>
-
-          <View style={styles.halfWidth}>
-            <Text style={styles.label}>State *</Text>
-            <TextInput
-              placeholder="Enter state"
-              placeholderTextColor="#999"
-              style={styles.input}
-              value={formData.state}
-              onChangeText={(text) => handleChange("state", text)}
-              editable={!isSubmitting}
-            />
-          </View>
-        </View>
-
-        {/* Pincode */}
-        <Text style={styles.label}>Pincode *</Text>
-        <TextInput
-          placeholder="Enter 6-digit pincode"
-          placeholderTextColor="#999"
-          style={styles.input}
-          value={formData.pincode}
-          onChangeText={(text) => handleChange("pincode", text)}
-          keyboardType="numeric"
-          maxLength={6}
-          editable={!isSubmitting}
-        />
-
-        {/* Mobile Number */}
-        <Text style={styles.label}>Mobile Number *</Text>
-        <TextInput
-          placeholder="Enter 10-digit mobile number"
-          placeholderTextColor="#999"
-          keyboardType="phone-pad"
-          style={styles.input}
-          value={formData.phone}
-          onChangeText={(text) => handleChange("phone", text)}
-          maxLength={10}
-          editable={!isSubmitting}
-        />
-
-        {/* Email */}
-        <Text style={styles.label}>Email Address *</Text>
-        <TextInput
-          placeholder="Enter email address"
-          placeholderTextColor="#999"
-          keyboardType="email-address"
-          autoCapitalize="none"
-          style={styles.input}
-          value={formData.email}
-          onChangeText={(text) => handleChange("email", text)}
           editable={!isSubmitting}
         />
 
@@ -670,7 +545,6 @@ export default function PremiumBusinessForm() {
         {/* PRICE BOX */}
         <View style={styles.priceBox}>
           <Text style={styles.priceTitle}>Premium Listing Fee</Text>
-          {/* <Text style={styles.price}>₹25,000</Text> */}
           <Text style={styles.priceSubText}>
             One-time featured business registration
           </Text>
@@ -777,23 +651,36 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 6,
+    alignItems: "center",
   },
+
+  backButton: {
+    position: "absolute",
+    top: 60,
+    left: 16,
+    zIndex: 10,
+  },
+
+ 
 
   headerTitle: {
     color: "#fff",
-    fontSize: 28,
+    fontSize: 26,
     fontWeight: "800",
+    textAlign: "center",
   },
 
   headerTitleTablet: {
-    fontSize: 36,
+    fontSize: 34,
   },
 
   headerSubtitle: {
     color: "#f3d0d0",
-    marginTop: 10,
-    fontSize: 15,
-    lineHeight: 22,
+    marginTop: 8,
+    fontSize: 13,
+    lineHeight: 18,
+    textAlign: "center",
+    letterSpacing: 0.3,
   },
 
   /* CARD */
@@ -929,22 +816,7 @@ const styles = StyleSheet.create({
     textAlignVertical: "top",
   },
 
-  disabledInput: {
-    backgroundColor: "#f0f0f0",
-    color: "#666",
-  },
-
-  /* ROW LAYOUT */
-  rowContainer: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-  },
-
-  halfWidth: {
-    width: "48%",
-  },
-
-  /* SELECT INPUT */
+  /* SELECT INPUT (Gender / Type) - Full width like other fields */
   selectInput: {
     backgroundColor: "#fafafa",
     borderWidth: 1,
@@ -1020,13 +892,6 @@ const styles = StyleSheet.create({
     color: "#7f1d1d",
     fontSize: 16,
     fontWeight: "700",
-  },
-
-  price: {
-    color: "#a72828",
-    fontSize: 40,
-    fontWeight: "900",
-    marginTop: 10,
   },
 
   priceSubText: {
