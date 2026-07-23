@@ -257,7 +257,7 @@ export default function HomePage() {
                     style={styles.gradientButton}
                   >
                     <Text style={styles.gradientButtonText}>
-                      CAUCUS 2026...
+                      வாகை 2026...
                     </Text>
                   </LinearGradient>
                 </TouchableOpacity>
@@ -470,7 +470,7 @@ const getStyles = (isTablet, width) =>
 
     gradientButtonText: {
       color: "#fff",
-      fontSize: isTablet ? 22 : 18,
+      fontSize: isTablet ? 22 : 19,
       fontWeight: "900",
     },
 

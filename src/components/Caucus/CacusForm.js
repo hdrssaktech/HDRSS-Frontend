@@ -48,8 +48,19 @@ export default function PremiumBusinessForm() {
   const [showTypeModal, setShowTypeModal] = useState(false);
 
   // Options for dropdowns
-  const genderOptions = ["Male", "Female", "Other"];
-  const typeOptions = ["Individual", "Business", "Organization", "Student", "Professional"];
+  const genderOptions = [
+    { label: "Male", icon: "male" },
+    { label: "Female", icon: "female" },
+    { label: "Other", icon: "person" },
+  ];
+
+  const typeOptions = [
+    { label: "Individual", icon: "person-outline" },
+    { label: "Business", icon: "briefcase-outline" },
+    { label: "Organization", icon: "business-outline" },
+    { label: "Student", icon: "school-outline" },
+    { label: "Professional", icon: "ribbon-outline" },
+  ];
 
   const handleChange = (field, value) => {
     setFormData({
@@ -561,11 +572,11 @@ export default function PremiumBusinessForm() {
         </TouchableOpacity>
       </View>
 
-      {/* Gender Selection Modal */}
+      {/* Gender Selection Modal - Centered */}
       <Modal
         visible={showGenderModal}
         transparent={true}
-        animationType="slide"
+        animationType="fade"
         onRequestClose={() => setShowGenderModal(false)}
       >
         <TouchableOpacity
@@ -573,32 +584,50 @@ export default function PremiumBusinessForm() {
           activeOpacity={1}
           onPress={() => setShowGenderModal(false)}
         >
-          <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Select Gender</Text>
-            {genderOptions.map((option) => (
+          <TouchableOpacity activeOpacity={1} style={styles.modalContent}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>Select Gender</Text>
               <TouchableOpacity
-                key={option}
-                style={styles.modalOption}
-                onPress={() => {
-                  handleChange("gender", option);
-                  setShowGenderModal(false);
-                }}
+                style={styles.modalCloseButton}
+                onPress={() => setShowGenderModal(false)}
+                hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
               >
-                <Text style={styles.modalOptionText}>{option}</Text>
-                {formData.gender === option && (
-                  <Ionicons name="checkmark" size={24} color="#a72828" />
-                )}
+                <Ionicons name="close" size={20} color="#666" />
               </TouchableOpacity>
-            ))}
-          </View>
+            </View>
+
+            {genderOptions.map((option) => {
+              const isSelected = formData.gender === option.label;
+              return (
+                <TouchableOpacity
+                  key={option.label}
+                  style={[styles.modalOption, isSelected && styles.modalOptionSelected]}
+                  onPress={() => {
+                    handleChange("gender", option.label);
+                    setShowGenderModal(false);
+                  }}
+                  activeOpacity={0.7}
+                >
+                  <Text
+                    style={[styles.modalOptionText, isSelected && styles.modalOptionTextSelected]}
+                  >
+                    {option.label}
+                  </Text>
+                  <View style={[styles.radioCircle, isSelected && styles.radioCircleSelected]}>
+                    {isSelected && <View style={styles.radioCircleInner} />}
+                  </View>
+                </TouchableOpacity>
+              );
+            })}
+          </TouchableOpacity>
         </TouchableOpacity>
       </Modal>
 
-      {/* Type Selection Modal */}
+      {/* Type Selection Modal - Centered */}
       <Modal
         visible={showTypeModal}
         transparent={true}
-        animationType="slide"
+        animationType="fade"
         onRequestClose={() => setShowTypeModal(false)}
       >
         <TouchableOpacity
@@ -606,24 +635,42 @@ export default function PremiumBusinessForm() {
           activeOpacity={1}
           onPress={() => setShowTypeModal(false)}
         >
-          <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Select Type</Text>
-            {typeOptions.map((option) => (
+          <TouchableOpacity activeOpacity={1} style={styles.modalContent}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>Select Type</Text>
               <TouchableOpacity
-                key={option}
-                style={styles.modalOption}
-                onPress={() => {
-                  handleChange("type", option);
-                  setShowTypeModal(false);
-                }}
+                style={styles.modalCloseButton}
+                onPress={() => setShowTypeModal(false)}
+                hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
               >
-                <Text style={styles.modalOptionText}>{option}</Text>
-                {formData.type === option && (
-                  <Ionicons name="checkmark" size={24} color="#a72828" />
-                )}
+                <Ionicons name="close" size={20} color="#666" />
               </TouchableOpacity>
-            ))}
-          </View>
+            </View>
+
+            {typeOptions.map((option) => {
+              const isSelected = formData.type === option.label;
+              return (
+                <TouchableOpacity
+                  key={option.label}
+                  style={[styles.modalOption, isSelected && styles.modalOptionSelected]}
+                  onPress={() => {
+                    handleChange("type", option.label);
+                    setShowTypeModal(false);
+                  }}
+                  activeOpacity={0.7}
+                >
+                  <Text
+                    style={[styles.modalOptionText, isSelected && styles.modalOptionTextSelected]}
+                  >
+                    {option.label}
+                  </Text>
+                  <View style={[styles.radioCircle, isSelected && styles.radioCircleSelected]}>
+                    {isSelected && <View style={styles.radioCircleInner} />}
+                  </View>
+                </TouchableOpacity>
+              );
+            })}
+          </TouchableOpacity>
         </TouchableOpacity>
       </Modal>
 
@@ -839,42 +886,96 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
 
-  /* MODAL */
+  /* MODAL - Centered Dialog */
   modalOverlay: {
     flex: 1,
-    backgroundColor: "rgba(0, 0, 0, 0.5)",
-    justifyContent: "flex-end",
+    backgroundColor: "rgba(0, 0, 0, 0.55)",
+    justifyContent: "center",
+    alignItems: "center",
+    paddingHorizontal: 30,
   },
 
   modalContent: {
     backgroundColor: "#fff",
-    borderTopLeftRadius: 25,
-    borderTopRightRadius: 25,
+    borderRadius: 22,
     padding: 20,
-    paddingBottom: Platform.OS === 'ios' ? 40 : 30,
+    width: "100%",
+    maxWidth: 380,
+    elevation: 10,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.25,
+    shadowRadius: 12,
+  },
+
+  modalHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginBottom: 14,
+    paddingBottom: 14,
+    borderBottomWidth: 1,
+    borderBottomColor: "#f0f0f0",
   },
 
   modalTitle: {
-    fontSize: 20,
-    fontWeight: "700",
+    fontSize: 18,
+    fontWeight: "800",
     color: "#222",
-    marginBottom: 20,
-    textAlign: "center",
+  },
+
+  modalCloseButton: {
+    backgroundColor: "#f4f4f4",
+    borderRadius: 14,
+    padding: 6,
   },
 
   modalOption: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    paddingVertical: 16,
-    paddingHorizontal: 20,
-    borderBottomWidth: 1,
-    borderBottomColor: "#f0f0f0",
+    paddingVertical: 12,
+    paddingHorizontal: 12,
+    borderRadius: 14,
+    marginBottom: 6,
+  },
+
+  modalOptionSelected: {
+    backgroundColor: "#fff5f5",
+    borderWidth: 1,
+    borderColor: "#f3caca",
+  },
+
+  radioCircle: {
+    width: 22,
+    height: 22,
+    borderRadius: 11,
+    borderWidth: 2,
+    borderColor: "#d9c2c2",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+
+  radioCircleSelected: {
+    borderColor: "#a72828",
+  },
+
+  radioCircleInner: {
+    width: 11,
+    height: 11,
+    borderRadius: 6,
+    backgroundColor: "#a72828",
   },
 
   modalOptionText: {
-    fontSize: 17,
+    fontSize: 16,
     color: "#333",
+    fontWeight: "500",
+  },
+
+  modalOptionTextSelected: {
+    color: "#7f1d1d",
+    fontWeight: "700",
   },
 
   /* PRICE BOX */

@@ -7,7 +7,7 @@
     "development": {
       "developmentClient": true,
       "distribution": "internal",
-      "android": {git config --global user.email
+      "android": {
         "buildType": "apk"
       }
     },

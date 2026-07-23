@@ -22,20 +22,17 @@ export default function CharitiesPage2() {
   const { width } = useWindowDimensions();
   const [show, Setshow] = useState(false);
   const [amount, setAmount] = useState("");
-
   const isTablet = width >= 600;
 
-  /* ================= GPAY PAYMENT ================= */
-  const GPAY_NUMBER = "9677717474"; // Corrected number
-
+  /* ================= UPI PAYMENT (same method as CAUCUS form) ================= */
   const openGPay = async () => {
     if (!amount || Number(amount) <= 0) {
       Alert.alert("Enter Amount", "Please enter a valid donation amount");
       return;
     }
 
-    const upiUrl = `upi://pay?pa=${GPAY_NUMBER}@okicici&pn=${encodeURIComponent(
-      "HDRSS Charity"
+    const upiUrl = `upi://pay?pa=hdrss.in-1@oksbi&pn=${encodeURIComponent(
+      "Hindu Dharma Raksha Sena"
     )}&am=${amount}&cu=INR`;
 
     try {
@@ -43,17 +40,11 @@ export default function CharitiesPage2() {
       if (supported) {
         await Linking.openURL(upiUrl);
       } else {
-        Alert.alert(
-          "GPay Not Found",
-          "Please make sure Google Pay is installed on your device"
-        );
+        Alert.alert("Error", "No UPI app found on your device");
       }
     } catch (error) {
       console.log(error);
-      Alert.alert(
-        "GPay Not Found",
-        "Please make sure Google Pay is installed on your device"
-      );
+      Alert.alert("Error", "Failed to open UPI payment app");
     }
   };
 
@@ -281,13 +272,7 @@ export default function CharitiesPage2() {
             onPress={openGPay}
             activeOpacity={0.85}
           >
-            <Ionicons
-              name="heart"
-              size={isTablet ? 22 : 18}
-              color="#FBEEDB"
-              style={{ marginRight: 8 }}
-            />
-            <Text
+                      <Text
               style={
                 isTablet
                   ? styles.payButtonTextTablet
